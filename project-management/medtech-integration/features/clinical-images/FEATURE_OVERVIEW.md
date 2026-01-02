@@ -1,8 +1,63 @@
 # Clinical Images Feature
 
-**Last Updated**: 2025-12-09  
-**Status**: Specification Complete - Ready for Implementation  
-**Completion**: ~30% (Infrastructure complete, UI/UX specs finalized, implementation pending)
+**Last Updated**: 2025-12-15  
+**Status**: Implementation Ready - Comprehensive Specs Complete  
+**Completion**: ~30% (Infrastructure complete, UI/UX specs finalized, Redis/Ably architecture defined)
+
+---
+
+## Development Context & Decisions
+
+**Last Updated**: 2025-12-15  
+**Purpose**: Capture key decisions to avoid re-asking same questions in future sessions
+
+### Infrastructure Setup (Already Configured)
+- ✅ **Redis (Upstash)**: `https://unique-stallion-12716.upstash.io` (+ REST token)
+- ✅ **Ably**: Already integrated and running
+- ✅ **AWS Account**: Available for S3 setup
+- ✅ **Environment Variables**: All stored in Vercel dashboard
+- ⏳ **S3 Bucket**: To be created (see SETUP_INSTRUCTIONS.md)
+
+### Codebase Architecture Clarifications
+- **API Routes Split**:
+  - **Vercel**: Session management, S3, Redis endpoints (no ALEX API calls)
+  - **Lightsail BFF**: ONLY endpoints that call Medtech ALEX API (requires static IP 13.236.58.12)
+- **Why Split**: Medtech firewall requires IP whitelisting, Vercel has dynamic IPs
+- **Lightsail BFF Location**: `/opt/clinicpro-bff/` on server (auto-deploys via GitHub Actions)
+- **Desktop Widget**: Already implemented at `/app/(medtech)/medtech-images/page.tsx`
+- **Mobile Page**: Not started, will create at `/app/(medtech)/medtech-images/mobile/page.tsx`
+- **Store**: Use existing `imageWidgetStore.ts` (no rename, already in use by desktop)
+
+### Technical Decisions
+- **Image Compression**: `browser-image-compression` library (handles HEIC, 120KB bundle acceptable)
+- **HEIC Conversion**: Client-side only (no backend fallback needed)
+- **Image Limit**: 20 per session (warning at 15), covers 99% of clinical cases
+- **Session Persistence**: Does NOT survive page refresh (acceptable UX trade-off)
+- **Real-Time Sync**: Ably for mobile → desktop (already integrated)
+- **Session Storage**: Redis for metadata (2-hour TTL), S3 for images (1-hour lifecycle)
+
+### Implementation Priorities
+- **Phase 1 Focus**: Backend first → Simple mobile (4 screens) → Minimal desktop updates
+- **Simple Mobile Flow**: Landing → Camera → Upload Progress → Success (skip metadata forms)
+- **Full Mobile UI**: Defer 7-screen version with metadata to Phase 2
+- **Desktop Updates**: Minimal (Ably listener + session fetch), defer full UI polish to Phase 2
+
+### Deployment Strategy
+- **Frontend (Vercel)**: Auto-deploy on push to main (already working)
+- **API Routes (Vercel)**: Session management, S3, Redis endpoints (auto-deploy with frontend)
+- **BFF (Lightsail)**: Commit endpoint + ALEX API calls (auto-deploy via GitHub Actions)
+- **GitHub Actions**: Setup guide in `GITHUB_ACTIONS_SETUP.md` (~10 min one-time setup)
+
+### Testing Configuration
+- **Environment**: UAT ALEX API (`https://alexapiuat.medtechglobal.com/FHIR`)
+- **Test Patient**: NHI `ZZZ0016`, Patient ID `14e52e16edb7a435bfa05e307afd008b`
+- **Test Facility**: `F2N060-E` (Healthier Care)
+
+### Cost Estimates
+- **S3**: ~$0.31/month (Sydney region, 1-day lifecycle)
+- **Redis (Upstash)**: $0/month (free tier sufficient)
+- **Ably**: $0/month (free tier: 200 connections, 100k messages/day)
+- **Total**: ~$0.31/month
 
 ---
 
@@ -16,12 +71,17 @@ Enable GPs to capture clinical images from within Medtech Evolution and save dir
 
 ## Implementation Documentation
 
-**Before implementing, read these specifications:**
+**🚀 NEXT STEPS (Start Here):**
 
-1. **[mobile-ui-spec.md](./mobile-ui-spec.md)** - Complete mobile UI specification (7 screens, data flow, validation)
-2. **[desktop-ui-spec.md](./desktop-ui-spec.md)** - Complete desktop UI specification (layout, components, interactions)
-3. **[implementation-requirements.md](./implementation-requirements.md)** - Technical requirements and API contracts
-4. **[test-results.md](./test-results.md)** - FHIR API validation results
+1. **[SETUP_INSTRUCTIONS.md](./SETUP_INSTRUCTIONS.md)** - **DO THIS FIRST** - Step-by-step S3 bucket setup, AWS credentials, environment variables (~30 mins)
+2. **[IMPLEMENTATION_PLAN.md](./IMPLEMENTATION_PLAN.md)** - **READ NEXT** - Detailed plan of what will be built (backend + simple mobile + desktop Ably listener)
+
+**Architecture & Detailed Specs:**
+
+3. **[implementation-documentation.md](./implementation-documentation.md)** - Complete technical architecture (Redis schema, API contracts, full mobile/desktop specs)
+4. **[mobile-ui-spec.md](./mobile-ui-spec.md)** - Complete mobile UI specification (7 screens, data flow, validation) - Phase 2 full version
+5. **[desktop-ui-spec.md](./desktop-ui-spec.md)** - Complete desktop UI specification (layout, components, interactions) - Phase 2 full version
+6. **[test-results.md](./test-results.md)** - FHIR API validation results (POST Media confirmed working)
 
 ---
 
@@ -34,12 +94,31 @@ Enable GPs to capture clinical images from within Medtech Evolution and save dir
 - QR code generation for mobile handoff
 
 ### What's Pending ⏳
-- Mobile UI implementation (7 screens)
-- Desktop UI updates (patient banner, warnings, metadata fields)
-- Redis + S3 session storage
-- Real-time Ably sync (mobile → desktop)
-- Backend commit endpoint (FHIR Media conversion)
-- Widget launch mechanism research (Phase 3)
+
+**Phase 1: Mobile Upload & Real-Time Sync** (Current Focus)
+- [ ] Redis session storage implementation (Upstash)
+- [ ] S3 bucket setup with lifecycle policies
+- [ ] Mobile page implementation (7 screens)
+- [ ] Desktop Ably listener implementation
+- [ ] BFF API endpoints (6 endpoints):
+  - POST /api/session-tokens
+  - GET /api/session-tokens/:token
+  - POST /api/users/:userId/presigned-url
+  - POST /api/users/:userId/images
+  - GET /api/users/:userId/session
+  - POST /api/users/:userId/commit
+- [ ] Image compression (client-side, <1MB target)
+- [ ] Real-time Ably sync (mobile → desktop)
+- [ ] End-to-end testing (mobile capture → desktop preview → commit)
+
+**Phase 2: Complete Integration** (Not Started)
+- [ ] Desktop UI polish (patient banner, warnings, metadata fields)
+- [ ] Error handling improvements
+- [ ] Widget launch mechanism research
+
+**Phase 3: Production Deployment** (Not Started)
+- [ ] Production environment configuration
+- [ ] Medtech partner integration testing
 
 ---
 
@@ -66,15 +145,23 @@ GP opens Medtech Evolution
 
 ### Component Architecture
 
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| Desktop Widget | React/Next.js (Vercel) | Image capture, editing, metadata entry |
-| Mobile Page | React/Next.js (Vercel) | Phone camera capture, QR handoff |
-| BFF | Node.js (Lightsail) | OAuth, FHIR translation, static IP for Medtech firewall |
-| Session Storage | Redis | Session metadata, S3 keys (10-minute TTL) |
-| Image Storage | S3/Supabase Storage | Temporary image storage (1-hour retention) |
-| Real-Time Sync | Ably | Mobile → Desktop notifications |
-| ALEX API | Medtech FHIR R4 | Upload images to patient encounters |
+| Component | Technology | Hosting | Purpose |
+|-----------|-----------|---------|---------|
+| Desktop Widget | React/Next.js | Vercel | Image capture, editing, metadata entry |
+| Mobile Page | React/Next.js | Vercel | Phone camera capture, QR handoff |
+| Session API | Next.js API Routes | Vercel | Session tokens, S3 URLs, Redis CRUD |
+| Commit API | Express.js | Lightsail BFF | FHIR Media upload to ALEX (requires static IP) |
+| Session Storage | Redis (Upstash) | Cloud | Session metadata, S3 keys (2-hour TTL) |
+| Image Storage | S3 | AWS Sydney | Temporary storage (1-hour lifecycle) |
+| Real-Time Sync | Ably | Cloud | Mobile → Desktop notifications |
+| ALEX API | Medtech FHIR R4 | Medtech | Patient encounter integration |
+
+**Key Infrastructure:**
+- **Lightsail BFF**: Static IP 13.236.58.12 (whitelisted by Medtech) at `/opt/clinicpro-bff/`
+- **Redis Keys**: `user:{userId}` (session data), `session-token:{token}` (QR tokens)
+- **S3 Bucket**: `clinicpro-images-temp` in `ap-southeast-2` with 1-hour lifecycle policy
+- **Ably Channel**: `session:{userId}` for real-time image notifications
+- **Image Compression**: Client-side via `browser-image-compression` (target <1MB, JPEG 85% quality)
 
 ---
 
@@ -166,20 +253,30 @@ GP opens Medtech Evolution
 
 ---
 
-## Scale Assumptions
+## Scale Assumptions & Resource Planning
 
-- **Target**: 100 concurrent GPs
+**Target Capacity**: 100 concurrent GPs
+
+**Usage Patterns**:
 - **Average session**: 5 images per session, 1MB each (after compression)
-- **Session duration**: 10 minutes average
+- **Session duration**: 10 minutes average, 2-hour max TTL
 - **Daily usage**: 5-10 sessions per GP per day
 - **Monthly volume**: 50,000-100,000 image uploads
 
-### Resource Usage (100 Concurrent GPs)
-- **Redis memory**: ~10MB (session metadata only)
-- **S3 storage**: ~500MB temporary (1-hour retention, auto-cleanup)
-- **Ably connections**: 100 concurrent (free tier supports 200)
-- **Ably messages**: ~5,000/day (free tier supports 100,000/day)
-- **BFF memory**: 512MB-1GB sufficient
+**Infrastructure Requirements (100 Concurrent GPs)**:
+
+| Resource | Specification | Cost Estimate |
+|----------|--------------|---------------|
+| Redis (Upstash) | ~10MB storage (session metadata only) | Free tier sufficient |
+| S3 Storage | ~500MB temporary (1-hour lifecycle, auto-cleanup) | ~$0.01/month |
+| Ably | 100 connections, ~5,000 messages/day | Free tier (supports 200 connections, 100k messages/day) |
+| BFF (Lightsail) | 512MB-1GB RAM, 1 vCPU | Current $10/month sufficient |
+
+**Bottlenecks & Limits**:
+- **Redis Session Limit**: 50 images per session (configurable)
+- **S3 Upload Timeout**: 60 seconds per image
+- **Ably Message Size**: Max 32KB per message (sufficient for metadata)
+- **ALEX API Rate Limits**: Unknown (assume conservative ~10 req/sec)
 
 ---
 
@@ -201,34 +298,55 @@ GP opens Medtech Evolution
 
 ## Development Phases
 
-### Phase 1: Mobile Upload & Dataflow (CURRENT)
-**Time**: 6-8 hours  
-**Status**: In Progress
+### Phase 1: Mobile Upload & Real-Time Sync (CURRENT)
+**Time**: 8-12 hours  
+**Status**: Ready to Start - Complete specs available in implementation-documentation.md
 
-- Mobile upload UI with real backend (replace alert)
-- Redis + S3 session storage implementation
-- Mobile → Desktop sync via Ably
-- Dataflow documentation
+**Backend Tasks** (3-5 hours):
+- [ ] Setup Upstash Redis instance and configure connection
+- [ ] Setup S3 bucket with lifecycle policy (1-hour expiry)
+- [ ] Implement 6 BFF API endpoints (session tokens, presigned URLs, images, commit)
+- [ ] Integrate ALEX OAuth service with Redis session storage
+- [ ] Implement FHIR Media resource builder
 
-### Phase 2: Complete Integration
+**Frontend Mobile Tasks** (3-5 hours):
+- [ ] Implement mobile page with 7 screens (using mobile-ui-spec.md)
+- [ ] Implement image compression (browser-image-compression)
+- [ ] Integrate S3 upload flow via presigned URLs
+- [ ] Implement Ably publisher for image-uploaded events
+- [ ] Implement session validation and error handling
+
+**Frontend Desktop Tasks** (2-3 hours):
+- [ ] Implement Ably subscriber for image-uploaded events
+- [ ] Update desktop widget to fetch session on load
+- [ ] Implement real-time image preview updates
+- [ ] Update commit flow to use Redis session data
+- [ ] Add disconnection detection and manual refresh
+
+**Testing** (1-2 hours):
+- [ ] End-to-end flow: QR scan → Mobile capture → Desktop preview → Commit
+- [ ] Error scenarios (network failure, session expiry, S3 upload failure)
+- [ ] Cross-device testing (iOS Safari, Android Chrome)
+
+### Phase 2: Complete Integration (NOT STARTED)
 **Time**: 4-6 hours  
-**Status**: Not Started
+**Status**: Awaiting Phase 1 completion
 
-- Connect real ALEX API to commit endpoint
-- Build FHIR Media resource from session images
-- End-to-end testing with real images
-- Error handling validation
+- [ ] Desktop UI polish (patient banner, warnings, metadata validation)
+- [ ] Enhanced error handling and retry logic
+- [ ] Performance optimization
+- [ ] Production testing with real GP workflows
 
-### Phase 3: Widget Launch Mechanism
+### Phase 3: Widget Launch Mechanism (NOT STARTED)
 **Time**: 3-5 hours  
-**Status**: Not Started
+**Status**: Awaiting Medtech partner guidance
 
-- Determine how to launch from Medtech Evolution
-- Implement patient context passing
-- Test launch flow
-- Ready for GP practice pilots
+- [ ] Research Medtech Evolution widget launch patterns
+- [ ] Implement patient/encounter context passing
+- [ ] Test launch flow from Medtech Evolution
+- [ ] Ready for GP practice pilots
 
-**Total Estimated Time**: 13-19 hours (6-8h Phase 1 + 4-6h Phase 2 + 3-5h Phase 3)
+**Total Estimated Time**: 15-23 hours across 3 phases
 
 ---
 
