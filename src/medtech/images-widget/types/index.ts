@@ -23,9 +23,11 @@ export type ImageStatus = 'pending' | 'compressing' | 'uploading' | 'committed' 
 
 export type WidgetImage = {
   id: string;
-  file: File;
-  preview: string; // Blob URL for preview
+  file: File | null; // Null for images uploaded from mobile (no File object)
+  preview?: string; // Blob URL for preview (desktop capture)
+  previewUrl?: string; // S3 presigned URL for preview (mobile upload)
   thumbnail?: string; // Compressed preview
+  s3Key?: string; // S3 key (for images uploaded to session storage)
 
   // Metadata
   metadata: {
@@ -34,6 +36,7 @@ export type WidgetImage = {
     view?: CodeableConcept;
     type?: CodeableConcept;
     label?: string; // Free text to differentiate images
+    notes?: string; // Additional notes
     // Edit state (non-destructive)
     edits?: {
       rotation?: number; // Rotation angle in degrees
@@ -52,7 +55,7 @@ export type WidgetImage = {
             x2: number; // End point X as percentage (0-100)
             y2: number; // End point Y as percentage (0-100)
           }
-          | {
+        | {
             // Legacy format: position and angle (for backward compatibility when reading)
             id: string;
             x: number; // Position X as percentage (0-100)
