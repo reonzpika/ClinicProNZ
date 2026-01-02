@@ -1,7 +1,10 @@
-/* eslint-disable jsonc/sort-keys */
-{
+/* eslint-disable jsonc/sort-keys */{
   "compilerOptions": {
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
@@ -11,7 +14,6 @@
     "alwaysStrict": true,
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
-
     "noImplicitAny": true,
     "noImplicitReturns": true,
     "noImplicitThis": true,
@@ -19,36 +21,42 @@
     "noUnusedParameters": true,
     "allowUnreachableCode": false,
     "noFallthroughCasesInSwitch": true,
-
     "target": "es2017",
     "outDir": "out",
     "sourceMap": true,
-
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "allowJs": true,
     "checkJs": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-
-    "jsx": "preserve",
+    "jsx": "react-jsx",
     "noEmit": true,
     "isolatedModules": true,
     "incremental": true,
-
     // Load types
-    "types": ["vitest/globals"],
-
+    "types": [
+      "vitest/globals"
+    ],
     // Path aliases
     "baseUrl": ".",
     "paths": {
-      "@/app/*": ["./app/*"],
-      "@/src/*": ["./src/*"],
-      "@/db/*": ["./database/*"],
-      "@/public/*": ["./public/*"],
-      "@/healthify/*": ["./healthify/*"]
+      "@/app/*": [
+        "./app/*"
+      ],
+      "@/src/*": [
+        "./src/*"
+      ],
+      "@/db/*": [
+        "./database/*"
+      ],
+      "@/public/*": [
+        "./public/*"
+      ],
+      "@/healthify/*": [
+        "./healthify/*"
+      ]
     },
-
     // Editor support
     "plugins": [
       {
@@ -56,13 +64,20 @@
       }
     ]
   },
-  "exclude": ["./out/**/*", "./node_modules/**/*", "**/*.spec.ts", "**/*.e2e.ts", "commitlint.config.ts"],
+  "exclude": [
+    "./out/**/*",
+    "./node_modules/**/*",
+    "**/*.spec.ts",
+    "**/*.e2e.ts",
+    "commitlint.config.ts"
+  ],
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
     ".storybook/*.ts",
     ".next/types/**/*.ts",
-    "**/*.mts"
+    "**/*.mts",
+    ".next/dev/types/**/*.ts"
   ]
 }

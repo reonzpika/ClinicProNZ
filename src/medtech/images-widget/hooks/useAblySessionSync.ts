@@ -5,16 +5,20 @@
  * Fetches session images eagerly when notified
  */
 
-import Ably from 'ably';
+'use client';
+
 import { nanoid } from 'nanoid';
 import { useEffect, useRef } from 'react';
+
+// Dynamic import Ably to avoid SSR issues
+import type * as AblyTypes from 'ably';
 
 import { useImageWidgetStore } from '../stores/imageWidgetStore';
 import type { WidgetImage } from '../types';
 
 export function useAblySessionSync(encounterId: string | null | undefined) {
   const { addImage, sessionImages } = useImageWidgetStore();
-  const ablyRef = useRef<Ably.Realtime | null>(null);
+  const ablyRef = useRef<AblyTypes.Realtime | null>(null);
   const hasInitialFetchRef = useRef(false);
 
   useEffect(() => {
@@ -32,15 +36,19 @@ export function useAblySessionSync(encounterId: string | null | undefined) {
 
     console.log('[Ably Sync] Initializing session sync', { encounterId });
 
-    // Initialize Ably client (client-side)
-    const ably = new Ably.Realtime({ key: ablyApiKey });
-    ablyRef.current = ably;
+    // Initialize Ably client (client-side only, dynamic import)
+    let cleanupFn: (() => void) | null = null;
+    
+    (async () => {
+      const Ably = (await import('ably')).default;
+      const ably = new Ably.Realtime({ key: ablyApiKey });
+      ablyRef.current = ably;
 
-    const channelName = `session:${encounterId}`;
-    const channel = ably.channels.get(channelName);
+      const channelName = `session:${encounterId}`;
+      const channel = ably.channels.get(channelName);
 
-    // Fetch existing session images on mount (eager fetch)
-    async function fetchSessionImages() {
+      // Fetch existing session images on mount (eager fetch)
+      async function fetchSessionImages() {
       try {
         console.log('[Ably Sync] Fetching existing session images', { encounterId });
 
@@ -106,27 +114,35 @@ export function useAblySessionSync(encounterId: string | null | undefined) {
       }
     }
 
-    // Subscribe to image-uploaded events
-    channel.subscribe('image-uploaded', async (message) => {
-      console.log('[Ably Sync] Image uploaded event received', {
-        encounterId,
-        data: message.data,
+      // Subscribe to image-uploaded events
+      channel.subscribe('image-uploaded', async (message) => {
+        console.log('[Ably Sync] Image uploaded event received', {
+          encounterId,
+          data: message.data,
+        });
+
+        // Fetch latest session images (includes newly uploaded image)
+        await fetchSessionImages();
       });
 
-      // Fetch latest session images (includes newly uploaded image)
+      // Initial fetch on mount
       await fetchSessionImages();
-    });
 
-    // Initial fetch on mount
-    fetchSessionImages();
+      // Set cleanup function
+      cleanupFn = () => {
+        console.log('[Ably Sync] Cleaning up', { encounterId });
+        channel.unsubscribe();
+        ably.close();
+        ablyRef.current = null;
+        hasInitialFetchRef.current = false;
+      };
+    })();
 
-    // Cleanup
+    // Cleanup on unmount
     return () => {
-      console.log('[Ably Sync] Cleaning up', { encounterId });
-      channel.unsubscribe();
-      ably.close();
-      ablyRef.current = null;
-      hasInitialFetchRef.current = false;
+      if (cleanupFn) {
+        cleanupFn();
+      }
     };
   }, [encounterId]); // Only depend on encounterId (not addImage to avoid re-init)
 }
