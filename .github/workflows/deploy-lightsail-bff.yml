@@ -1,0 +1,63 @@
+name: Deploy to Lightsail BFF
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'app/api/(integration)/medtech/session/commit/**'
+      - 'src/lib/services/medtech/**'
+      - 'src/lib/services/redis/**'
+      - '.github/workflows/deploy-lightsail-bff.yml'
+
+jobs:
+  deploy:
+    name: Deploy BFF to Lightsail
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to Lightsail via SSH
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: 13.236.58.12
+          username: ubuntu
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          script: |
+            cd /opt/clinicpro-bff
+            
+            # Pull latest code
+            echo "📥 Pulling latest code..."
+            git pull origin main || exit 1
+            
+            # Install dependencies
+            echo "📦 Installing dependencies..."
+            npm ci --production || exit 1
+            
+            # Restart service
+            echo "🔄 Restarting BFF service..."
+            sudo systemctl restart clinicpro-bff || exit 1
+            
+            # Verify service is running
+            echo "✅ Checking service status..."
+            sleep 3
+            sudo systemctl is-active clinicpro-bff || exit 1
+            
+            echo "🎉 Deployment successful!"
+            echo "Service status:"
+            sudo systemctl status clinicpro-bff --no-pager | head -10
+
+      - name: Comment on commit
+        uses: peter-evans/commit-comment@v3
+        if: success()
+        with:
+          body: |
+            ✅ **Lightsail BFF deployed successfully!**
+            
+            - Server: 13.236.58.12
+            - Service: clinicpro-bff
+            - Status: Running
+            
+            Check deployment logs in [Actions](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
