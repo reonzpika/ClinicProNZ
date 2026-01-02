@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2025-12-15"
-version: "1.4.0"
+last_updated: "2026-01-02"
+version: "1.5.0"
 tags:
   - integration
   - medtech
@@ -116,8 +116,9 @@ The application is split across two hosting platforms due to Medtech's IP whitel
 
 **Lightsail BFF (Static IP: 13.236.58.12)**:
 - **Commit Endpoint**: Upload images to Medtech ALEX API
-- **Location**: `/opt/clinicpro-bff/` on Lightsail server
-- **Deployment**: Auto-deploy via GitHub Actions (see `GITHUB_ACTIONS_SETUP.md`)
+- **Location**: `/home/deployer/app/` on Lightsail server
+- **Source Code**: `/lightsail-bff/` in main repo (merged from separate repo 2026-01-02)
+- **Deployment**: Auto-deploy via GitHub Actions on push to `lightsail-bff/**`
 - **Why**: Medtech firewall requires whitelisted static IP for ALEX API access
 - **Restart**: `sudo systemctl restart clinicpro-bff`
 
@@ -339,6 +340,14 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 ## Recent Updates Summary
+
+### [2026-01-02] — 🔄 BFF Repo Merged into Main Repo
+
+- **Repository consolidation**: Merged `clinicpro-bff` repo into main `ClinicProNZ` repo
+- **New location**: BFF code now in `/lightsail-bff/` folder of main repo
+- **Deployment updated**: GitHub Actions workflow updated to deploy from merged repo
+- **Single source of truth**: All code now in one repository for easier management
+- **Benefits**: Simpler workflow for solo founder, auto-deployment working, cleaner git history
 
 ### [2025-12-09] — 🏗️ Phase 1 Architecture Finalized & Documentation Restructure
 

@@ -1,8 +1,9 @@
 # Lightsail BFF Setup Documentation
 
-**Version**: 1.0  
-**Last Updated**: 2025-11-11  
-**Status**: ✅ Production Ready
+**Version**: 2.0  
+**Last Updated**: 2026-01-02  
+**Status**: ✅ Production Ready  
+**Repository**: Merged into main ClinicProNZ repo at `/lightsail-bff/`
 
 ---
 
@@ -15,6 +16,12 @@ The Lightsail BFF (Backend for Frontend) is a Node.js Express server that acts a
 - Manage OAuth token caching
 - Proxy FHIR API requests
 - Handle ALEX-specific headers and authentication
+
+**Repository Structure** (as of 2026-01-02):
+- **Source code**: `/lightsail-bff/` folder in main `ClinicProNZ` repository
+- **Deployed location**: `/home/deployer/app/` on Lightsail server
+- **Deployment**: Auto-deploys via GitHub Actions when `/lightsail-bff/**` changes
+- **Formerly**: Separate `clinicpro-bff` repository (merged 2026-01-02)
 
 ---
 
@@ -238,6 +245,12 @@ sudo systemctl status clinicpro-bff
 
 ### Deploy Code Changes
 
+**Automatic Deployment** (Recommended - Setup via GitHub Actions):
+
+Changes to `/lightsail-bff/**` in main repo automatically deploy to Lightsail. See `features/clinical-images/GITHUB_ACTIONS_SETUP.md`.
+
+**Manual Deployment** (If needed):
+
 ```bash
 # 1. SSH into server
 ssh -i /path/to/your-key.pem ubuntu@13.236.58.12
@@ -249,19 +262,22 @@ cd /home/deployer/app
 git status
 git branch
 
-# 4. Pull latest code
-sudo -u deployer git pull origin main  # or your branch name
+# 4. Pull latest code from main repo
+sudo -u deployer git pull origin main
 
-# 5. Install dependencies (if package.json changed)
-sudo -u deployer npm install
+# 5. Copy BFF files from lightsail-bff folder
+sudo -u deployer rsync -av --exclude='.env' --exclude='node_modules' lightsail-bff/ .
 
-# 6. Restart service
+# 6. Install dependencies (if package.json changed)
+sudo -u deployer npm ci --production
+
+# 7. Restart service
 sudo systemctl restart clinicpro-bff
 
-# 7. Check logs for errors
+# 8. Check logs for errors
 sudo journalctl -u clinicpro-bff -f
 
-# 8. Test endpoint
+# 9. Test endpoint
 curl http://localhost:3000/api/medtech/test?nhi=ZZZ0016
 ```
 
