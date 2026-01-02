@@ -25,7 +25,7 @@ import { NextResponse } from 'next/server';
 import { redisSessionService, s3ImageService } from '@/src/lib/services/session-storage';
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ encounterId: string }> },
 ) {
   try {
