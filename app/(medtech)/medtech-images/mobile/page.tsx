@@ -321,11 +321,9 @@ throw new Error('No encounter context');
     setUploadProgress({ current: 0, total: images.length });
 
     try {
-      for (let i = 0; i < images.length; i++) {
-        const image = images[i];
-        if (!image) continue; // Type guard
+      for (const [index, image] of images.entries()) {
         await uploadImage(image);
-        setUploadProgress({ current: i + 1, total: images.length });
+        setUploadProgress({ current: index + 1, total: images.length });
       }
 
       // All uploaded successfully
