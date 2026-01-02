@@ -1,104 +1,353 @@
 ---
-description: "Library-First Approach - Always research existing solutions before building from scratch"
+description: "Library & Open Source First - Search for existing solutions before building"
 alwaysApply: true
 globs: []
+version: "2.0.0"
+priority: NORMAL
+last_updated: "2026-01-01"
 ---
 
-# Library-First Approach
+# Library & Open Source First Approach
 
 ## Core Principle
 
-**Always research and evaluate existing, well-maintained libraries before building features from scratch.**
+**Before building anything, actively search for:**
+1. Well-maintained libraries (npm/pnpm)
+2. Popular open source repositories (GitHub)
+3. Example implementations and patterns
+4. Articles and tutorials (Stack Overflow, dev.to, Medium)
+
+**USE AI WEB SEARCH CAPABILITIES TO FIND SOLUTIONS.**
+
+This runs automatically during THINKING mode when planning code.
 
 ## When Building New Features
 
-### 1. Research Phase (Mandatory)
-Before implementing any new feature:
-1. **Search npm/pnpm registry** for relevant libraries
-2. **Check GitHub stars/activity** - prefer libraries with:
-   - 1,000+ stars (for popular features)
-   - Recent commits (within last 6 months)
-   - Active maintenance
-   - Good documentation
-3. **Review alternatives** - compare 2-3 options
-4. **Check bundle size** - consider impact on application size
-5. **Verify TypeScript support** - ensure type definitions available
+### Step 1: Active Search (Mandatory - Use Web Search Tool)
 
-### 2. Decision Criteria
+**This happens automatically in THINKING mode before showing pseudocode plan.**
+
+When user says "build X", search these sources:
+
+**1. npm/pnpm Registry:**
+- Search: "[feature name] react typescript"
+- Example: "image cropper react typescript"
+- Look for packages with 1,000+ stars
+- Check last updated date (prefer < 6 months ago)
+
+**2. GitHub Repositories:**
+- Search: "[feature name] [tech stack]"
+- Example: "medical imaging next.js"
+- Look for repos with:
+  - 500+ stars (proven useful)
+  - Recent commits (last 6 months)
+  - Active issues/PRs (maintained)
+  - Good README/documentation
+  - Similar tech stack (Next.js, React, TypeScript)
+
+**3. Stack Overflow:**
+- Search: "[feature] implementation [stack]"
+- Example: "FHIR API integration nodejs"
+- Look for:
+  - High-voted answers (50+ votes)
+  - Recent activity (last 2 years)
+  - Code examples
+  - Performance/security considerations
+
+**4. dev.to Articles:**
+- Search: "[feature] tutorial [tech]"
+- Example: "Next.js image upload tutorial"
+- Look for:
+  - Recent articles (last year)
+  - Complete code examples
+  - Best practices explained
+  - Real-world use cases
+
+**5. Medium Articles:**
+- Search: "[feature] implementation guide"
+- Example: "healthcare API integration best practices"
+- Look for:
+  - Detailed technical articles
+  - Architecture explanations
+  - Lessons learned / pitfalls
+  - From credible authors
+
+**6. Check Existing Stack:**
+- Review package.json dependencies FIRST
+- User might already have a library that solves this
+
+### Step 2: Evaluate Findings
+
+**For Libraries (npm):**
+- ✅ 1,000+ stars (popular features)
+- ✅ Recent commits (within 6 months)
+- ✅ Active maintenance (issues being addressed)
+- ✅ Good documentation
+- ✅ TypeScript support
+- ✅ Reasonable bundle size (< 100KB for most)
+- ✅ License compatible (MIT, Apache, etc.)
+- ✅ No critical security vulnerabilities
+
+**For GitHub Repos (reference implementations):**
+- ✅ 500+ stars (proven useful)
+- ✅ Recent activity (not abandoned)
+- ✅ Clear code structure (can learn from it)
+- ✅ Similar tech stack (Next.js, React, TypeScript)
+- ✅ Good README with architecture explanation
+
+**For Stack Overflow / Articles:**
+- ✅ From reputable sources (high reputation users, known publications)
+- ✅ Recent content (last 1-2 years for tech)
+- ✅ Applicable to your stack (Next.js, React, TypeScript)
+- ✅ Solves similar problem
+- ✅ Includes working code examples
+
+### Step 3: Present Findings
+
+After searching, present what you found BEFORE showing pseudocode:
+
+**Format:**
+```
+I searched for solutions first:
+
+📦 LIBRARIES FOUND:
+- [library-name]: [stars] stars, last updated [date]
+  ✅ Pros: [key benefits]
+  ❌ Cons: [limitations]
+  Bundle: [size]
+
+🔍 GITHUB REPOS FOUND:
+- [repo-name]: [stars] stars
+  Description: [what it does]
+  Useful for: [what we can learn/adapt]
+
+💬 STACK OVERFLOW / ARTICLES:
+- [title]: [source] - [date]
+  Key insight: [main takeaway]
+
+RECOMMENDATION:
+[Use library X] OR [Adapt pattern from Y] OR [Build custom because Z]
+
+━━━ IMPLEMENTATION PLAN ━━━
+[Then show detailed pseudocode with chosen approach]
+
+Proceed with implementation?
+```
+
+**If nothing found:**
+```
+I searched for solutions (npm, GitHub, Stack Overflow, articles):
+- No existing library found for [specific feature]
+- Found [related library] that handles [partial functionality]
+- Found [article/pattern] with useful approach
+
+RECOMMENDATION:
+Build custom using [pattern/approach from search]
++ Integrate [related library] for [partial functionality]
+
+━━━ IMPLEMENTATION PLAN ━━━
+[Then show detailed pseudocode]
+
+Proceed with implementation?
+```
+
+### Step 4: Decision Criteria
 
 **Use a library when:**
-- ✅ Library solves 80%+ of requirements
+- ✅ Solves 80%+ of requirements
 - ✅ Well-maintained and actively developed
 - ✅ Good documentation and community support
 - ✅ TypeScript support available
-- ✅ Reasonable bundle size (< 100KB for most cases)
-- ✅ License compatible with project
-- ✅ No major security vulnerabilities
+- ✅ Reasonable bundle size
+- ✅ Saves significant time vs building
+
+**Adapt patterns from repos/articles when:**
+- ✅ Library doesn't exist but pattern does
+- ✅ Need to understand architecture approach
+- ✅ Can adapt code to your needs
+- ✅ Saves research time
 
 **Build from scratch when:**
-- ❌ No suitable library exists
-- ❌ Library is unmaintained or deprecated
+- ❌ No suitable library OR pattern exists (verified via search)
+- ❌ Existing solutions unmaintained (no commits in 12+ months)
 - ❌ Library adds significant bundle size for minimal benefit
-- ❌ Requirements are highly customised and library would require extensive modification
-- ❌ Library has critical bugs or security issues
+- ❌ Requirements highly customized (medical workflows, regulatory)
+- ❌ Security/privacy concerns with external dependencies
 
-### 3. Research Process
+---
 
-1. **Search terms**: Use specific feature names (e.g., "image crop", "date picker", "chart")
-2. **Check multiple sources**:
-   - npm/pnpm registry
-   - GitHub trending repositories
-   - Awesome lists (e.g., awesome-react)
-   - Stack Overflow discussions
-3. **Evaluate top 3 options**:
-   - Compare features, API, bundle size
-   - Read recent issues/PRs for red flags
-   - Check compatibility with current tech stack
+## Search Examples
 
-### 4. Examples
+### Example 1: Medical Imaging Feature
 
-**Good examples:**
-- Image editing → `react-konva` (canvas-based, handles complex transformations)
-- Image cropping → `react-easy-crop` (simple, well-maintained)
-- Date picking → `react-day-picker` or `@radix-ui/react-calendar`
-- Charts → `recharts` or `victory`
-- Form validation → `react-hook-form` + `zod`
+**User**: "build medical image annotation tool"
 
-**When to build custom:**
-- Highly domain-specific features (e.g., medical imaging workflows)
-- Tight performance requirements where libraries add overhead
-- Unique UI/UX requirements not met by existing solutions
+**AI searches**:
+1. npm: "medical image annotation react"
+2. GitHub: "DICOM viewer react" / "medical imaging annotation"
+3. Stack Overflow: "medical image annotation javascript"
+4. dev.to: "healthcare image viewer tutorial"
+5. Medium: "building medical imaging tools"
 
-### 5. Implementation Guidelines
+**AI finds**:
+- Library: `react-konva` (already in package.json!)
+- Repo: cornerstone.js (DICOM viewer, 2k stars)
+- SO answer: Canvas annotation techniques
+- Article: Healthcare annotation best practices
 
-When using a library:
-1. **Read documentation thoroughly** before implementation
-2. **Follow library patterns** - don't fight the library's design
-3. **Wrap if needed** - create thin wrapper components for consistency
-4. **Document why** - add comments explaining library choice
-5. **Keep updated** - stay current with library versions
+**AI presents**:
+```
+I searched for solutions:
 
-### 6. Communication
+📦 LIBRARIES FOUND:
+- react-konva: 6k stars, last updated 1 month ago
+  ✅ Already installed! Canvas-based, handles annotations
+  ✅ Good docs, TypeScript support
+  Bundle: 50KB
 
-When suggesting a library:
-- Explain why it's better than building from scratch
-- Mention key benefits (maintenance, features, community)
-- Note any trade-offs (bundle size, learning curve)
-- Provide quick example or reference
+🔍 GITHUB REPOS:
+- cornerstone.js: 2k stars
+  DICOM medical imaging viewer
+  Useful for: Medical imaging patterns, DICOM handling
+
+💬 ARTICLES:
+- "Building Healthcare Annotation Tools" (Medium)
+  Key insight: Layer-based approach for annotations
+
+RECOMMENDATION:
+Use react-konva (already installed) for annotation layer
++ Learn DICOM patterns from cornerstone.js if needed
+
+━━━ IMPLEMENTATION PLAN ━━━
+[pseudocode using react-konva]
+
+Proceed with implementation?
+```
+
+### Example 2: FHIR Integration
+
+**User**: "build FHIR patient search"
+
+**AI searches**:
+1. npm: "fhir client typescript"
+2. GitHub: "fhir integration nodejs example"
+3. Stack Overflow: "FHIR search parameters"
+4. dev.to: "FHIR API tutorial"
+
+**AI finds**:
+- Library: `fhir-kit-client`
+- Repo: hapi-fhir examples
+- SO: FHIR search best practices
+- Tutorial: FHIR query patterns
+
+**AI presents**: [findings + recommendation + pseudocode + "Proceed?"]
+
+### Example 3: Nothing Exists
+
+**User**: "build ACC45 occupation code matcher"
+
+**AI searches**:
+1. npm: "ACC occupation code" → Nothing
+2. GitHub: "ACC45 new zealand" → Nothing relevant
+3. Stack Overflow: "fuzzy matching medical codes"
+4. Articles: "fuzzy search implementation"
+
+**AI finds**:
+- Library: `fuse.js` (fuzzy search, 18k stars)
+- SO: Fuzzy matching algorithms
+- Article: "Implementing fuzzy search"
+
+**AI presents**:
+```
+I searched for solutions:
+
+📦 No ACC-specific library exists.
+
+Found general solution:
+- fuse.js: 18k stars, fuzzy search library
+  ✅ Perfect for code matching, lightweight (12KB)
+
+💬 STACK OVERFLOW:
+- "Fuzzy matching for medical terminology"
+  Key insight: Levenshtein distance + threshold tuning
+
+RECOMMENDATION:
+Build custom ACC matcher using fuse.js for search engine
+
+━━━ IMPLEMENTATION PLAN ━━━
+[pseudocode with fuse.js integration]
+
+Proceed with implementation?
+```
+
+---
+
+## Integration with Session Workflow
+
+**This rule runs during THINKING mode for code planning.**
+
+**Workflow:**
+1. User: "build X"
+2. AI: *enters THINKING mode*
+3. AI: *searches npm + GitHub + Stack Overflow + dev.to + Medium*
+4. AI: *presents findings*
+5. AI: *shows pseudocode plan incorporating findings*
+6. AI: "Proceed with implementation?"
+7. User: "yes"
+8. AI: *enters DOING mode, writes code*
+
+---
+
+## When NOT to Search
+
+**Skip searching for:**
+- Tiny utility functions (< 10 lines)
+- Features already partially built (refactoring existing code)
+- Debugging existing code (fixing bugs)
+- Minor refactoring
+- User explicitly says "don't search, just build"
+
+---
+
+## Search Quality Tips
+
+**Good searches:**
+- ✅ "[specific feature] [tech stack]" → "modal dialog react typescript"
+- ✅ "[domain] [pattern]" → "healthcare authentication flow"
+- ✅ "[api name] [language] example" → "ALEX api nodejs example"
+- ✅ "[problem] best practices" → "medical data validation best practices"
+
+**Bad searches:**
+- ❌ Too generic: "component library" (too broad)
+- ❌ Wrong stack: "image editor angular" (you use React)
+- ❌ Outdated: Filtering for 5+ year old content
+
+---
+
+## Examples from Project Context
+
+**User already uses successfully:**
+- Image editing: `react-konva` + `konva` (canvas-based)
+- Forms: `react-hook-form` + `zod` (validation)
+- UI components: 12x `@radix-ui/*` (accessible components)
+- AI: OpenAI, Anthropic, Deepgram SDKs
+- Database: Drizzle ORM, Neon PostgreSQL
+- Auth: Clerk (full authentication)
+- Real-time: Ably
+- Payments: Stripe
+
+**When to build custom (domain-specific):**
+- Medical imaging workflows (regulatory, privacy)
+- FHIR/ALEX API integration (healthcare-specific)
+- ACC occupation code matching (NZ-specific)
+- Clinical note generation (medical domain)
 
 ## Anti-Patterns to Avoid
 
-❌ **"I'll build it quickly"** - Often takes longer than integrating a library
-❌ **"Libraries are bloated"** - Modern libraries are often tree-shakeable
-❌ **"We need full control"** - Most libraries are extensible
-❌ **"No time to research"** - 15 minutes of research saves hours of development
-
-## Exception: Learning/Prototyping
-
-Building from scratch is acceptable for:
-- Learning purposes
-- Prototyping to understand requirements
-- When explicitly requested by user for educational reasons
+❌ **Not searching before building** - Wastes time
+❌ **"I'll build it quickly"** - Often takes longer than integrating
+❌ **"Libraries are bloated"** - Modern libraries tree-shakeable
+❌ **"No time to research"** - 5 min search saves hours of dev
 
 ---
 

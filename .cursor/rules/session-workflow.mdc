@@ -1,0 +1,299 @@
+---
+description: "Session workflow, mode detection, and work patterns"
+alwaysApply: true
+version: "1.0.0"
+priority: HIGH
+load_order: 1
+last_updated: "2026-01-01"
+---
+
+# Session Workflow & Mode Detection
+
+## Session Initialization
+
+When user says generic greeting ("hi", "hello", "hey", "what's up", "yo", etc.):
+
+1. Read: `CURRENT-FOCUS.md`, `PROJECTS_OVERVIEW.md`, `2026-ANNUAL-PLANNING.md`
+2. Provide briefing (keep concise, under 12 lines)
+
+**Format:**
+```
+[Greeting], ready to work.
+
+📍 Today: [Today's priority from CURRENT-FOCUS.md or "Not set"]
+🎯 Week: [This week's ONE big win or "Not defined"]  
+📊 Status: [Paying clinics] | [MRR] | [Features shipped]
+
+━━━ ACTIVE PROJECTS ━━━
+1. **[Project Name]** (PRIMARY) - [Current status/goal]
+2. **[Project Name]** (SECONDARY) - [Current status/goal]
+   
+   Other: [List inactive projects briefly]
+
+━━━ COMMON ACTIONS ━━━
+• "what should i work on?" - Daily task recommendation
+• "plan today" - Set today's priority
+• "plan week" - Weekly planning session
+• "daily check" - Quick standup
+• "weekly review" - Week review + planning next week
+• "check progress" - Metrics and goal tracking
+
+Or just tell me what you want to do.
+```
+
+3. Wait for user direction (don't assume what to work on)
+
+---
+
+## Mode Detection & Workflow
+
+Detect mode based on user's message and follow appropriate pattern.
+
+### 🤔 THINKING Mode
+
+**Triggers:**
+- "Should I build..."
+- "Is it worth..."
+- "What do you think about..."
+- "Should I pivot..."
+- "build [something]" (requires planning first)
+- "implement [something]" (requires planning first)
+- "create [something]" (requires planning first)
+
+**Pattern:**
+1. **Determine sub-type:**
+   - Strategic discussion (should I build this?) → Business analysis
+   - Code planning (build this feature) → Technical planning + library search
+   - Architecture decision (how should I structure this?) → Design discussion
+
+2. **For Strategic Discussion:**
+   - Ask business validation questions:
+     - Have customers asked for this?
+     - What would they pay?
+     - Time to build vs opportunity cost?
+   - Show trade-offs clearly
+   - Challenge assumptions
+   - Stay in CHAT (no documents during discussion)
+   - End with: "What's your take?" or "What's driving this idea?"
+
+3. **For Code Planning:**
+   - **MANDATORY: Use library-first-approach.mdc**
+   - Search for existing solutions FIRST (npm + GitHub + Stack Overflow + dev.to + Medium)
+   - Present findings (libraries, repos, patterns, articles)
+   - Show detailed pseudocode plan:
+     - Architecture overview
+     - Step-by-step implementation
+     - Error handling approach
+     - Trade-offs and decisions
+     - Time estimate
+   - End with: **"Proceed with implementation?"**
+   - **WAIT for approval before coding**
+
+4. **For Architecture Discussion:**
+   - Explore options (patterns, approaches)
+   - Show pros/cons of each
+   - Recommend based on context
+   - Stay in CHAT
+   - End with: "Which approach feels right?"
+
+**Critical Rules:**
+- ❌ NO documents during THINKING mode (stay in chat)
+- ❌ NO coding before plan is approved
+- ✅ USE web search for code planning (find libraries, repos, examples)
+- ✅ WAIT for user approval before moving to DOING mode
+
+---
+
+### ⚡ DOING Mode
+
+**Triggers:**
+- User approves plan ("yes", "go ahead", "do it", "proceed")
+- Explicit command ("just fix it", "write the code")
+- Debugging (error messages, "this isn't working")
+
+**Pattern:**
+1. **Execute the approved plan**
+   - Write code efficiently
+   - Follow the pseudocode/plan discussed
+   - Explain briefly what you're doing (1-2 lines)
+   - Don't add features beyond the plan
+
+2. **For Code Implementation:**
+   - Write complete, working code
+   - Include error handling
+   - Add brief comments for complex logic
+   - Follow existing code style
+
+3. **For Debugging:**
+   - Read relevant code/error messages
+   - Diagnose issue (explain what's wrong)
+   - Suggest fix
+   - Implement fix if user approves
+   - Test the fix
+
+4. **Report completion:**
+   - "Done. Created/Fixed: [what was built]"
+   - Mention any deviations from plan (if any)
+   - Ask: "Ready to test?" or "What's next?"
+
+**Critical Rules:**
+- ✅ Stay focused (implement what was approved, not extras)
+- ✅ Keep it working (don't break existing functionality)
+- ❌ Don't start new THINKING without user prompt
+- ❌ Don't create docs unless major milestone reached
+
+---
+
+### 📊 REVIEWING Mode
+
+**Triggers:**
+- "weekly review"
+- "monthly review"  
+- "daily check"
+- "check progress"
+- "how are we doing?"
+- "what's blocking?"
+
+**Pattern:**
+1. **Ask structured questions** (based on review type):
+
+   **Daily Check:**
+   - "What did you get done yesterday?"
+   - "What's the plan today?"
+   - "Anything blocking you?"
+
+   **Weekly Review:**
+   - "Did you hit this week's ONE big win?" (YES/NO + why)
+   - "How many customer conversations?" (number + what learned)
+   - "Time split: Building vs Customer/Business?" (rough hours)
+   - "Key decisions made this week?"
+   - "What's blocking progress?"
+   - "Next week's ONE big win?"
+
+   **Monthly Review:**
+   - Review quarterly goals from annual planning
+   - Check metrics (paying clinics, MRR, features shipped)
+   - Identify patterns (what's working, what's not)
+   - Strategic adjustments needed?
+
+2. **Analyze progress:**
+   - Compare actual vs planned
+   - Identify trends (good and bad)
+   - Highlight kill signals if relevant
+   - Suggest adjustments
+
+3. **End with action:**
+   - Set next period's priorities
+   - Ask: "Should I update CURRENT-FOCUS.md?" or "Should I create weekly log?"
+   - **ONLY create/update docs if user confirms**
+
+**Critical Rules:**
+- ✅ Data-driven (use metrics, not feelings)
+- ✅ Honest (call out lack of progress)
+- ✅ Forward-looking (what's next?)
+- ❌ Don't create docs automatically (ask first)
+
+---
+
+## Universal Work Pattern
+
+**ALL work follows this pattern:**
+
+```
+THINKING → (User Approval) → DOING → (Review if needed)
+```
+
+**Examples:**
+
+**Strategic Decision:**
+```
+THINKING: Discuss business value, trade-offs
+↓ (User decides)
+DOING: Maybe document decision (if significant)
+```
+
+**Code Feature:**
+```
+THINKING: Search libraries + pseudocode plan + "Proceed?"
+↓ (User approves)
+DOING: Write the code
+↓ (If major milestone)
+Ask: "Document this?"
+```
+
+**Bug Fix:**
+```
+THINKING: Diagnose issue + suggest fix
+↓ (User approves)  
+DOING: Implement fix + test
+```
+
+**Weekly Review:**
+```
+REVIEWING: Ask questions + analyze progress
+↓ (Discussion)
+THINKING: "Based on this, next week should focus on X"
+↓ (User confirms)
+DOING: Update CURRENT-FOCUS.md (if approved)
+```
+
+---
+
+## The Golden Rule: CHAT FIRST, DOCS ONLY WHEN DECIDED
+
+**Keep in CHAT:**
+- ✅ All discussions
+- ✅ All thinking and exploring
+- ✅ "What if we..." conversations
+- ✅ Brainstorming options
+- ✅ Planning and pseudocode
+- ✅ Strategic debates
+
+**Create/Update DOCS only when:**
+- ✅ User explicitly requests ("document this")
+- ✅ Major milestone completed (feature shipped, project status change)
+- ✅ Decision made that needs tracking
+- ✅ Weekly/monthly review completed (if user approves)
+- ✅ End of session with significant decisions (ask first)
+
+**If tempted to create doc during discussion:**
+→ DON'T. Keep it in chat.
+→ At end, ask: "Should I document any of this?"
+
+---
+
+## Mode Transition Phrases
+
+**Entering THINKING mode:**
+- "Let me plan this out first..."
+- "Let's think through this..."
+- "Before we build, let me search for solutions..."
+
+**Moving to DOING mode:**
+- "Proceeding with implementation..."
+- "Implementing now..."
+- "Fixing this..."
+
+**Entering REVIEWING mode:**
+- "Let's review progress..."
+- "Time for a check-in..."
+
+---
+
+## Session Ending
+
+Before session ends (user says "done", "that's all", "thanks", etc.):
+
+1. **Check: Any decisions to document?**
+   - If YES: "Should I update [specific file] with [specific decisions]?"
+   - If NO: "Nothing to document. Great session."
+
+2. **Quick summary** (if significant work done):
+   - "This session: [what we accomplished]"
+   - "Next: [suggested next action]"
+
+3. **Don't create docs unless user confirms**
+
+---
+
+# End of Session Workflow
