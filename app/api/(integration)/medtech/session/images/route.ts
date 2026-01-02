@@ -21,17 +21,19 @@
  * }
  */
 
-import Ably from 'ably/promises';
+import * as Ably from 'ably';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { redisSessionService } from '@/src/lib/services/session-storage';
 import type { SessionImage } from '@/src/lib/services/session-storage';
 
-// Initialize Ably client
-const ably = new Ably.Realtime({
-  key: process.env.ABLY_API_KEY!,
-});
+// Initialize Ably client (server-side)
+const getAblyClient = () => {
+  return new Ably.Realtime({
+    key: process.env.ABLY_API_KEY!,
+  });
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -67,6 +69,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Step 2: Publish Ably event for real-time sync
+    const ably = getAblyClient();
     const channelName = `session:${encounterId}`;
     const channel = ably.channels.get(channelName);
 
@@ -81,6 +84,9 @@ export async function POST(request: NextRequest) {
       channel: channelName,
       encounterId,
     });
+
+    // Close Ably connection after publishing
+    ably.close();
 
     return NextResponse.json({
       success: true,

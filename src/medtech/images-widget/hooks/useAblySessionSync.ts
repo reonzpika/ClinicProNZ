@@ -5,7 +5,7 @@
  * Fetches session images eagerly when notified
  */
 
-import Ably from 'ably/promises';
+import Ably from 'ably';
 import { nanoid } from 'nanoid';
 import { useEffect, useRef } from 'react';
 
@@ -32,7 +32,7 @@ export function useAblySessionSync(encounterId: string | null | undefined) {
 
     console.log('[Ably Sync] Initializing session sync', { encounterId });
 
-    // Initialize Ably client
+    // Initialize Ably client (client-side)
     const ably = new Ably.Realtime({ key: ablyApiKey });
     ablyRef.current = ably;
 

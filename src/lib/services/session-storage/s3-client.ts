@@ -10,7 +10,7 @@
  * S3 Key Format: sessions/{encounterId}/{timestamp}_{imageId}.jpg
  */
 
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { retry } from 'ts-retry-promise';
 
@@ -93,8 +93,8 @@ export class S3ImageService {
    * Auto-retry: 3 attempts with exponential backoff
    */
   async generatePresignedDownloadUrl(s3Key: string): Promise<PresignedDownloadResult> {
-    // Use GetObjectCommand (not PutObjectCommand)
-    const command = new PutObjectCommand({
+    // Use GetObjectCommand for downloads
+    const command = new GetObjectCommand({
       Bucket: this.bucketName,
       Key: s3Key,
     });
