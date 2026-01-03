@@ -24,14 +24,8 @@ import { retry } from 'ts-retry-promise';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { Input } from '@/src/shared/components/ui/input';
 import { Label } from '@/src/shared/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/src/shared/components/ui/select';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -51,9 +45,8 @@ interface ImageFile {
   file: File;
   previewUrl: string;
   metadata: {
-    laterality?: string;
-    bodySite?: string;
-    notes?: string;
+    side?: 'left' | 'right';
+    description?: string;
   };
 }
 
@@ -62,38 +55,6 @@ interface EncounterContext {
   patientId: string;
   facilityId: string;
 }
-
-// Body site options (common clinical sites)
-const BODY_SITES = [
-  { code: 'ear-left', display: 'Left Ear' },
-  { code: 'ear-right', display: 'Right Ear' },
-  { code: 'eye-left', display: 'Left Eye' },
-  { code: 'eye-right', display: 'Right Eye' },
-  { code: 'hand-left', display: 'Left Hand' },
-  { code: 'hand-right', display: 'Right Hand' },
-  { code: 'foot-left', display: 'Left Foot' },
-  { code: 'foot-right', display: 'Right Foot' },
-  { code: 'chest', display: 'Chest' },
-  { code: 'abdomen', display: 'Abdomen' },
-  { code: 'back', display: 'Back' },
-  { code: 'face', display: 'Face' },
-  { code: 'neck', display: 'Neck' },
-  { code: 'arm-left', display: 'Left Arm' },
-  { code: 'arm-right', display: 'Right Arm' },
-  { code: 'leg-left', display: 'Left Leg' },
-  { code: 'leg-right', display: 'Right Leg' },
-  { code: 'skin-lesion', display: 'Skin Lesion' },
-  { code: 'wound', display: 'Wound' },
-  { code: 'other', display: 'Other' },
-];
-
-// Laterality options
-const LATERALITY_OPTIONS = [
-  { code: 'left', display: 'Left' },
-  { code: 'right', display: 'Right' },
-  { code: 'bilateral', display: 'Bilateral' },
-  { code: 'na', display: 'N/A' },
-];
 
 function MobilePageContent() {
   const searchParams = useSearchParams();
@@ -202,17 +163,29 @@ return;
   }
 
   /**
-   * Skip metadata and proceed to upload
+   * Go back to review screen from metadata
    */
-  function skipMetadata() {
-    startUpload();
+  function backToReview() {
+    setStep('review');
   }
 
   /**
    * Next image in metadata flow
+   * Carries forward metadata from first image to subsequent images
    */
   function nextMetadataImage() {
     if (currentMetadataIndex < images.length - 1) {
+      // Carry forward first image's metadata to next images
+      if (currentMetadataIndex === 0 && images[0]) {
+        const firstImageMetadata = images[0].metadata;
+        setImages(prev =>
+          prev.map((img, idx) =>
+            idx > 0 && (!img.metadata.side && !img.metadata.description)
+              ? { ...img, metadata: { ...firstImageMetadata } }
+              : img,
+          ),
+        );
+      }
       setCurrentMetadataIndex(prev => prev + 1);
     }
     else {
@@ -492,10 +465,6 @@ throw new Error('No encounter context');
                   Continue
                 </Button>
               </div>
-
-              <Button onClick={skipMetadata} variant="ghost" className="w-full text-sm">
-                Skip metadata and upload now
-              </Button>
             </CardContent>
           </Card>
         )}
@@ -503,8 +472,17 @@ throw new Error('No encounter context');
         {/* Step 3: Metadata Entry */}
         {step === 'metadata' && images[currentMetadataIndex] && (
           <Card>
-            <CardHeader>
-              <CardTitle>
+            <CardHeader className="relative">
+              {/* Back button */}
+              <button
+                onClick={backToReview}
+                className="absolute left-4 top-4 rounded p-1 hover:bg-slate-100"
+                aria-label="Back to review"
+              >
+                <ChevronLeft className="size-5 text-slate-600" />
+              </button>
+
+              <CardTitle className="text-center">
                 Image
                 {' '}
                 {currentMetadataIndex + 1}
@@ -524,46 +502,47 @@ throw new Error('No encounter context');
                 />
               </div>
 
-              {/* Laterality */}
+              {/* Side Toggle */}
               <div className="space-y-2">
-                <Label>Laterality (optional)</Label>
-                <Select
-                  value={images[currentMetadataIndex]!.metadata.laterality}
-                  onValueChange={value =>
-                    updateImageMetadata(images[currentMetadataIndex]!.id, 'laterality', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select laterality" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LATERALITY_OPTIONS.map(option => (
-                      <SelectItem key={option.code} value={option.code}>
-                        {option.display}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Side (optional)</Label>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={images[currentMetadataIndex]!.metadata.side === 'right' ? 'default' : 'outline'}
+                    className="flex-1"
+                    onClick={() => updateImageMetadata(images[currentMetadataIndex]!.id, 'side', 'right')}
+                  >
+                    Right
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={images[currentMetadataIndex]!.metadata.side === 'left' ? 'default' : 'outline'}
+                    className="flex-1"
+                    onClick={() => updateImageMetadata(images[currentMetadataIndex]!.id, 'side', 'left')}
+                  >
+                    Left
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => updateImageMetadata(images[currentMetadataIndex]!.id, 'side', '')}
+                    disabled={!images[currentMetadataIndex]!.metadata.side}
+                  >
+                    <X className="size-4" />
+                  </Button>
+                </div>
               </div>
 
-              {/* Body Site */}
+              {/* Description */}
               <div className="space-y-2">
-                <Label>Body Site (optional)</Label>
-                <Select
-                  value={images[currentMetadataIndex]!.metadata.bodySite}
-                  onValueChange={value =>
-                    updateImageMetadata(images[currentMetadataIndex]!.id, 'bodySite', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select body site" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BODY_SITES.map(site => (
-                      <SelectItem key={site.code} value={site.code}>
-                        {site.display}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label>Description</Label>
+                <Input
+                  type="text"
+                  value={images[currentMetadataIndex]!.metadata.description || ''}
+                  onChange={e =>
+                    updateImageMetadata(images[currentMetadataIndex]!.id, 'description', e.target.value)}
+                />
               </div>
 
               {/* Navigation */}
@@ -592,12 +571,6 @@ throw new Error('No encounter context');
                   )}
                 </Button>
               </div>
-
-              <Button onClick={skipMetadata} variant="ghost" className="w-full text-sm">
-                Skip remaining
-                {' '}
-                {images.length - currentMetadataIndex - 1 > 0 && `(${images.length - currentMetadataIndex - 1} images)`}
-              </Button>
             </CardContent>
           </Card>
         )}
