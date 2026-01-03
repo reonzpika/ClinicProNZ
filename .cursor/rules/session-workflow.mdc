@@ -310,27 +310,57 @@ N. Update weekly log (if significant milestone) - pending
 
 Use `TodoWrite` tool with `merge: true` to update status:
 
-**Starting work:**
+**Starting work (generic template):**
 ```typescript
 TodoWrite({
   merge: false,  // Create new todos
   todos: [
-    { id: "1", content: "Update session-workflow.mdc", status: "in_progress" },
-    { id: "2", content: "Test todo workflow", status: "pending" },
-    { id: "3", content: "Build, test, and fix all errors", status: "pending" },
-    { id: "4", content: "Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)", status: "pending" },
-    { id: "5", content: "Update weekly log (if significant)", status: "pending" }
+    { id: "1", content: "[First implementation step]", status: "in_progress" },
+    { id: "2", content: "[Second implementation step]", status: "pending" },
+    { id: "3", content: "[Third implementation step]", status: "pending" },
+    // ... more implementation steps as needed
+    { id: "N-2", content: "Build, test, and fix all errors", status: "pending" },
+    { id: "N-1", content: "Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)", status: "pending" },
+    { id: "N", content: "Update weekly log (if significant)", status: "pending" }
   ]
 })
 ```
 
-**During work:**
+**Example 1: Building a feature (login form)**
+```typescript
+TodoWrite({
+  merge: false,
+  todos: [
+    { id: "1", content: "Create login form component", status: "in_progress" },
+    { id: "2", content: "Implement authentication logic", status: "pending" },
+    { id: "3", content: "Add error handling", status: "pending" },
+    { id: "4", content: "Build, test, and fix all errors", status: "pending" },
+    { id: "5", content: "Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)", status: "pending" },
+    { id: "6", content: "Update weekly log (if significant)", status: "pending" }
+  ]
+})
+```
+
+**Example 2: Fixing a bug (simple)**
+```typescript
+TodoWrite({
+  merge: false,
+  todos: [
+    { id: "1", content: "Fix TypeScript error in user service", status: "in_progress" },
+    { id: "2", content: "Build, test, and fix all errors", status: "pending" },
+    { id: "3", content: "Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)", status: "pending" },
+    { id: "4", content: "Update weekly log (if significant)", status: "pending" }
+  ]
+})
+```
+
+**During work (updating progress):**
 ```typescript
 TodoWrite({
   merge: true,  // Update existing todos
   todos: [
-    { id: "1", status: "completed" },
-    { id: "2", status: "in_progress" }
+    { id: "1", status: "completed" },           // Just finished step 1
+    { id: "2", status: "in_progress" }          // Now starting step 2
   ]
 })
 ```
@@ -340,7 +370,7 @@ TodoWrite({
 ### Example: Todo-Driven Development Flow
 
 ```
-User: "build todo list integration into PM AI"
+User: "build user profile page with avatar upload"
 ↓
 AI: [THINKING mode] searches libraries, shows plan
 ↓
@@ -348,34 +378,38 @@ User: "proceed"
 ↓
 AI: "Proceeding with implementation"
 AI: [Creates todos]:
-  1. Update session-workflow.mdc with todo integration - in_progress
-  2. Test todo workflow in conversation - pending
-  3. Build, test, and fix all errors - pending
-  4. Update documentation (PROJECT_SUMMARY + PROJECTS_OVERVIEW) - pending
-  5. Update weekly log (if significant) - pending
+  1. Create profile page component - in_progress
+  2. Implement avatar upload with image compression - pending
+  3. Add form validation - pending
+  4. Build, test, and fix all errors - pending
+  5. Update documentation (PROJECT_SUMMARY + PROJECTS_OVERVIEW) - pending
+  6. Update weekly log (if significant) - pending
 ↓
-AI: [Updates session-workflow.mdc]
+AI: [Creates profile page component]
 AI: [Marks todo 1 completed, moves to todo 2]
 ↓
-AI: [Tests workflow]
+AI: [Implements avatar upload]
 AI: [Marks todo 2 completed, moves to todo 3]
 ↓
-AI: [Runs build] → errors found
-AI: [Fixes errors]
-AI: [Runs build] → success
-AI: [Tests feature] → works
+AI: [Adds form validation]
 AI: [Marks todo 3 completed, moves to todo 4]
 ↓
-AI: [Updates PROJECT_SUMMARY.md]
-AI: [Updates PROJECTS_OVERVIEW.md]
+AI: [Runs build] → errors found (TypeScript type issue)
+AI: [Fixes type errors]
+AI: [Runs build] → success
+AI: [Tests feature in browser] → works
 AI: [Marks todo 4 completed, moves to todo 5]
+↓
+AI: [Updates PROJECT_SUMMARY.md with new feature]
+AI: [Updates PROJECTS_OVERVIEW.md with achievement]
+AI: [Marks todo 5 completed, moves to todo 6]
 ↓
 AI: "This was a significant feature. Update weekly log?"
 User: "yes"
 AI: [Updates weekly log]
-AI: [Marks todo 5 completed]
+AI: [Marks todo 6 completed]
 ↓
-AI: "Done. All todos completed. Feature implemented and documented."
+AI: "Done. All todos completed. User profile page implemented and documented."
 ```
 
 ---
