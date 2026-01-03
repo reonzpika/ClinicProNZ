@@ -368,6 +368,26 @@ throw new Error('No encounter context');
           <p className="text-sm text-slate-600">Mobile Upload</p>
         </header>
 
+        {/* Hidden file inputs (available on all screens) */}
+        <input
+          id="camera-input"
+          type="file"
+          accept="image/*"
+          capture="environment"
+          multiple
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+
+        <input
+          id="gallery-input"
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+
         {/* Step 1: Capture */}
         {step === 'capture' && (
           <Card>
@@ -393,25 +413,6 @@ throw new Error('No encounter context');
                 <Upload className="mr-2 size-5" />
                 Choose from Gallery
               </Button>
-
-              <input
-                id="camera-input"
-                type="file"
-                accept="image/*"
-                capture="environment"
-                multiple
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-
-              <input
-                id="gallery-input"
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleFileSelect}
-                className="hidden"
-              />
 
               <div className="rounded-lg bg-blue-50 p-3 text-xs text-blue-800">
                 <strong>Tip:</strong>
