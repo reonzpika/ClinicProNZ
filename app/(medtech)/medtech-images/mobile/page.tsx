@@ -472,25 +472,31 @@ throw new Error('No encounter context');
         {/* Step 3: Metadata Entry */}
         {step === 'metadata' && images[currentMetadataIndex] && (
           <Card>
-            <CardHeader className="relative">
-              {/* Back button */}
-              <button
-                onClick={backToReview}
-                className="absolute left-4 top-4 rounded p-1 hover:bg-slate-100"
-                aria-label="Back to review"
-              >
-                <ChevronLeft className="size-5 text-slate-600" />
-              </button>
+            <CardHeader>
+              <div className="flex items-center">
+                {/* Back button */}
+                <button
+                  onClick={backToReview}
+                  className="rounded p-1 hover:bg-slate-100"
+                  aria-label="Back to review"
+                >
+                  <ChevronLeft className="size-5 text-slate-600" />
+                </button>
 
-              <CardTitle className="text-center">
-                Image
-                {' '}
-                {currentMetadataIndex + 1}
-                {' '}
-                of
-                {' '}
-                {images.length}
-              </CardTitle>
+                {/* Title - centered with flex-1 */}
+                <CardTitle className="flex-1 text-center">
+                  Image
+                  {' '}
+                  {currentMetadataIndex + 1}
+                  {' '}
+                  of
+                  {' '}
+                  {images.length}
+                </CardTitle>
+
+                {/* Spacer to balance the layout */}
+                <div className="w-9" />
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Image preview */}
