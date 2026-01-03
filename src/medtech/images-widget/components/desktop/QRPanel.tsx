@@ -11,6 +11,7 @@
 'use client';
 
 import { Clock, Loader2, QrCode, RefreshCw } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useEffect, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
@@ -20,7 +21,6 @@ import { useQRSession } from '../../hooks/useQRSession';
 
 export function QRPanel() {
   const {
-    qrSvg,
     mobileUrl,
     isExpired,
     isGenerating,
@@ -49,10 +49,10 @@ export function QRPanel() {
 
   // Generate on mount if not already generated
   useEffect(() => {
-    if (!qrSvg && !isGenerating) {
+    if (!mobileUrl && !isGenerating) {
       generateSession();
     }
-  }, [qrSvg, isGenerating, generateSession]);
+  }, [mobileUrl, isGenerating, generateSession]);
 
   return (
     <Card>
@@ -73,19 +73,23 @@ export function QRPanel() {
         )}
 
         {/* QR Code Display */}
-        {!isGenerating && qrSvg && (
+        {!isGenerating && mobileUrl && (
           <>
             <div className="relative">
               {/* QR Code */}
               <div className="flex justify-center">
-                <img
-                  src={qrSvg}
-                  alt="QR Code for mobile upload"
-                  className={`rounded-lg border-2 ${
+                <div
+                  className={`rounded-lg border-2 p-2 ${
                     isExpired ? 'border-red-300 opacity-50' : 'border-slate-200'
                   }`}
-                  style={{ width: 200, height: 200 }}
-                />
+                >
+                  <QRCodeSVG
+                    value={mobileUrl}
+                    size={200}
+                    level="H"
+                    includeMargin={false}
+                  />
+                </div>
               </div>
 
               {/* Expired Overlay */}

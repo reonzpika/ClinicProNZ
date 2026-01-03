@@ -153,7 +153,7 @@ export type Recipient = {
 
 export type MobileSessionResponse = {
   mobileUploadUrl: string;
-  qrSvg: string; // SVG data URI
+  qrSvg: string | null; // SVG data URI (null if client-side generation)
   ttlSeconds: number;
 };
 

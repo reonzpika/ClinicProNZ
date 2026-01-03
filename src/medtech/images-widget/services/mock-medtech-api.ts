@@ -209,18 +209,25 @@ export const realMedtechAPI = {
     return response.json();
   },
 
-  async initiateMobile(encounterId: string): Promise<MobileSessionResponse> {
-    const response = await fetch('/api/medtech/mobile/initiate', {
+  async initiateMobile(encounterId: string, patientId: string, facilityId: string): Promise<MobileSessionResponse> {
+    const response = await fetch('/api/medtech/session/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ encounterId }),
+      body: JSON.stringify({ encounterId, patientId, facilityId }),
     });
 
     if (!response.ok) {
       throw new Error(`Failed to initiate mobile session: ${response.statusText}`);
     }
 
-    return response.json();
+    const data = await response.json();
+    
+    // Map Phase 1B response format to MobileSessionResponse
+    return {
+      mobileUploadUrl: data.mobileUrl,
+      qrSvg: null, // QR generation will happen client-side
+      ttlSeconds: data.expiresIn,
+    };
   },
 
   async uploadInitiate(request: UploadInitiateRequest): Promise<UploadInitiateResponse> {

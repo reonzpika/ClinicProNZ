@@ -10,7 +10,6 @@ import { useImageWidgetStore } from '../stores/imageWidgetStore';
 
 type QRSessionState = {
   mobileUrl: string | null;
-  qrSvg: string | null;
   expiresAt: number | null; // Timestamp
   isExpired: boolean;
 };
@@ -19,7 +18,6 @@ export function useQRSession() {
   const encounterContext = useImageWidgetStore(state => state.encounterContext);
   const [sessionState, setSessionState] = useState<QRSessionState>({
     mobileUrl: null,
-    qrSvg: null,
     expiresAt: null,
     isExpired: false,
   });
@@ -30,14 +28,17 @@ export function useQRSession() {
         throw new Error('No encounter context available');
       }
 
-      return medtechAPI.initiateMobile(encounterContext.encounterId);
+      return medtechAPI.initiateMobile(
+        encounterContext.encounterId,
+        encounterContext.patientId,
+        encounterContext.facilityId
+      );
     },
     onSuccess: (data) => {
       const expiresAt = Date.now() + data.ttlSeconds * 1000;
 
       setSessionState({
         mobileUrl: data.mobileUploadUrl,
-        qrSvg: data.qrSvg,
         expiresAt,
         isExpired: false,
       });
