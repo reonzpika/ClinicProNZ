@@ -1,8 +1,32 @@
 # Cursor AI Rules System
 
-**Version**: 6.0.0 (Consolidation-First Rules)  
-**Last Updated**: 2025-12-09  
-**Architecture**: 3 always-loaded files + embedded navigation
+**Version**: 6.1.0 (Todo Integration for Memory Persistence)  
+**Last Updated**: 2026-01-02  
+**Architecture**: 4 always-loaded files + embedded navigation
+
+---
+
+## What Changed in v6.1
+
+**Change from v6.0**: Added `session-workflow.mdc` as always-loaded with integrated todo system for persistent memory.
+
+**Why**: 
+- AI forgets critical final steps (documentation, build verification, weekly log) after long coding sessions
+- Rules get buried in long context (200+ messages) but incomplete todos remain visible
+- Uses todo system as persistent checklist that AI cannot ignore
+
+**How it works**:
+- When AI enters DOING mode (writes/modifies code), todos are automatically created
+- Final 3 todos ALWAYS added: (1) Build/test/fix errors, (2) Update documentation, (3) Update weekly log
+- AI cannot mark work "done" with pending todos
+- Incomplete todos remain visible throughout session as memory mechanism
+
+**Impact**: 
+- ✅ Quality control steps never skipped, even in 200+ message threads
+- ✅ Documentation always completed
+- ✅ Build verification mandatory before finishing
+- ✅ Weekly log tracking automated
+- ✅ Visual progress tracking throughout work session
 
 ---
 
@@ -87,6 +111,33 @@
 
 ---
 
+### Level 3: Session Workflow & Todo System (Always-Loaded)
+
+**File**: `session-workflow.mdc` (~500 lines, ~2,500 tokens)
+
+**Loads when**: Always (alwaysApply: true)
+
+**Contains**:
+- **Session initialization**: Briefing format, common actions
+- **Mode detection**: THINKING, DOING, REVIEWING modes with patterns
+- **Todo list integration**: Automatic todo creation, mandatory final 3 todos, progress tracking
+- **Universal work pattern**: THINKING → DOING → REVIEWING flow
+- **Session ending checklist**: Incomplete todo detection
+
+**Why always-loaded**: 
+- Prevents AI from forgetting critical steps after long sessions
+- Uses todo visibility as persistent memory mechanism
+- Ensures quality control steps never skipped (build/docs/log)
+- Rules can be buried in long context, but incomplete todos remain visible
+
+**Key Innovation**: 
+- When AI enters DOING mode, todos automatically created
+- Final 3 todos ALWAYS added: Build/test/fix, Update docs, Update weekly log
+- AI cannot mark work "done" with pending todos
+- Works even in 200+ message conversations
+
+---
+
 ## Token Efficiency
 
 | Version | Always-Loaded | Context-Loaded | Total |
@@ -95,8 +146,9 @@
 | v4.0 | ~50 lines (~250 tokens) | ~800 lines | ~850 lines |
 | v5.0 | ~120 lines (~600 tokens) | ~0 lines | ~120 lines |
 | v6.0 | ~190 lines (~950 tokens) | ~0 lines | ~190 lines |
+| v6.1 | ~690 lines (~3,450 tokens) | ~0 lines | ~690 lines |
 
-**v6.0 changes**: Added Part 2 (Documentation Rules) to project-work-rules.mdc to prevent file proliferation and ensure new files are always referenced in main docs.
+**v6.1 changes**: Added session-workflow.mdc (~500 lines) with todo integration for persistent memory. Trade-off: Higher token cost but ensures critical steps never forgotten in long sessions.
 
 ---
 
@@ -154,6 +206,9 @@ AI Process:
 .cursor/rules/
 ├── mandatory-overview-first.mdc (Always-loaded, Level 0)
 ├── project-work-rules.mdc (Always-loaded, Level 2)
+├── session-workflow.mdc (Always-loaded, Level 3) ← NEW in v6.1
+├── accountability-system.mdc (Workspace rule, always-loaded)
+├── ai-role-and-context.mdc (Workspace rule, always-loaded)
 ├── library-first-approach.mdc (Workspace rule, always-loaded)
 ├── fhir-medtech-development.mdc (Technical FHIR rules, on-demand)
 └── README.md (This file)
@@ -163,6 +218,8 @@ AI Process:
 ├── [project-name]/
 │   ├── PROJECT_SUMMARY.md (Required for each project)
 │   └── PROJECT_RULES.mdc (Optional project-specific rules)
+├── weekly-logs/
+│   └── YYYY-WW.md (Weekly accomplishments, decisions, metrics)
 └── ...
 ```
 
@@ -183,7 +240,36 @@ All navigation logic lives in the overview file itself:
 
 ### 3. Work Rules Always Available
 
-project-work-rules.mdc is always loaded to ensure consistent workflow behavior. The rules are lightweight (~70 lines) and contain essential workflow patterns (discuss → approve → implement → update) that should apply to all interactions.
+project-work-rules.mdc is always loaded to ensure consistent workflow behavior. The rules are lightweight (~140 lines) and contain essential workflow patterns (discuss → approve → implement → update) that should apply to all interactions.
+
+### 3a. Todo System for Persistent Memory
+
+session-workflow.mdc implements todo-driven workflow to solve the "AI forgets after long sessions" problem:
+
+**How it works**:
+1. When AI enters DOING mode (writes/modifies code), todos automatically created
+2. Final 3 todos ALWAYS added (in this order):
+   - Build, test, and fix all errors
+   - Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)
+   - Update weekly log (if significant milestone)
+3. AI updates todo status as progressing (pending → in_progress → completed)
+4. AI cannot mark work "done" with pending todos
+
+**Why it works**:
+- Rules can be buried in 200+ message context
+- Incomplete todos remain visible throughout session
+- Acts as persistent checklist AI cannot ignore
+- Visual reminder of what still needs doing
+
+**Example todo structure**:
+```
+1. [First implementation step] - in_progress
+2. [Second implementation step] - pending
+3. [Third implementation step] - pending
+4. Build, test, and fix all errors - pending
+5. Update documentation (PROJECT_SUMMARY + PROJECTS_OVERVIEW) - pending
+6. Update weekly log (if significant) - pending
+```
 
 ### 4. Discuss Before Implementing
 
@@ -251,6 +337,10 @@ globs:
 - Edit any PROJECT_SUMMARY.md
 - Expected: PROJECTS_OVERVIEW.md also updates (index, highlights, schedule, details)
 
+**Test 5**: Todo system
+- Say: "build a login form"
+- Expected: AI creates todos with final 3 (build/docs/log), updates status as progressing, cannot say "done" until all completed
+
 ---
 
 ## Success Metrics
@@ -261,12 +351,17 @@ globs:
 - ✅ AI discusses before implementing code changes
 - ✅ Dashboard stays synchronized with project summaries
 - ✅ No unnecessary files created during discussions
+- ✅ AI creates todos when entering DOING mode
+- ✅ AI completes all todos (build/docs/log) before marking done
+- ✅ Documentation and weekly logs consistently updated
 
 **System needs tuning when**:
 - ❌ AI explores codebase before reading overview
 - ❌ AI implements changes without discussion/approval
 - ❌ Dashboard gets out of sync with project summaries
 - ❌ AI creates test reports or interim docs during exploration
+- ❌ AI marks work "done" with pending todos
+- ❌ AI skips build verification or documentation updates
 
 ---
 
@@ -352,14 +447,17 @@ The system is now simple enough to understand in one read:
 1. Read overview first (mandatory-overview-first.mdc)
 2. Follow navigation in overview (PROJECTS_OVERVIEW.md)
 3. Apply work rules consistently (project-work-rules.mdc - always loaded)
+4. Use todo system for memory persistence (session-workflow.mdc - always loaded)
 
 That's it. No complex dependencies, no load orders, no competing instructions.
 
 ---
 
-**Version**: 6.0.0  
+**Version**: 6.1.0  
 **Status**: ✅ Production Ready  
-**Last Updated**: 2025-12-09
+**Last Updated**: 2026-01-02
+
+**Key v6.1 Innovation**: Todo system as persistent memory mechanism. Solves "AI forgets critical steps after long sessions" by making incomplete todos always visible, even when rules get buried in context.
 
 ---
 

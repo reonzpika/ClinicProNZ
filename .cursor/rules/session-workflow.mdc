@@ -121,35 +121,50 @@ Detect mode based on user's message and follow appropriate pattern.
 - Debugging (error messages, "this isn't working")
 
 **Pattern:**
-1. **Execute the approved plan**
+1. **Create todos (if modifying code)**
+   - Create todos with implementation steps + 3 final todos (build/docs/log)
+   - Use `TodoWrite` with `merge: false`
+   - Mark first todo as `in_progress`
+
+2. **Execute the approved plan**
    - Write code efficiently
    - Follow the pseudocode/plan discussed
+   - Update todo status as you progress
    - Explain briefly what you're doing (1-2 lines)
    - Don't add features beyond the plan
 
-2. **For Code Implementation:**
+3. **For Code Implementation:**
    - Write complete, working code
    - Include error handling
    - Add brief comments for complex logic
    - Follow existing code style
+   - Mark implementation todos completed as you finish each
 
-3. **For Debugging:**
+4. **For Debugging:**
    - Read relevant code/error messages
    - Diagnose issue (explain what's wrong)
    - Suggest fix
    - Implement fix if user approves
    - Test the fix
 
-4. **Report completion:**
+5. **Complete final todos (ALWAYS before reporting done):**
+   - Build, test, and fix all errors
+   - Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)
+   - Update weekly log (if significant milestone)
+   - Mark all todos completed
+
+6. **Report completion:**
    - "Done. Created/Fixed: [what was built]"
+   - Confirm all todos completed
    - Mention any deviations from plan (if any)
-   - Ask: "Ready to test?" or "What's next?"
 
 **Critical Rules:**
 - ✅ Stay focused (implement what was approved, not extras)
 - ✅ Keep it working (don't break existing functionality)
+- ✅ Create todos when entering DOING mode (for code changes)
+- ✅ Complete ALL todos before reporting done
 - ❌ Don't start new THINKING without user prompt
-- ❌ Don't create docs unless major milestone reached
+- ❌ NEVER say "done" with pending todos
 
 ---
 
@@ -204,6 +219,201 @@ Detect mode based on user's message and follow appropriate pattern.
 
 ---
 
+## Todo List Integration
+
+### Purpose: Prevent Forgetting Critical Final Steps
+
+**Problem:** After long coding sessions, AI forgets to:
+- Run build and fix errors
+- Update documentation
+- Update weekly log
+
+**Solution:** Use todos as persistent memory/checklist that AI cannot ignore.
+
+---
+
+### When to Create Todos
+
+**Create todos ANY time AI enters DOING mode (writes/modifies code):**
+
+1. **User approves implementation plan** ("proceed", "yes", "go ahead")
+2. **User gives multi-step coding task**
+3. **AI starts modifying code for any reason**
+
+**Even for "quick fixes"** - still create minimum 3 final todos (prevents forgotten steps).
+
+**Skip todos only when:**
+- Pure strategic discussion (no code changes)
+- Weekly review / progress check (REVIEWING mode)
+- User just exploring options (no implementation yet)
+
+---
+
+### Todo Structure
+
+**For complex work (3+ implementation steps):**
+```
+1. [First implementation step] - in_progress
+2. [Second implementation step] - pending
+3. [Third implementation step] - pending
+...
+N-2. Build, test, and fix all errors - pending
+N-1. Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md) - pending
+N. Update weekly log (if significant milestone) - pending
+```
+
+**For simple work (< 3 steps):**
+```
+1. [Implementation task] - in_progress
+2. Build, test, and fix all errors - pending
+3. Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md) - pending
+4. Update weekly log (if significant milestone) - pending
+```
+
+**The 3 final todos are ALWAYS added when coding.**
+
+---
+
+### Todo Execution Rules
+
+**During implementation:**
+- Update todo status as you progress (pending → in_progress → completed)
+- Mark completed immediately after finishing each step
+- Use `merge: true` to update existing todos
+
+**Build, test, and fix all errors:**
+- Run build command (`pnpm build` or relevant)
+- Fix any compilation/type errors
+- Run build again until it passes
+- Manually verify feature works as expected
+- Run automated tests if they exist
+- Clean up debug code (console.logs, commented code)
+
+**Update documentation:**
+- Update `/project-management/[project]/PROJECT_SUMMARY.md` (status, milestones, decisions)
+- Update `/project-management/PROJECTS_OVERVIEW.md` (recent achievements, add new milestone)
+- Update technical docs if relevant (API docs, architecture, etc.)
+- Add/update code comments for complex logic
+
+**Update weekly log:**
+- Only if significant milestone reached
+- Location: `/project-management/weekly-logs/YYYY-WW.md`
+- Include: accomplishments, decisions, blockers, metrics
+- Ask user: "Was this significant enough for weekly log?"
+
+**Critical Rule:**
+> **Never report work as "done" with pending todos. Check todo list before completion. If ANY todos are pending, complete them first.**
+
+---
+
+### Todo Status Management
+
+Use `TodoWrite` tool with `merge: true` to update status:
+
+**Starting work (generic template):**
+```typescript
+TodoWrite({
+  merge: false,  // Create new todos
+  todos: [
+    { id: "1", content: "[First implementation step]", status: "in_progress" },
+    { id: "2", content: "[Second implementation step]", status: "pending" },
+    { id: "3", content: "[Third implementation step]", status: "pending" },
+    // ... more implementation steps as needed
+    { id: "N-2", content: "Build, test, and fix all errors", status: "pending" },
+    { id: "N-1", content: "Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)", status: "pending" },
+    { id: "N", content: "Update weekly log (if significant)", status: "pending" }
+  ]
+})
+```
+
+**Example 1: Building a feature (login form)**
+```typescript
+TodoWrite({
+  merge: false,
+  todos: [
+    { id: "1", content: "Create login form component", status: "in_progress" },
+    { id: "2", content: "Implement authentication logic", status: "pending" },
+    { id: "3", content: "Add error handling", status: "pending" },
+    { id: "4", content: "Build, test, and fix all errors", status: "pending" },
+    { id: "5", content: "Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)", status: "pending" },
+    { id: "6", content: "Update weekly log (if significant)", status: "pending" }
+  ]
+})
+```
+
+**Example 2: Fixing a bug (simple)**
+```typescript
+TodoWrite({
+  merge: false,
+  todos: [
+    { id: "1", content: "Fix TypeScript error in user service", status: "in_progress" },
+    { id: "2", content: "Build, test, and fix all errors", status: "pending" },
+    { id: "3", content: "Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)", status: "pending" },
+    { id: "4", content: "Update weekly log (if significant)", status: "pending" }
+  ]
+})
+```
+
+**During work (updating progress):**
+```typescript
+TodoWrite({
+  merge: true,  // Update existing todos
+  todos: [
+    { id: "1", status: "completed" },           // Just finished step 1
+    { id: "2", status: "in_progress" }          // Now starting step 2
+  ]
+})
+```
+
+---
+
+### Example: Todo-Driven Development Flow
+
+```
+User: "build user profile page with avatar upload"
+↓
+AI: [THINKING mode] searches libraries, shows plan
+↓
+User: "proceed"
+↓
+AI: "Proceeding with implementation"
+AI: [Creates todos]:
+  1. Create profile page component - in_progress
+  2. Implement avatar upload with image compression - pending
+  3. Add form validation - pending
+  4. Build, test, and fix all errors - pending
+  5. Update documentation (PROJECT_SUMMARY + PROJECTS_OVERVIEW) - pending
+  6. Update weekly log (if significant) - pending
+↓
+AI: [Creates profile page component]
+AI: [Marks todo 1 completed, moves to todo 2]
+↓
+AI: [Implements avatar upload]
+AI: [Marks todo 2 completed, moves to todo 3]
+↓
+AI: [Adds form validation]
+AI: [Marks todo 3 completed, moves to todo 4]
+↓
+AI: [Runs build] → errors found (TypeScript type issue)
+AI: [Fixes type errors]
+AI: [Runs build] → success
+AI: [Tests feature in browser] → works
+AI: [Marks todo 4 completed, moves to todo 5]
+↓
+AI: [Updates PROJECT_SUMMARY.md with new feature]
+AI: [Updates PROJECTS_OVERVIEW.md with achievement]
+AI: [Marks todo 5 completed, moves to todo 6]
+↓
+AI: "This was a significant feature. Update weekly log?"
+User: "yes"
+AI: [Updates weekly log]
+AI: [Marks todo 6 completed]
+↓
+AI: "Done. All todos completed. User profile page implemented and documented."
+```
+
+---
+
 ## Universal Work Pattern
 
 **ALL work follows this pattern:**
@@ -225,16 +435,25 @@ DOING: Maybe document decision (if significant)
 ```
 THINKING: Search libraries + pseudocode plan + "Proceed?"
 ↓ (User approves)
-DOING: Write the code
-↓ (If major milestone)
-Ask: "Document this?"
+DOING: Create todos (implementation steps + 3 final todos)
+       Write the code
+       Update todo status as progressing
+       Build, test, fix errors
+       Update documentation (PROJECT_SUMMARY + PROJECTS_OVERVIEW)
+       Update weekly log (if significant)
+       Mark all todos completed
 ```
 
 **Bug Fix:**
 ```
 THINKING: Diagnose issue + suggest fix
 ↓ (User approves)  
-DOING: Implement fix + test
+DOING: Create todos (fix + 3 final todos)
+       Implement fix
+       Build, test, fix errors
+       Update documentation (if needed)
+       Update weekly log (if significant)
+       Mark all todos completed
 ```
 
 **Weekly Review:**
@@ -293,15 +512,21 @@ DOING: Update CURRENT-FOCUS.md (if approved)
 
 Before session ends (user says "done", "that's all", "thanks", etc.):
 
-1. **Check: Any decisions to document?**
+1. **Check: Any incomplete todos?**
+   - If YES: "You have [N] pending todos. Should I complete them first?"
+   - List pending todos
+   - Wait for user decision (complete or defer)
+   - If defer: Note in next session
+
+2. **Check: Any decisions to document?**
    - If YES: "Should I update [specific file] with [specific decisions]?"
    - If NO: "Nothing to document. Great session."
 
-2. **Quick summary** (if significant work done):
+3. **Quick summary** (if significant work done):
    - "This session: [what we accomplished]"
    - "Next: [suggested next action]"
 
-3. **Don't create docs unless user confirms**
+4. **Don't create docs unless user confirms**
 
 ---
 
