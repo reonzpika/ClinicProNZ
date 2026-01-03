@@ -915,6 +915,8 @@ Action: Implemented 9 conversational triggers for autonomous updates
 
 **Follow-up Update [2026-01-02]**: Updated examples in session-workflow.mdc to use generic task examples instead of specific "todo integration" examples. Makes rule more reusable and clearer for AI to follow for any coding task.
 
+**Documentation Update [2026-01-02]**: Updated `.cursor/rules/README.md` to document todo integration system (v6.1.0). Added Level 3 section for session-workflow.mdc, updated architecture diagram, added todo system examples and testing guidelines.
+
 ---
 
 *Project Created: [2025-11-06]*
