@@ -63,13 +63,17 @@ export async function POST(request: NextRequest) {
     );
 
     // Step 4: Generate mobile URL
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    // Use request host for dynamic URL (works for preview/production)
+    const protocol = request.headers.get('x-forwarded-proto') || 'https';
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host') || 'clinicpro.co.nz';
+    const baseUrl = `${protocol}://${host}`;
     const mobileUrl = `${baseUrl}/medtech-images/mobile?t=${token}`;
 
     console.log('[Session Create] Session created successfully', {
       encounterId,
       token: token.slice(0, 8),
       sessionCreatedAt: session.createdAt,
+      mobileUrl: mobileUrl.slice(0, 60) + '...',
     });
 
     return NextResponse.json({
