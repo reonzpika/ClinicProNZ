@@ -452,18 +452,37 @@ throw new Error('No encounter context');
                 ))}
               </div>
 
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => document.getElementById('camera-input')?.click()}
-                  variant="outline"
-                  className="flex-1"
-                >
-                  Add More
-                </Button>
+              {/* Add more buttons */}
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => document.getElementById('camera-input')?.click()}
+                    variant="outline"
+                    className="flex-1"
+                    size="sm"
+                  >
+                    <Camera className="mr-2 size-4" />
+                    Camera
+                  </Button>
 
-                <Button onClick={proceedToMetadata} className="flex-1">
+                  <Button
+                    onClick={() => document.getElementById('gallery-input')?.click()}
+                    variant="outline"
+                    className="flex-1"
+                    size="sm"
+                  >
+                    <Upload className="mr-2 size-4" />
+                    Gallery
+                  </Button>
+                </div>
+
+                <Button onClick={proceedToMetadata} className="w-full">
                   <Check className="mr-2 size-4" />
-                  Continue
+                  Continue (
+                  {images.length}
+                  {' '}
+                  {images.length === 1 ? 'image' : 'images'}
+                  )
                 </Button>
               </div>
             </CardContent>
