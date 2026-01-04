@@ -31,7 +31,9 @@ export function useQRSession() {
       return medtechAPI.initiateMobile(
         encounterContext.encounterId,
         encounterContext.patientId,
-        encounterContext.facilityId
+        encounterContext.facilityId,
+        encounterContext.patientName,
+        encounterContext.patientNHI,
       );
     },
     onSuccess: (data) => {

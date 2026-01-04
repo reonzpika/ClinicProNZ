@@ -53,6 +53,8 @@ export async function GET(
     return NextResponse.json({
       encounterId: tokenData.encounterId,
       patientId: tokenData.patientId,
+      patientName: tokenData.patientName,
+      patientNHI: tokenData.patientNHI,
       facilityId: tokenData.facilityId,
       valid: true,
     });
