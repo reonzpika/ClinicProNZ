@@ -598,15 +598,23 @@ throw new Error('No encounter context');
                 </div>
               </div>
 
-              {/* Description */}
+              {/* Description - REQUIRED */}
               <div className="space-y-2">
-                <Label>Description</Label>
+                <Label>
+                  Description
+                  {' '}
+                  <span className="text-red-600">*</span>
+                </Label>
                 <Input
                   type="text"
                   value={images[currentMetadataIndex]!.metadata.description || ''}
                   onChange={e =>
                     updateImageMetadata(images[currentMetadataIndex]!.id, 'description', e.target.value)}
+                  placeholder="e.g., Red rash on left ear"
                 />
+                {(!images[currentMetadataIndex]!.metadata.description || images[currentMetadataIndex]!.metadata.description.trim() === '') && (
+                  <p className="text-xs text-red-600">Description is required</p>
+                )}
               </div>
 
               {/* Navigation */}
@@ -621,6 +629,7 @@ throw new Error('No encounter context');
                 <Button
                   onClick={nextMetadataImage}
                   className="flex-1"
+                  disabled={!images[currentMetadataIndex]!.metadata.description || images[currentMetadataIndex]!.metadata.description.trim() === ''}
                 >
                   {currentMetadataIndex < images.length - 1 ? (
                     <>

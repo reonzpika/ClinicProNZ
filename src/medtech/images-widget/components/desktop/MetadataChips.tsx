@@ -72,19 +72,21 @@ export function MetadataChips({
         sticky={stickyMetadata.laterality}
         onSelect={concept => handleSelect('laterality', concept)}
         showTextInput
-        required
         onApply={onApplyLaterality}
         onApplyToSelected={onApplyToSelected}
         restImagesCount={restImagesCount}
         canApply={hasLaterality}
       />
 
-      {/* Description (free text) */}
+      {/* Description (free text) - REQUIRED */}
       <div>
         <label htmlFor={`notes-${imageId}`} className="mb-2 block text-xs font-medium text-slate-700">
           Description
 {' '}
-<span className="text-slate-500">(optional)</span>
+<span className="text-red-600">*</span>
+          {!image.metadata.notes || image.metadata.notes.trim() === '' ? (
+            <span className="ml-2 text-xs font-normal text-red-600">(is required)</span>
+          ) : null}
         </label>
         <textarea
           id={`notes-${imageId}`}

@@ -117,7 +117,7 @@ function MedtechImagesPageContent() {
 
   // Invalid images (missing required metadata)
   const invalidImages = uncommittedImages.filter(
-    img => !img.metadata.laterality,
+    img => !img.metadata.notes || img.metadata.notes.trim() === '',
   );
 
   const hasInvalidImages = invalidImages.length > 0;
@@ -336,8 +336,8 @@ Image
         </div>
       )}
 
-      {/* QR Panel (Collapsible) */}
-      {showQR && (
+      {/* QR Panel (Collapsible) - Hide when images uploaded */}
+      {showQR && sessionImages.length === 0 && (
         <div className="border-b border-slate-200 bg-white px-6 py-4">
           <QRPanel />
         </div>

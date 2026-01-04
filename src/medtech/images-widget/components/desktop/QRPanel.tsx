@@ -10,12 +10,10 @@
 
 'use client';
 
-import { Clock, Loader2, QrCode, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useEffect, useState } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
 import { useQRSession } from '../../hooks/useQRSession';
 
@@ -24,130 +22,66 @@ export function QRPanel() {
     mobileUrl,
     isExpired,
     isGenerating,
-    generateSession,
     regenerateSession,
-    getRemainingTime,
   } = useQRSession();
 
-  const [remainingSeconds, setRemainingSeconds] = useState(0);
-
-  // Update remaining time every second
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRemainingSeconds(getRemainingTime());
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [getRemainingTime]);
-
-  // Format remaining time
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  // Generate on mount if not already generated
-  useEffect(() => {
-    if (!mobileUrl && !isGenerating) {
-      generateSession();
-    }
-  }, [mobileUrl, isGenerating, generateSession]);
-
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <QrCode className="size-5 text-purple-600" />
-          Mobile Upload
-        </CardTitle>
-      </CardHeader>
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      {/* Loading State */}
+      {isGenerating && (
+        <div className="flex items-center justify-center py-4">
+          <Loader2 className="mr-3 size-8 animate-spin text-purple-500" />
+          <p className="text-sm text-slate-600">Generating QR code...</p>
+        </div>
+      )}
 
-      <CardContent className="space-y-4">
-        {/* Loading State */}
-        {isGenerating && (
-          <div className="flex flex-col items-center justify-center py-8">
-            <Loader2 className="mb-3 size-12 animate-spin text-purple-500" />
-            <p className="text-sm text-slate-600">Generating QR code...</p>
-          </div>
-        )}
-
-        {/* QR Code Display */}
-        {!isGenerating && mobileUrl && (
-          <>
-            <div className="relative">
-              {/* QR Code */}
-              <div className="flex justify-center">
-                <div
-                  className={`rounded-lg border-2 p-2 ${
-                    isExpired ? 'border-red-300 opacity-50' : 'border-slate-200'
-                  }`}
-                >
-                  <QRCodeSVG
-                    value={mobileUrl}
-                    size={200}
-                    level="H"
-                    includeMargin={false}
-                  />
-                </div>
-              </div>
-
-              {/* Expired Overlay */}
-              {isExpired && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white shadow-lg">
-                    Expired
-                  </div>
-                </div>
-              )}
+      {/* QR Code Display - Horizontal Layout */}
+      {!isGenerating && mobileUrl && (
+        <div className="flex gap-4">
+          {/* Left: QR Code */}
+          <div className="relative shrink-0">
+            <div
+              className={`rounded-lg border-2 p-2 ${
+                isExpired ? 'border-red-300 opacity-50' : 'border-slate-200'
+              }`}
+            >
+              <QRCodeSVG
+                value={mobileUrl}
+                size={120}
+                level="H"
+                includeMargin={false}
+              />
             </div>
-
-            {/* Timer */}
-            {!isExpired && remainingSeconds > 0 && (
-              <div className="flex items-center justify-center gap-2 text-sm text-slate-600">
-                <Clock className="size-4" />
-                <span>
-Expires in
-{formatTime(remainingSeconds)}
-                </span>
+            {isExpired && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="rounded-lg bg-red-500 px-3 py-1 text-xs font-medium text-white shadow-lg">
+                  Expired
+                </div>
               </div>
             )}
+          </div>
 
-            {/* Mobile URL (for manual entry) */}
-            {mobileUrl && !isExpired && (
-              <div className="rounded-lg bg-slate-50 p-3">
-                <p className="mb-1 text-xs font-medium text-slate-700">Mobile URL:</p>
-                <p className="break-all text-xs text-slate-600">{mobileUrl}</p>
-              </div>
-            )}
-
-            {/* Regenerate Button */}
+          {/* Right: Instructions & Button */}
+          <div className="flex flex-1 flex-col justify-between">
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-slate-900">Mobile Upload</p>
+              <p className="text-xs text-slate-600">
+                Scan QR with mobile device to capture and upload images. Images appear here automatically.
+              </p>
+            </div>
             <Button
               onClick={regenerateSession}
               disabled={isGenerating}
               variant="outline"
               size="sm"
-              className="w-full"
+              className="mt-3 w-fit"
             >
               <RefreshCw className="mr-2 size-4" />
-              {isExpired ? 'Generate New QR' : 'Regenerate QR'}
+              Regenerate QR
             </Button>
-
-            {/* Instructions */}
-            <div className="rounded-lg bg-blue-50 p-3">
-              <p className="text-xs text-blue-800">
-                <strong>Instructions:</strong>
-                <br />
-                1. Scan QR with mobile device
-                <br />
-                2. Capture images with phone camera
-                <br />
-                3. Images appear here automatically
-              </p>
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
