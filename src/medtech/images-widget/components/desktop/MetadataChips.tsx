@@ -30,22 +30,18 @@ type MetadataChipsProps = {
   imageId: string;
   onMetadataChange?: (metadata: Partial<Record<'laterality' | 'bodySite' | 'view' | 'type', CodeableConcept>>) => void;
   onApplyLaterality?: () => void;
-  onApplyBodySite?: () => void;
   onApplyToSelected?: () => void;
   restImagesCount?: number;
   hasLaterality?: boolean;
-  hasBodySite?: boolean;
 };
 
 export function MetadataChips({
   imageId,
   onMetadataChange,
   onApplyLaterality,
-  onApplyBodySite,
   onApplyToSelected,
   restImagesCount = 0,
   hasLaterality = false,
-  hasBodySite = false,
 }: MetadataChipsProps) {
   const { capabilities, sessionImages, updateMetadata, setStickyMetadata, stickyMetadata } = useImageWidgetStore();
 
@@ -83,58 +79,21 @@ export function MetadataChips({
         canApply={hasLaterality}
       />
 
-      {/* Body Site */}
-      <ChipGroup
-        label="Body Site"
-        options={quickChips.bodySitesCommon}
-        selected={image.metadata.bodySite}
-        sticky={stickyMetadata.bodySite}
-        onSelect={concept => handleSelect('bodySite', concept)}
-        showTextInput
-        required
-        onApply={onApplyBodySite}
-        onApplyToSelected={onApplyToSelected}
-        restImagesCount={restImagesCount}
-        canApply={hasBodySite}
-      />
-
-      {/* View */}
-      <ChipGroup
-        label="View"
-        options={quickChips.views}
-        selected={image.metadata.view}
-        sticky={stickyMetadata.view}
-        onSelect={concept => handleSelect('view', concept)}
-        showTextInput
-        hideOthersDropdown
-      />
-
-      {/* Type */}
-      <ChipGroup
-        label="Type"
-        options={quickChips.types}
-        selected={image.metadata.type}
-        sticky={stickyMetadata.type}
-        onSelect={concept => handleSelect('type', concept)}
-        showTextInput
-        hideOthersDropdown
-      />
-
-      {/* Label (free text) */}
+      {/* Description (free text) */}
       <div>
-        <label htmlFor={`label-${imageId}`} className="mb-2 block text-xs font-medium text-slate-700">
-          Label
+        <label htmlFor={`notes-${imageId}`} className="mb-2 block text-xs font-medium text-slate-700">
+          Description
 {' '}
 <span className="text-slate-500">(optional)</span>
         </label>
-        <input
-          id={`label-${imageId}`}
-          type="text"
-          value={image.metadata.label || ''}
-          onChange={e => updateMetadata(imageId, { label: e.target.value })}
-          placeholder="e.g., Lesion 1 (superior)"
-          className="w-48 rounded-md border border-slate-300 px-3 py-1.5 text-xs focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
-          maxLength={100}
+        <textarea
+          id={`notes-${imageId}`}
+          value={image.metadata.notes || ''}
+          onChange={e => updateMetadata(imageId, { notes: e.target.value })}
+          placeholder="e.g., Left ear, red rash"
+          className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+          rows={3}
+          maxLength={500}
         />
       </div>
     </div>

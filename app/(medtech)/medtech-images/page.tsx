@@ -117,7 +117,7 @@ function MedtechImagesPageContent() {
 
   // Invalid images (missing required metadata)
   const invalidImages = uncommittedImages.filter(
-    img => !img.metadata.laterality || !img.metadata.bodySite,
+    img => !img.metadata.laterality,
   );
 
   const hasInvalidImages = invalidImages.length > 0;

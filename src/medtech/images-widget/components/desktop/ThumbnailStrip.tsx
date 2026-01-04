@@ -63,7 +63,7 @@ type ThumbnailCardProps = {
 
 function ThumbnailCard({ image, isCurrent, onClick, onErrorClick, onRemove }: ThumbnailCardProps) {
   // Badge logic: Yellow = validation error, Red = commit error, Green = committed
-  const isInvalid = !image.metadata.laterality || !image.metadata.bodySite;
+  const isInvalid = !image.metadata.laterality;
   const hasCommitError = image.status === 'error' || !!image.error;
 
   // Badge type: 'validation' (yellow), 'error' (red), 'committed' (green), or null
