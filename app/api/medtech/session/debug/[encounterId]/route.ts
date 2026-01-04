@@ -12,10 +12,10 @@ import { redisSessionService } from '@/src/lib/services/session-storage';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { encounterId: string } },
+  { params }: { params: Promise<{ encounterId: string }> },
 ) {
   try {
-    const { encounterId } = params;
+    const { encounterId } = await params;
 
     console.log('[Debug] Fetching session', { encounterId });
 
