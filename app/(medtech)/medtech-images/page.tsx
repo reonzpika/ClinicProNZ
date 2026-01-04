@@ -107,6 +107,13 @@ function MedtechImagesPageContent() {
     }
   }, [sessionImages.length, currentImageId]);
 
+  // Auto-hide QR when first image arrives
+  useEffect(() => {
+    if (sessionImages.length > 0 && showQR) {
+      setShowQR(false);
+    }
+  }, [sessionImages.length]); // Only run when image count changes
+
   // Computed values
   const currentImage = currentImageId
     ? sessionImages.find(img => img.id === currentImageId) || null
@@ -336,8 +343,8 @@ Image
         </div>
       )}
 
-      {/* QR Panel (Collapsible) - Hide when images uploaded */}
-      {showQR && sessionImages.length === 0 && (
+      {/* QR Panel (Collapsible) */}
+      {showQR && (
         <div className="border-b border-slate-200 bg-white px-6 py-4">
           <QRPanel />
         </div>
