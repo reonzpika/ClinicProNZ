@@ -266,6 +266,21 @@ throw new Error('No encounter context');
     );
 
     // Step 4: Notify backend + publish Ably event (with retry)
+    // Transform metadata to backend schema
+    const backendMetadata = {
+      laterality: image.metadata.side
+        ? {
+            code: image.metadata.side,
+            display: image.metadata.side === 'left'
+              ? 'Left'
+              : image.metadata.side === 'right'
+                ? 'Right'
+                : 'X',
+          }
+        : undefined,
+      notes: image.metadata.description || undefined,
+    };
+
     await retry(
       async () => {
         const response = await fetch('/api/medtech/session/images', {
@@ -274,7 +289,7 @@ throw new Error('No encounter context');
           body: JSON.stringify({
             encounterId: encounterContext.encounterId,
             s3Key: presignedData.s3Key,
-            metadata: image.metadata,
+            metadata: backendMetadata,
           }),
         });
 

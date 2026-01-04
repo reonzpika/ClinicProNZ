@@ -26,13 +26,28 @@ export class RedisSessionService {
   }
 
   /**
-   * Create a new encounter session
+   * Create a new encounter session (or return existing)
    */
   async createSession(
     encounterId: string,
     patientId: string,
     facilityId: string,
   ): Promise<EncounterSession> {
+    // Check if session already exists
+    const existingSession = await this.getSession(encounterId);
+
+    if (existingSession) {
+      // Session exists - refresh TTL and update lastActivity
+      existingSession.lastActivity = Date.now();
+      await this.redis.setex(
+        `encounter:${encounterId}`,
+        SESSION_TTL,
+        JSON.stringify(existingSession),
+      );
+      return existingSession;
+    }
+
+    // Create new session
     const now = Date.now();
 
     const session: EncounterSession = {
