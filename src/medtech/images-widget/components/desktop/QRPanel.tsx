@@ -12,6 +12,7 @@
 
 import { Loader2, RefreshCw } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
+import { useEffect } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 
@@ -22,8 +23,16 @@ export function QRPanel() {
     mobileUrl,
     isExpired,
     isGenerating,
+    generateSession,
     regenerateSession,
   } = useQRSession();
+
+  // Auto-generate QR on mount if not already generated
+  useEffect(() => {
+    if (!mobileUrl && !isGenerating) {
+      generateSession();
+    }
+  }, [mobileUrl, isGenerating, generateSession]);
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4">
