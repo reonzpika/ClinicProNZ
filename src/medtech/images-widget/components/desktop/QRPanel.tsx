@@ -77,6 +77,13 @@ export function QRPanel() {
               <p className="text-xs text-slate-600">
                 Scan QR with mobile device to capture and upload images. Images appear here automatically.
               </p>
+              {/* Mobile URL */}
+              {mobileUrl && !isExpired && (
+                <div className="rounded-lg bg-slate-50 p-2">
+                  <p className="mb-1 text-xs font-medium text-slate-700">Mobile URL:</p>
+                  <p className="break-all text-xs text-slate-600">{mobileUrl}</p>
+                </div>
+              )}
             </div>
             <Button
               onClick={regenerateSession}
