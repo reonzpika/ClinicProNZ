@@ -17,7 +17,7 @@ import { useImageWidgetStore } from '../stores/imageWidgetStore';
 import type { WidgetImage } from '../types';
 
 export function useAblySessionSync(encounterId: string | null | undefined) {
-  const { addImage, sessionImages } = useImageWidgetStore();
+  const { addImage } = useImageWidgetStore();
   const ablyRef = useRef<AblyTypes.Realtime | null>(null);
   const hasInitialFetchRef = useRef(false);
 
@@ -69,8 +69,11 @@ export function useAblySessionSync(encounterId: string | null | undefined) {
         // Add images to store (if not already present)
         if (data.images && data.images.length > 0) {
           for (const img of data.images) {
+            // Get CURRENT store state (avoid stale closure)
+            const currentImages = useImageWidgetStore.getState().sessionImages;
+            
             // Check if image already exists in store (by s3Key, not downloadUrl)
-            const exists = sessionImages.some(storeImg =>
+            const exists = currentImages.some(storeImg =>
               storeImg.s3Key === img.s3Key,
             );
 
