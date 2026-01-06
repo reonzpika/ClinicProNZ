@@ -2,7 +2,7 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2026-01-02"
+last_updated: "2026-01-06"
 version: "1.5.0"
 tags:
   - integration
@@ -20,6 +20,7 @@ quick_reference:
 key_docs:
   project_rules: "PROJECT_RULES.md"
   feature_overview: "features/clinical-images/FEATURE_OVERVIEW.md"
+  task_checker_overview: "features/task-completion-checker/FEATURE_OVERVIEW.md"
   roadmap: "DEVELOPMENT_ROADMAP.md"
   architecture: "infrastructure/architecture.md"
   oauth_config: "infrastructure/oauth-and-config.md"
@@ -340,6 +341,27 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 ## Recent Updates Summary
+
+### [2026-01-06] — 🆕 Task Completion Checker Feature Exploration Started
+
+**New Feature Concept** (validated as technically feasible):
+- AI-powered tool to extract tasks from consultation notes and flag incomplete ones
+- Approach: Hybrid (AI extracts, GP confirms, tool cross-references with ALEX data)
+- Focus: Labs, Prescriptions, Referrals (verifiable via ALEX API)
+- Note format: SOAP structure with Plan section, free text
+
+**What Was Created**:
+- Feature folder: `features/task-completion-checker/`
+- Feature overview: `features/task-completion-checker/FEATURE_OVERVIEW.md`
+- BFF test endpoints: 5 new endpoints in `/lightsail-bff/index.js`
+- Validation script: `/scripts/validate-task-checker-via-bff.ts`
+
+**Next Steps**:
+1. Deploy BFF with new endpoints (merge to main)
+2. Run validation script to confirm note text is accessible
+3. If feasible, proceed to AI prompt design and MVP
+
+**Documentation**: See `features/task-completion-checker/FEATURE_OVERVIEW.md` for full details.
 
 ### [2026-01-02] — ✅ Phase 1B Implementation Complete (Redis + S3 + Mobile + Ably)
 
