@@ -17,12 +17,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Prepare SSH key
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "${{ secrets.LIGHTSAIL_SSH_KEY }}" ]; then
+            echo "::error::Missing GitHub secret LIGHTSAIL_SSH_KEY. Set it to your *private* SSH key (OpenSSH format), or a base64-encoded private key."
+            exit 1
+          fi
+
+          mkdir -p .ssh
+          KEY_FILE=".ssh/lightsail.key"
+
+          # Support either a raw multiline private key, or a base64-encoded key.
+          if printf '%s' "${{ secrets.LIGHTSAIL_SSH_KEY }}" | grep -q "BEGIN .*PRIVATE KEY"; then
+            printf '%s' "${{ secrets.LIGHTSAIL_SSH_KEY }}" > "${KEY_FILE}"
+          else
+            printf '%s' "${{ secrets.LIGHTSAIL_SSH_KEY }}" | base64 -d > "${KEY_FILE}"
+          fi
+
+          chmod 600 "${KEY_FILE}"
+
       - name: Deploy to Lightsail via SSH
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: 13.236.58.12
           username: ubuntu
-          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          key_path: .ssh/lightsail.key
+          port: 22
+          passphrase: ${{ secrets.LIGHTSAIL_SSH_KEY_PASSPHRASE }}
+          script_stop: true
           script: |
             # Navigate to BFF directory
             cd /home/deployer/app
