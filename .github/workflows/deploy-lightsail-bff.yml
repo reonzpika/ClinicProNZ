@@ -27,8 +27,11 @@ jobs:
             exit 1
           fi
 
-          mkdir -p .ssh
-          KEY_FILE=".ssh/lightsail.key"
+          # NOTE: appleboy/scp-action runs in a container. If we put the key under
+          # a restrictive directory (e.g. .ssh with 700 perms), the container user
+          # can get "permission denied" reading it. Keep the key in the workspace
+          # and make it readable for this ephemeral runner only.
+          KEY_FILE="${GITHUB_WORKSPACE}/lightsail.key"
 
           # Support either a raw multiline private key, or a base64-encoded key.
           if printf '%s' "${{ secrets.LIGHTSAIL_SSH_KEY }}" | grep -q "BEGIN .*PRIVATE KEY"; then
@@ -37,14 +40,15 @@ jobs:
             printf '%s' "${{ secrets.LIGHTSAIL_SSH_KEY }}" | base64 -d > "${KEY_FILE}"
           fi
 
-          chmod 600 "${KEY_FILE}"
+          # Readable by the scp/ssh action containers.
+          chmod a+r "${KEY_FILE}"
 
       - name: Upload BFF files to Lightsail
         uses: appleboy/scp-action@v0.1.7
         with:
           host: 13.236.58.12
           username: ubuntu
-          key_path: .ssh/lightsail.key
+          key_path: lightsail.key
           port: 22
           passphrase: ${{ secrets.LIGHTSAIL_SSH_KEY_PASSPHRASE }}
           source: "lightsail-bff/*"
@@ -55,18 +59,23 @@ jobs:
         with:
           host: 13.236.58.12
           username: ubuntu
-          key_path: .ssh/lightsail.key
+          key_path: lightsail.key
           port: 22
           passphrase: ${{ secrets.LIGHTSAIL_SSH_KEY_PASSPHRASE }}
           script_stop: true
           script: |
             echo "📦 Deploying BFF from uploaded artefacts..."
 
-            SRC_DIR="/home/ubuntu/lightsail-bff/lightsail-bff"
-            if [ ! -d "${SRC_DIR}" ]; then
-              echo "❌ Uploaded folder not found at ${SRC_DIR}"
-              echo "Contents of /home/ubuntu/lightsail-bff:"
-              ls -la /home/ubuntu/lightsail-bff || true
+            BASE_DIR="/home/ubuntu/lightsail-bff"
+            if [ -d "${BASE_DIR}/lightsail-bff" ]; then
+              SRC_DIR="${BASE_DIR}/lightsail-bff"
+            elif [ -f "${BASE_DIR}/package.json" ]; then
+              # Some scp configurations unpack files directly into the target directory.
+              SRC_DIR="${BASE_DIR}"
+            else
+              echo "❌ Uploaded folder not found at expected locations."
+              echo "Contents of ${BASE_DIR}:"
+              ls -la "${BASE_DIR}" || true
               exit 1
             fi
 
