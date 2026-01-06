@@ -209,11 +209,23 @@ export const realMedtechAPI = {
     return response.json();
   },
 
-  async initiateMobile(encounterId: string, patientId: string, facilityId: string): Promise<MobileSessionResponse> {
+  async initiateMobile(
+    encounterId: string,
+    patientId: string,
+    facilityId: string,
+    patientName?: string,
+    patientNHI?: string,
+  ): Promise<MobileSessionResponse> {
     const response = await fetch('/api/medtech/session/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ encounterId, patientId, facilityId }),
+      body: JSON.stringify({
+        encounterId,
+        patientId,
+        facilityId,
+        patientName,
+        patientNHI,
+      }),
     });
 
     if (!response.ok) {

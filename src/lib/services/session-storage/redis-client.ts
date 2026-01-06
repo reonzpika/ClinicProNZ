@@ -15,7 +15,7 @@ import { Redis } from '@upstash/redis';
 import type { EncounterSession, SessionImage, SessionToken } from './types';
 
 const SESSION_TTL = 7200; // 2 hours in seconds
-const TOKEN_TTL = 600; // 10 minutes in seconds
+const TOKEN_TTL = 7200; // 2 hours in seconds (matches session TTL)
 
 export class RedisSessionService {
   private redis: Redis;
@@ -26,18 +26,37 @@ export class RedisSessionService {
   }
 
   /**
-   * Create a new encounter session
+   * Create a new encounter session (or return existing)
    */
   async createSession(
     encounterId: string,
     patientId: string,
     facilityId: string,
+    patientName?: string,
+    patientNHI?: string,
   ): Promise<EncounterSession> {
+    // Check if session already exists
+    const existingSession = await this.getSession(encounterId);
+
+    if (existingSession) {
+      // Session exists - refresh TTL and update lastActivity
+      existingSession.lastActivity = Date.now();
+      await this.redis.setex(
+        `encounter:${encounterId}`,
+        SESSION_TTL,
+        JSON.stringify(existingSession),
+      );
+      return existingSession;
+    }
+
+    // Create new session
     const now = Date.now();
 
     const session: EncounterSession = {
       encounterId,
       patientId,
+      patientName,
+      patientNHI,
       facilityId,
       images: [],
       createdAt: now,
@@ -111,22 +130,26 @@ export class RedisSessionService {
   }
 
   /**
-   * Create session token for QR code (short-lived)
+   * Create session token for QR code (2-hour TTL)
    */
   async createSessionToken(
     token: string,
     encounterId: string,
     patientId: string,
     facilityId: string,
+    patientName?: string,
+    patientNHI?: string,
   ): Promise<void> {
     const tokenData: SessionToken = {
       encounterId,
       patientId,
+      patientName,
+      patientNHI,
       facilityId,
       createdAt: Date.now(),
     };
 
-    // Store with 10-minute TTL
+    // Store with 2-hour TTL
     await this.redis.setex(
       `session-token:${token}`,
       TOKEN_TTL,

@@ -31,10 +31,8 @@ export async function GET() {
           },
           quickChips: {
             laterality: [
-              { system: 'http://snomed.info/sct', code: '24028007', display: 'Right' },
               { system: 'http://snomed.info/sct', code: '7771000', display: 'Left' },
-              { system: 'http://snomed.info/sct', code: '51440002', display: 'Bilateral' },
-              { system: 'http://snomed.info/sct', code: '373067005', display: 'Not applicable' },
+              { system: 'http://snomed.info/sct', code: '24028007', display: 'Right' },
             ],
             bodySitesCommon: [
               { system: 'http://snomed.info/sct', code: '89545001', display: 'Face' },

@@ -16,7 +16,7 @@
  */
 
 import imageCompression from 'browser-image-compression';
-import { Camera, Check, ChevronLeft, ChevronRight, Loader2, Upload, X } from 'lucide-react';
+import { Camera, Check, ChevronLeft, ChevronRight, Loader2, QrCode, Upload, X } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
@@ -53,6 +53,8 @@ interface ImageFile {
 interface EncounterContext {
   encounterId: string;
   patientId: string;
+  patientName?: string;
+  patientNHI?: string;
   facilityId: string;
 }
 
@@ -94,6 +96,8 @@ function MobilePageContent() {
       setEncounterContext({
         encounterId: data.encounterId,
         patientId: data.patientId,
+        patientName: data.patientName,
+        patientNHI: data.patientNHI,
         facilityId: data.facilityId,
       });
 
@@ -241,7 +245,9 @@ throw new Error('No encounter context');
         });
 
         if (!response.ok) {
-          throw new Error('Failed to get presigned URL');
+          // Parse error message from API
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || errorData.error || 'Failed to get presigned URL');
         }
 
         return await response.json();
@@ -266,6 +272,21 @@ throw new Error('No encounter context');
     );
 
     // Step 4: Notify backend + publish Ably event (with retry)
+    // Transform metadata to backend schema
+    const backendMetadata = {
+      laterality: image.metadata.side
+        ? {
+            code: image.metadata.side,
+            display: image.metadata.side === 'left'
+              ? 'Left'
+              : image.metadata.side === 'right'
+                ? 'Right'
+                : 'X',
+          }
+        : undefined,
+      notes: image.metadata.description || undefined,
+    };
+
     await retry(
       async () => {
         const response = await fetch('/api/medtech/session/images', {
@@ -274,7 +295,7 @@ throw new Error('No encounter context');
           body: JSON.stringify({
             encounterId: encounterContext.encounterId,
             s3Key: presignedData.s3Key,
-            metadata: image.metadata,
+            metadata: backendMetadata,
           }),
         });
 
@@ -367,6 +388,25 @@ throw new Error('No encounter context');
           <h1 className="text-2xl font-bold text-slate-900">ClinicPro Images</h1>
           <p className="text-sm text-slate-600">Mobile Upload</p>
         </header>
+
+        {/* Patient Info Banner */}
+        {encounterContext && (encounterContext.patientName || encounterContext.patientNHI) && (
+          <div className="mb-4 rounded-lg border-2 border-purple-200 bg-purple-50 p-4">
+            <p className="text-center text-sm font-medium text-purple-900">Current Patient</p>
+            {encounterContext.patientName && (
+              <p className="mt-1 text-center text-lg font-bold text-purple-900">
+                {encounterContext.patientName}
+              </p>
+            )}
+            {encounterContext.patientNHI && (
+              <p className="text-center text-sm text-purple-700">
+                NHI:
+                {' '}
+                {encounterContext.patientNHI}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Hidden file inputs (available on all screens) */}
         <input
@@ -560,15 +600,23 @@ throw new Error('No encounter context');
                 </div>
               </div>
 
-              {/* Description */}
+              {/* Description - REQUIRED */}
               <div className="space-y-2">
-                <Label>Description</Label>
+                <Label>
+                  Description
+                  {' '}
+                  <span className="text-red-600">*</span>
+                </Label>
                 <Input
                   type="text"
                   value={images[currentMetadataIndex]!.metadata.description || ''}
                   onChange={e =>
                     updateImageMetadata(images[currentMetadataIndex]!.id, 'description', e.target.value)}
+                  placeholder="e.g., Red rash on left ear"
                 />
+                {(!images[currentMetadataIndex]!.metadata.description || images[currentMetadataIndex]!.metadata.description.trim() === '') && (
+                  <p className="text-xs text-red-600">Description is required</p>
+                )}
               </div>
 
               {/* Navigation */}
@@ -583,6 +631,7 @@ throw new Error('No encounter context');
                 <Button
                   onClick={nextMetadataImage}
                   className="flex-1"
+                  disabled={!images[currentMetadataIndex]!.metadata.description || images[currentMetadataIndex]!.metadata.description.trim() === ''}
                 >
                   {currentMetadataIndex < images.length - 1 ? (
                     <>
@@ -664,6 +713,33 @@ throw new Error('No encounter context');
               <Button onClick={captureMore} className="w-full" size="lg">
                 <Camera className="mr-2 size-5" />
                 Upload More Images
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-slate-300" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-slate-500">or</span>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => {
+                  // Clear session and prompt to scan new QR code
+                  setImages([]);
+                  setCurrentMetadataIndex(0);
+                  setUploadProgress({ current: 0, total: 0 });
+                  setEncounterContext(null);
+                  setStep('error');
+                  setError('Please scan QR code for next patient');
+                }}
+                variant="outline"
+                className="w-full"
+                size="lg"
+              >
+                <QrCode className="mr-2 size-5" />
+                Next Patient (Scan New QR)
               </Button>
             </CardContent>
           </Card>

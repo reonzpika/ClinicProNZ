@@ -107,6 +107,13 @@ function MedtechImagesPageContent() {
     }
   }, [sessionImages.length, currentImageId]);
 
+  // Auto-hide QR when first image arrives
+  useEffect(() => {
+    if (sessionImages.length > 0 && showQR) {
+      setShowQR(false);
+    }
+  }, [sessionImages.length]); // Only run when image count changes
+
   // Computed values
   const currentImage = currentImageId
     ? sessionImages.find(img => img.id === currentImageId) || null
@@ -117,7 +124,7 @@ function MedtechImagesPageContent() {
 
   // Invalid images (missing required metadata)
   const invalidImages = uncommittedImages.filter(
-    img => !img.metadata.laterality || !img.metadata.bodySite,
+    img => !img.metadata.notes || img.metadata.notes.trim() === '',
   );
 
   const hasInvalidImages = invalidImages.length > 0;
