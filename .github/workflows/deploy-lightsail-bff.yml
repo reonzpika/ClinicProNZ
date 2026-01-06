@@ -37,7 +37,9 @@ jobs:
             printf '%s' "${{ secrets.LIGHTSAIL_SSH_KEY }}" | base64 -d > "${KEY_FILE}"
           fi
 
-          chmod 600 "${KEY_FILE}"
+          # These actions run in Docker containers; if the file is 600, the container user may not
+          # have permission to read it. This is still safe on ephemeral GitHub runners.
+          chmod 644 "${KEY_FILE}"
 
       - name: Upload BFF files to Lightsail
         uses: appleboy/scp-action@v0.1.7
