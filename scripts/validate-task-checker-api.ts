@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ALEX API Validation Script for Task Completion Checker Feature
  * 
@@ -147,10 +148,10 @@ async function testDocumentReference(): Promise<void> {
 
     console.log(`\n📊 Results: ${bundle.total ?? bundle.entry?.length ?? 0} documents found`);
 
-    const entries = bundle.entry;
-    if (entries && entries.length > 0) {
+    const entries = bundle.entry ?? [];
+    if (entries.length > 0) {
       console.log('\n📄 Sample DocumentReference:');
-      const doc = entries[0].resource as DocumentReference;
+      const doc = entries[0]!.resource as unknown as DocumentReference;
       
       console.log(`   ID: ${doc.id}`);
       console.log(`   Status: ${doc.status}`);
@@ -159,8 +160,9 @@ async function testDocumentReference(): Promise<void> {
       console.log(`   Description: ${doc.description || 'N/A'}`);
       
       // Check content structure
-      if (doc.content && doc.content.length > 0) {
-        const attachment = doc.content[0].attachment;
+      const contentArray = doc.content ?? [];
+      if (contentArray.length > 0) {
+        const attachment = contentArray[0]?.attachment;
         console.log('\n   📎 Attachment:');
         console.log(`      Content-Type: ${attachment?.contentType || 'N/A'}`);
         console.log(`      Has inline data: ${attachment?.data ? 'YES ✅' : 'NO'}`);
@@ -229,10 +231,10 @@ async function testDiagnosticReport(): Promise<void> {
 
     console.log(`\n📊 Results: ${bundle.total ?? bundle.entry?.length ?? 0} reports found`);
 
-    const entries = bundle.entry;
-    if (entries && entries.length > 0) {
+    const entries = bundle.entry ?? [];
+    if (entries.length > 0) {
       console.log('\n📄 Sample DiagnosticReport:');
-      const report = entries[0].resource;
+      const report = entries[0]!.resource;
       console.log(JSON.stringify(report, null, 2).substring(0, 1500));
     } else {
       console.log('\n⚠️ No diagnostic reports found for test patient');
@@ -255,10 +257,10 @@ async function testMedicationRequest(): Promise<void> {
 
     console.log(`\n📊 Results: ${bundle.total ?? bundle.entry?.length ?? 0} prescriptions found`);
 
-    const entries = bundle.entry;
-    if (entries && entries.length > 0) {
+    const entries = bundle.entry ?? [];
+    if (entries.length > 0) {
       console.log('\n📄 Sample MedicationRequest:');
-      const rx = entries[0].resource;
+      const rx = entries[0]!.resource;
       console.log(JSON.stringify(rx, null, 2).substring(0, 1500));
     } else {
       console.log('\n⚠️ No prescriptions found for test patient');
@@ -282,10 +284,10 @@ async function testCommunication(): Promise<void> {
 
     console.log(`\n📊 Results: ${bundle.total ?? bundle.entry?.length ?? 0} communications found`);
 
-    const entries = bundle.entry;
-    if (entries && entries.length > 0) {
+    const entries = bundle.entry ?? [];
+    if (entries.length > 0) {
       console.log('\n📄 Sample Communication:');
-      const comm = entries[0].resource;
+      const comm = entries[0]!.resource;
       console.log(JSON.stringify(comm, null, 2).substring(0, 1500));
     } else {
       console.log('\n⚠️ No communications found for test patient');
@@ -309,10 +311,10 @@ async function testTask(): Promise<void> {
 
     console.log(`\n📊 Results: ${bundle.total ?? bundle.entry?.length ?? 0} tasks found`);
 
-    const entries = bundle.entry;
-    if (entries && entries.length > 0) {
+    const entries = bundle.entry ?? [];
+    if (entries.length > 0) {
       console.log('\n📄 Sample Task:');
-      const task = entries[0].resource;
+      const task = entries[0]!.resource;
       console.log(JSON.stringify(task, null, 2).substring(0, 1500));
     } else {
       console.log('\n⚠️ No tasks found for test patient');

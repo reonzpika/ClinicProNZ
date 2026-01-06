@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * ALEX API Validation via BFF
  * 
