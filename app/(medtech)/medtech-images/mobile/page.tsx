@@ -245,7 +245,9 @@ throw new Error('No encounter context');
         });
 
         if (!response.ok) {
-          throw new Error('Failed to get presigned URL');
+          // Parse error message from API
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || errorData.error || 'Failed to get presigned URL');
         }
 
         return await response.json();
