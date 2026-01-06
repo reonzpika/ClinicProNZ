@@ -17,7 +17,7 @@ import { useImageWidgetStore } from '../stores/imageWidgetStore';
 import type { WidgetImage } from '../types';
 
 export function useAblySessionSync(encounterId: string | null | undefined) {
-  const { addImage, sessionImages } = useImageWidgetStore();
+  const { addImage } = useImageWidgetStore();
   const ablyRef = useRef<AblyTypes.Realtime | null>(null);
   const hasInitialFetchRef = useRef(false);
 
@@ -69,16 +69,20 @@ export function useAblySessionSync(encounterId: string | null | undefined) {
         // Add images to store (if not already present)
         if (data.images && data.images.length > 0) {
           for (const img of data.images) {
-            // Check if image already exists in store
-            const exists = sessionImages.some(storeImg =>
-              storeImg.previewUrl === img.downloadUrl,
+            // Get CURRENT store state (avoid stale closure)
+            const currentImages = useImageWidgetStore.getState().sessionImages;
+            
+            // Check if image already exists in store (by s3Key, not downloadUrl)
+            const exists = currentImages.some(storeImg =>
+              storeImg.s3Key === img.s3Key,
             );
 
             if (!exists && img.downloadUrl) {
               const widgetImage: WidgetImage = {
                 id: nanoid(),
                 file: null, // No file object for mobile uploads
-                previewUrl: img.downloadUrl,
+                thumbnail: img.downloadUrl, // For ThumbnailStrip
+                previewUrl: img.downloadUrl, // For ImagePreview
                 s3Key: img.s3Key,
                 metadata: {
                   laterality: img.metadata?.laterality

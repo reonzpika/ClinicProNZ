@@ -126,7 +126,7 @@ export function ImagePreview({
         >
           <img
             ref={imageRef}
-            src={image?.preview || ''}
+            src={image.thumbnail || image.preview || image.previewUrl || ''}
             alt={image?.metadata.label || 'Clinical image'}
             className="max-h-full max-w-full select-none object-contain"
             style={{
@@ -134,6 +134,9 @@ export function ImagePreview({
               transition: isDragging ? 'none' : 'transform 0.2s',
             }}
             draggable={false}
+            onError={(e) => {
+              console.error('Failed to load image:', e);
+            }}
           />
         </div>
       </div>

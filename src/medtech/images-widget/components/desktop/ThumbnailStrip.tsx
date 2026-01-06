@@ -19,7 +19,7 @@ type ThumbnailStripProps = {
 };
 
 export function ThumbnailStrip({ currentImageId, onImageSelect, onErrorClick }: ThumbnailStripProps) {
-  const { sessionImages, removeImage } = useImageWidgetStore();
+  const { sessionImages, removeImage, encounterContext } = useImageWidgetStore();
 
   if (sessionImages.length === 0) {
     return (
@@ -40,7 +40,29 @@ export function ThumbnailStrip({ currentImageId, onImageSelect, onErrorClick }: 
             isCurrent={image.id === currentImageId}
             onClick={() => onImageSelect(image.id)}
             onErrorClick={hasCommitError && onErrorClick ? () => onErrorClick(image.id) : undefined}
-            onRemove={() => {
+            onRemove={async () => {
+              // If image is from session (has s3Key), delete from Redis
+              if (image.s3Key && encounterContext) {
+                try {
+                  const response = await fetch('/api/medtech/session/images/delete', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      encounterId: encounterContext.encounterId,
+                      s3Key: image.s3Key,
+                    }),
+                  });
+
+                  if (!response.ok) {
+                    console.error('[Delete Image] Failed to delete from session');
+                  }
+                }
+                catch (error) {
+                  console.error('[Delete Image] Error:', error);
+                }
+              }
+
+              // Remove from local state
               if (image.preview) {
                 URL.revokeObjectURL(image.preview);
               }
@@ -63,7 +85,7 @@ type ThumbnailCardProps = {
 
 function ThumbnailCard({ image, isCurrent, onClick, onErrorClick, onRemove }: ThumbnailCardProps) {
   // Badge logic: Yellow = validation error, Red = commit error, Green = committed
-  const isInvalid = !image.metadata.laterality || !image.metadata.bodySite;
+  const isInvalid = !image.metadata.notes || image.metadata.notes.trim() === '';
   const hasCommitError = image.status === 'error' || !!image.error;
 
   // Badge type: 'validation' (yellow), 'error' (red), 'committed' (green), or null

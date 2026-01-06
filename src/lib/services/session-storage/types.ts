@@ -32,6 +32,12 @@ export interface EncounterSession {
   /** Patient ID from Medtech */
   patientId: string;
 
+  /** Patient name (for display on mobile) */
+  patientName?: string;
+
+  /** Patient NHI (for display on mobile) */
+  patientNHI?: string;
+
   /** Facility ID */
   facilityId: string;
 
@@ -51,6 +57,12 @@ export interface SessionToken {
 
   /** Patient ID */
   patientId: string;
+
+  /** Patient name (for display on mobile) */
+  patientName?: string;
+
+  /** Patient NHI (for display on mobile) */
+  patientNHI?: string;
 
   /** Facility ID */
   facilityId: string;

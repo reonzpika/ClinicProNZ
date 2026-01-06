@@ -42,7 +42,6 @@ export function MetadataForm({ image, onPrevious, onNext, hasPrevious = false, h
 
   // Check if required fields are filled
   const hasLaterality = !!image.metadata.laterality;
-  const hasBodySite = !!image.metadata.bodySite;
 
   // Calculate rest images (all other uncommitted images)
   const restImages = sessionImages.filter((img) => {
@@ -63,20 +62,6 @@ export function MetadataForm({ image, onPrevious, onNext, hasPrevious = false, h
     targetIds.forEach((id) => {
       useImageWidgetStore.getState().updateMetadata(id, {
         laterality: image.metadata.laterality,
-      });
-    });
-    setError(null);
-  };
-
-  // Handle apply body site to rest
-  const handleApplyBodySite = () => {
-    if (!hasBodySite || restImages.length === 0) {
- return;
-}
-    const targetIds = restImages.map(img => img.id);
-    targetIds.forEach((id) => {
-      useImageWidgetStore.getState().updateMetadata(id, {
-        bodySite: image.metadata.bodySite,
       });
     });
     setError(null);
@@ -112,11 +97,9 @@ are required
         <MetadataChips
           imageId={image.id}
           onApplyLaterality={handleApplyLaterality}
-          onApplyBodySite={handleApplyBodySite}
           onApplyToSelected={handleApplyToSelected}
           restImagesCount={restImages.length}
           hasLaterality={hasLaterality}
-          hasBodySite={hasBodySite}
         />
       </div>
 

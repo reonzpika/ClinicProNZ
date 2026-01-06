@@ -28,7 +28,7 @@ import { redisSessionService } from '@/src/lib/services/session-storage';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { encounterId, patientId, facilityId } = body;
+    const { encounterId, patientId, facilityId, patientName, patientNHI } = body;
 
     // Validate required fields
     if (!encounterId || !patientId || !facilityId) {
@@ -42,6 +42,8 @@ export async function POST(request: NextRequest) {
       encounterId,
       patientId,
       facilityId,
+      hasPatientName: !!patientName,
+      hasPatientNHI: !!patientNHI,
     });
 
     // Step 1: Create encounter session in Redis
@@ -49,9 +51,11 @@ export async function POST(request: NextRequest) {
       encounterId,
       patientId,
       facilityId,
+      patientName,
+      patientNHI,
     );
 
-    // Step 2: Generate QR token (short-lived, 10 minutes)
+    // Step 2: Generate QR token (2-hour TTL)
     const token = crypto.randomUUID();
 
     // Step 3: Store token mapping in Redis
@@ -60,6 +64,8 @@ export async function POST(request: NextRequest) {
       encounterId,
       patientId,
       facilityId,
+      patientName,
+      patientNHI,
     );
 
     // Step 4: Generate mobile URL
@@ -79,7 +85,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       token,
       mobileUrl,
-      expiresIn: 600, // 10 minutes
+      expiresIn: 7200, // 2 hours
     });
   }
   catch (error) {

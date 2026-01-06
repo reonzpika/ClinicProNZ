@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2026-01-02"
-version: "1.5.0"
+last_updated: "2026-01-06"
+version: "1.6.0"
 tags:
   - integration
   - medtech
@@ -12,9 +12,9 @@ tags:
   - api
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 quick_reference:
-  current_phase: "Phase 1 - Mobile Upload & Dataflow Review"
-  status: "Architecture Complete | Implementation In Progress"
-  next_action: "Implement Redis + S3 session storage and mobile upload UI"
+  current_phase: "Phase 1B - Mobile Upload & Real-Time Sync"
+  status: "✅ Complete | All Tests Passing"
+  next_action: "Phase 1C - Commit images to ALEX API (FHIR Media resources)"
   key_blockers: []
   facility_id: "F2N060-E (API testing)"
 key_docs:
@@ -83,8 +83,8 @@ key_docs:
 ## AI Quick Reference
 
 **Current Phase**: Phase 1B - Mobile Upload & Real-Time Sync  
-**Status**: ✅ Implementation Complete | Ready for Testing  
-**Next Action**: Setup environment (S3 bucket + env vars) and run tests  
+**Status**: ✅ Complete | All Tests Passing  
+**Next Action**: Phase 1C - Commit images to ALEX API (FHIR Media resources)  
 **Key Blockers**: None  
 **Facility ID**: `F2N060-E` (API testing)  
 
@@ -340,6 +340,39 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 ## Recent Updates Summary
+
+### [2026-01-06] — ✅ Phase 1B Testing Complete & Production Ready
+
+**Testing Complete** (~3 hours across 2 days):
+- ✅ All 11 Phase 1B tests executed (Tests 1-8 manual, 9-11 passive)
+- ✅ 6 bugs identified and fixed during testing
+- ✅ Real-time sync working (mobile → desktop via Ably)
+- ✅ Image deletion from Redis implemented
+- ✅ QR code workflow validated (2-hour TTL)
+- ✅ 20 image per-session limit enforced
+- ✅ S3 lifecycle policy confirmed (24-hour auto-delete)
+
+**Bugs Fixed**:
+1. Duplicate images on upload (stale closure in useAblySessionSync)
+2. Deleted images reappearing after refresh (missing Redis DELETE API)
+3. QR panel not appearing (missing useEffect for auto-generation)
+4. Metadata schema mismatch (mobile: side/description → backend: laterality/notes)
+5. Side dropdown simplified (removed Bilateral/Not applicable, kept Left/Right only)
+6. Image limit error message now displays properly on mobile
+
+**Production Deployment**:
+- ✅ Deployed to: `https://www.clinicpro.co.nz/medtech-images`
+- ✅ CORS configured for production + preview URLs
+- ✅ Environment variables validated
+- ✅ End-to-end flow tested and working
+
+**Impact**:
+- Phase 1B fully functional and ready for GP use
+- Mobile upload → Desktop sync workflow validated
+- Data lifecycle confirmed (session: 2 hours, S3: 24 hours)
+- Ready to proceed to Phase 1C (FHIR commit)
+
+---
 
 ### [2026-01-02] — ✅ Phase 1B Implementation Complete (Redis + S3 + Mobile + Ably)
 
