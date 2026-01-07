@@ -126,6 +126,9 @@ app.post('/api/medtech/session/commit', async (req, res) => {
   const encounterId = body.encounterId
   const patientId = body.patientId
   const files = body.files
+  const correlationId = typeof body.correlationId === 'string' && body.correlationId.trim()
+    ? body.correlationId.trim()
+    : randomUUID()
 
   if (!encounterId || typeof encounterId !== 'string') {
     return res.status(400).json({ error: 'encounterId is required' })
@@ -212,9 +215,10 @@ app.post('/api/medtech/session/commit', async (req, res) => {
         clientRef,
         sizeBytes,
         contentType: mediaResource.content.contentType,
+        correlationId,
       })
 
-      const created = await alexApiClient.post('/Media', mediaResource)
+      const created = await alexApiClient.post('/Media', mediaResource, { correlationId })
       const mediaId = created?.id
 
       if (!mediaId) {
@@ -240,7 +244,82 @@ app.post('/api/medtech/session/commit', async (req, res) => {
   return res.json({
     files: results,
     durationMs: Date.now() - startTime,
+    correlationId,
   })
+})
+
+// ============================================================================
+// Medtech: Media Verification Endpoint (Phase 1D)
+// ============================================================================
+
+/**
+ * GET /api/medtech/media
+ *
+ * Purpose: Verify Media created via commit exists in ALEX, independent of Medtech UI.
+ *
+ * Query:
+ * - patient=<patientId> OR nhi=<NHI>
+ * - count=<number> (default 10)
+ * - _sort=<FHIR sort> (default -created)
+ *
+ * Notes:
+ * - Some servers support `patient`, others prefer `subject`.
+ * - We try `patient` first then fall back to `subject=Patient/{id}` if needed.
+ */
+app.get('/api/medtech/media', async (req, res) => {
+  const { patient, nhi, count = 10, _sort = '-created' } = req.query
+  const startTime = Date.now()
+  const correlationId = randomUUID()
+
+  try {
+    let patientId = patient
+
+    if (nhi && !patient) {
+      const patientBundle = await alexApiClient.get(
+        `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`,
+        { correlationId },
+      )
+      if (patientBundle.entry?.length > 0) {
+        patientId = patientBundle.entry[0].resource.id
+      } else {
+        return res.status(404).json({ success: false, error: 'Patient not found', correlationId })
+      }
+    }
+
+    if (!patientId) {
+      return res.status(400).json({ success: false, error: 'patient or nhi parameter required', correlationId })
+    }
+
+    // Try `patient` search param first.
+    let bundle = await alexApiClient.get(
+      `/Media?patient=${patientId}&_count=${count}&_sort=${encodeURIComponent(_sort)}`,
+      { correlationId },
+    )
+
+    // Fallback: some servers prefer `subject=Patient/{id}`.
+    if (!bundle?.entry || bundle.entry.length === 0) {
+      bundle = await alexApiClient.get(
+        `/Media?subject=Patient/${patientId}&_count=${count}&_sort=${encodeURIComponent(_sort)}`,
+        { correlationId },
+      )
+    }
+
+    res.json({
+      success: true,
+      duration: Date.now() - startTime,
+      correlationId,
+      patientId,
+      total: bundle.total ?? bundle.entry?.length ?? 0,
+      media: bundle.entry?.map(e => e.resource) || [],
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      duration: Date.now() - startTime,
+      correlationId,
+    })
+  }
 })
 
 // ============================================================================

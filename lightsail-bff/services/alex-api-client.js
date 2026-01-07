@@ -25,6 +25,9 @@ class AlexApiClient {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/fhir+json',
         'mt-facilityid': facilityId,
+        // Request tracing across BFF <-> ALEX.
+        // Documented in ALEX API reference as `mt-correlationid`.
+        'mt-correlationid': correlationId,
       }
 
       const requestOptions = { method, headers }

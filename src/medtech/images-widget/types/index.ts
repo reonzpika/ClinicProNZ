@@ -246,6 +246,11 @@ export type CommitRequest = {
 };
 
 export type CommitResponse = {
+  /**
+   * Correlation ID for tracing this commit through Vercel logs, BFF logs, and ALEX API.
+   * Useful when a commit "succeeds" but the Medtech UI does not show the expected result.
+   */
+  correlationId?: string;
   files: Array<{
     fileId: string;
     status: 'committed' | 'error';
