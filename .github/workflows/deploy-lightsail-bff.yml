@@ -9,6 +9,9 @@ on:
       - '.github/workflows/deploy-lightsail-bff.yml'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     name: Deploy BFF to Lightsail
@@ -130,7 +133,9 @@ jobs:
       - name: Comment on commit
         uses: peter-evans/commit-comment@v3
         if: success()
+        continue-on-error: true
         with:
+          sha: ${{ github.sha }}
           body: |
             ✅ **Lightsail BFF deployed successfully!**
             
