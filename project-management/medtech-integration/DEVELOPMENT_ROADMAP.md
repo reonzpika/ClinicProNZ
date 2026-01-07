@@ -1,10 +1,10 @@
 # Medtech Integration - Development Roadmap
 
 **Created**: 2025-11-12  
-**Last Updated**: 2026-01-02  
-**Status**: Phase 1 Complete | Ready for Testing  
+**Last Updated**: 2026-01-07  
+**Status**: Phase 1C Complete | Commit to ALEX working end-to-end  
 **Estimated Total Time**: 13-19 hours  
-**Current Phase**: Phase 1 Complete | Phase 2 Ready to Start
+**Current Phase**: Phase 1C ✅ Complete | Next: Phase 1D (Medtech UI validation + hardening + launch mechanism)
 
 **Feature Overview**: See [Clinical Images Feature Overview](./features/clinical-images/FEATURE_OVERVIEW.md) for architectural decisions and context.
 
@@ -12,7 +12,7 @@
 
 ## Quick Start - Next Development Session
 
-**Current Status**: ✅ POST Media Validated! Widget can upload images to Medtech ALEX API (201 Created)
+**Current Status**: ✅ Phase 1C Complete. Commit path creates FHIR `Media` in ALEX UAT via Lightsail BFF (static IP), working end-to-end (desktop + mobile).
 
 **Phase 1 Architecture Finalized** (2025-12-09):
 - Redis + S3 for session storage (supports 100+ concurrent GPs)
@@ -25,9 +25,12 @@
 - ✅ POST Media validated (widget can upload images)
 - ✅ Desktop widget complete (capture, edit, metadata, commit flow)
 - ✅ Architecture decisions finalized for 100+ concurrent scale
-- ⏳ Mobile upload needs real implementation (currently alert())
-- ⏳ Redis + S3 session storage needs implementation
-- ⏳ Backend integration needed (connect real ALEX API)
+- ✅ Redis + S3 session storage implemented (Upstash + AWS)
+- ✅ Mobile upload implemented (real backend, not alert())
+- ✅ Mobile → Desktop sync implemented (Ably)
+- ✅ Commit implemented via Lightsail BFF (`POST /api/medtech/session/commit`) and Vercel proxy (`POST /api/medtech/attachments/commit`)
+- ⏳ Confirm committed images appear in Medtech UI (Inbox/Daily Record) and validate workflow
+- ⏳ Widget launch mechanism needed (from within Medtech Evolution)
 
 **Test Environment**:
 - BFF URL: https://api.clinicpro.co.nz
@@ -64,11 +67,11 @@ This roadmap outlines the 3-phase development plan to complete the Medtech integ
 - ✅ POST Media validated (widget can upload images)
 - ✅ Desktop complete (capture, edit, metadata, commit flow, error handling)
 - ✅ Phase 1 architecture finalized (Redis + S3, Ably, scale assumptions)
-- ⏳ Redis + S3 session storage needs implementation
-- ⏳ Mobile upload needs real implementation (currently alert())
-- ⏳ Mobile → Desktop dataflow not implemented
+- ✅ Redis + S3 session storage implemented
+- ✅ Mobile upload implemented
+- ✅ Mobile → Desktop dataflow implemented
 - ⏳ Dataflow review needed (Desktop/Mobile → Medtech)
-- ⏳ Backend integration needed (connect real ALEX API)
+- ✅ Phase 1C commit working end-to-end (creates FHIR `Media` in ALEX UAT via Lightsail BFF)
 - ⏳ Widget launch mechanism needed
 
 ---
@@ -181,7 +184,7 @@ sessions/${token}/${timestamp}_${uuid}.jpg
 **Questions to Answer**:
 1. Does mobile need metadata entry? Or desktop only?
 2. Should mobile compress before upload or after?
-3. How long should QR session last? (currently mock)
+3. How long should QR session last? (currently 2-hour TTL; confirm desired TTL)
 
 ---
 
@@ -283,31 +286,29 @@ sessions/${token}/${timestamp}_${uuid}.jpg
 
 ## Phase 2: Complete the Integration (Backend)
 
-**Goal**: Connect frontend widget to real ALEX API via BFF  
+**Goal**: Connect frontend widget to real ALEX API via Lightsail BFF (static IP)  
 **Time Estimate**: 4-6 hours  
 **Priority**: Critical (enables end-to-end functionality)
 
-### 2.1 Update BFF Commit Endpoint - 2-3 hours
+### Phase 1C: Commit creates FHIR Media in ALEX via Lightsail BFF ✅ COMPLETE
 
-**Current State**: Mock implementation returning fake success  
-**Target State**: Real FHIR Media POST to ALEX API
+**Outcome**: End-to-end commit working (desktop + mobile). Vercel proxies to BFF only; BFF creates FHIR `Media` in ALEX UAT using base64 `content.data`.
 
-**Tasks**:
-- [ ] **Update commit route** (2 hours)
-  - File: `/app/api/(integration)/medtech/attachments/commit/route.ts`
-  - Add identifier generation (UUID)
-  - Add base64 conversion (from uploaded files)
-  - Build FHIR Media resource (per WIDGET_IMPLEMENTATION_REQUIREMENTS.md)
-  - POST to ALEX API via alexApiClient
-  - Handle 201 Created response
-  - Return Media IDs to frontend
-  
-- [ ] **Error handling** (1 hour)
-  - Handle 400 Bad Request (validation errors)
-  - Handle 401 Unauthorized (refresh token, retry)
-  - Handle 403 Forbidden (facility ID issue)
-  - Handle 503 Service Unavailable (retry with backoff)
-  - Map FHIR OperationOutcome to user-friendly errors
+**Implementation details (constraints)**:
+- ✅ **Mandatory identifier**: `Media.identifier[0].system = https://clinicpro.co.nz/image-id`; `value = UUID`
+- ✅ **No S3 URLs in FHIR**: Use `content.data` base64 (ALEX cannot fetch S3 URLs)
+- ✅ **Size enforcement**: Per-file `< 1MB` enforced in BFF
+- ✅ **Input sources supported**: `{ base64Data }` or `{ downloadUrl }` (BFF fetches and base64-encodes downloadUrl)
+
+**Completed tasks**:
+- ✅ **Lightsail BFF**: Added `POST /api/medtech/session/commit` that creates FHIR `Media` in ALEX UAT (static IP allow-listed)
+- ✅ **Vercel**: `POST /api/medtech/attachments/commit` proxies to BFF only; requires `patientId`; presigns mobile `s3Key` to `downloadUrl`
+- ✅ **Widget**: Commit sends commit-ready sources (desktop `base64Data`, mobile `s3Key`) and always includes `patientId`
+
+**Evidence (UAT + smoke tests)**:
+- Vercel log: `[Medtech Commit] Commit complete { duration: 3330, successCount: 2, errorCount: 0 }`
+- Direct smoke test mediaId example: `a4fcaddd4b8f24f377eca1c6b889ad76`
+- Health checks: `GET /health` OK; `GET /api/medtech/test?nhi=ZZZ0016` success
 
 **Code Example** (from WIDGET_IMPLEMENTATION_REQUIREMENTS.md):
 ```typescript
@@ -388,24 +389,15 @@ const response = await alexApiClient.post('/Media', mediaResource);
 
 ---
 
-### 2.2 Test with Real Images - 1-2 hours
+### Phase 1D (Proposed): Medtech UI validation + hardening + launch mechanism
+
+**Goal**: Confirm end-user workflow and make commit robust for pilot clinics.
 
 **Tasks**:
-- [ ] **Single image tests** (30 minutes)
-  - Test JPEG upload (< 1MB)
-  - Test PNG upload (< 1MB)
-  - Test large image (> 1MB, verify compression works)
-  
-- [ ] **Multiple image tests** (30 minutes)
-  - Test 3 images together
-  - Test 5 images together
-  - Verify all succeed
-  
-- [ ] **Error scenario tests** (1 hour)
-  - Test with invalid patient ID (should fail with clear error)
-  - Test with no internet connection (should show retry)
-  - Test with BFF down (should show retry)
-  - Test partial failure (intentionally break 1 of 3 images)
+- [ ] **Confirm in Medtech UI**: Verify committed images appear where expected (Inbox + Daily Record) and are usable for referrals
+- [ ] **Hardening**: Improve partial failure reporting (per-image errors), map OperationOutcome clearly, add request tracing/correlation IDs
+- [ ] **Launch mechanism**: Decide and implement widget launch path from within Medtech Evolution (context passing + auth)
+- [ ] **Optional workflow routing**: Decide any inbox/task routing behaviour (only if needed)
 
 **Test Patient** (UAT):
 - Patient ID: `14e52e16edb7a435bfa05e307afd008b`
@@ -424,21 +416,17 @@ const response = await alexApiClient.post('/Media', mediaResource);
 ### 2.3 Frontend Integration - 1 hour
 
 **Tasks**:
-- [ ] **Switch from mock to real API** (30 minutes)
-  - Update `NEXT_PUBLIC_MEDTECH_USE_MOCK=false` in environment variables
-  - Verify all API routes hit BFF (not mocks)
-  - File: `.env.local`, `.env.production`
+- ✅ **Commit route proxies to BFF only** (Phase 1C)
+  - Vercel `POST /api/medtech/attachments/commit` proxies to Lightsail BFF
+  - Requires `patientId`
+  - Presigns mobile `s3Key` to `downloadUrl` (BFF fetches and base64-encodes)
   
-- [ ] **Test end-to-end flow** (30 minutes)
-  - Launch widget with test patient ID
-  - Upload images
-  - Add metadata
-  - Commit
-  - Verify success feedback
-  - Check BFF logs for Media IDs
+- ✅ **End-to-end UAT (desktop + mobile)** (Phase 1C)
+  - Evidence: `[Medtech Commit] Commit complete { duration: 3330, successCount: 2, errorCount: 0 }`
+  - Example BFF smoke test mediaId: `a4fcaddd4b8f24f377eca1c6b889ad76`
 
 **Success Criteria**:
-- ✅ Images upload to real ALEX API (not mock)
+- ✅ Images upload to real ALEX API
 - ✅ User sees success message with count
 - ✅ Media IDs logged in BFF
 - ✅ Ready to verify in Medtech Evolution
@@ -646,7 +634,8 @@ if (!patientId) {
 ## Code Locations
 
 - Frontend Widget: `/src/medtech/images-widget/`
-- BFF Commit Endpoint: `/app/api/(integration)/medtech/attachments/commit/route.ts`
+- Vercel Commit Proxy: `/app/api/(integration)/medtech/attachments/commit/route.ts`
+- Lightsail BFF Commit Endpoint: `/api/medtech/session/commit` (Lightsail service; source in `/lightsail-bff/`)
 - Widget Page: `/app/(medtech)/medtech-images/page.tsx`
 - Mobile Page: `/app/(medtech)/medtech-images/mobile/page.tsx`
 - Store: `/src/medtech/images-widget/store/imageWidgetStore.ts`

@@ -12,9 +12,9 @@ tags:
   - api
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 quick_reference:
-  current_phase: "Phase 1C - Commit images to ALEX API (FHIR Media resources)"
-  status: "🔄 In Progress | Wiring real commit path via BFF"
-  next_action: "Deploy BFF + test Commit end-to-end (desktop + mobile)"
+  current_phase: "Phase 1C"
+  status: "✅ Complete | Commit to ALEX working end-to-end"
+  next_action: "Propose Phase 1D: verify Media appears in Medtech UI; tighten error handling and observability; decide widget launch mechanism and inbox/task routing (optional)"
   key_blockers: []
   facility_id: "F2N060-E (API testing)"
 key_docs:
@@ -83,9 +83,9 @@ key_docs:
 
 ## AI Quick Reference
 
-**Current Phase**: Phase 1C - Commit images to ALEX API (FHIR Media resources)  
-**Status**: 🔄 In Progress | Wiring real commit path via BFF  
-**Next Action**: Deploy BFF + test Commit end-to-end (desktop + mobile)  
+**Current Phase**: Phase 1C  
+**Status**: ✅ Complete | Commit to ALEX working end-to-end  
+**Next Action**: Propose Phase 1D: verify Media appears in Medtech UI; tighten error handling and observability; decide widget launch mechanism and inbox/task routing (optional)  
 **Key Blockers**: None  
 **Facility ID**: `F2N060-E` (API testing)  
 
@@ -215,29 +215,32 @@ Frontend (Vercel) → Commit API (Lightsail) → ALEX API (Medtech)
 - ✅ Infrastructure complete (OAuth, BFF, ALEX API connectivity)
 - ✅ POST Media validated (widget can upload images)
 - ✅ Desktop widget complete (capture, edit, metadata, commit flow)
-- ⏳ Mobile upload needs real implementation (currently alert())
-- ⏳ Backend integration needed (connect real ALEX API)
-- ⏳ Widget launch mechanism needed
+- ✅ Mobile upload complete (real backend via Redis + S3) and sync to desktop working
+- ✅ Phase 1C complete: Commit creates FHIR `Media` in ALEX via Lightsail BFF (static IP)
+- ⏳ Confirm committed images appear in Medtech UI (Inbox/Daily Record) for real-world workflow
+- ⏳ Widget launch mechanism needed (from within Medtech Evolution)
 
 ### Remaining Questions
 
 1. **Widget launch mechanism** — How to launch widget from Medtech Evolution (iFrame, new tab, etc.)
 2. **Encounter context passing** — How to receive patient/encounter ID from Medtech
+3. **Workflow confirmation** — Confirm committed images appear in Medtech UI in the expected place (Inbox + Daily Record) and are usable for HealthLink/ALEX referrals
 
 ---
 
 ## Active Development
 
-**Current Phase**: Phase 1 - Mobile Upload & Dataflow Review (4-6 hours)
+**Current Phase**: Phase 1C - Commit creates FHIR Media in ALEX via Lightsail BFF ✅ COMPLETE
 
 **See**: DEVELOPMENT_ROADMAP.md for complete 3-phase plan (12-18 hours total)
 
 **Next Steps**:
-1. Mobile upload UI with real backend (replace alert())
-2. Mobile → Desktop dataflow (images sync automatically)
-3. Desktop/Mobile → Medtech dataflow documentation and review
+1. Phase 1D: confirm images appear in Medtech UI (Inbox/Daily Record) and validate end-user workflow
+2. Tighten error handling and observability (clear partial failure reporting, request tracing, OperationOutcome surfacing)
+3. Decide widget launch mechanism and rollout approach (Medtech integration point, authentication, URL signing)
+4. Optional: inbox/task routing decisions (if images need to land in a specific workflow bucket)
 
-**Target Completion**: End of Week (Nov 17, 2025)
+**Target Completion**: TBD (depends on Medtech UI validation access and launch mechanism decisions)
 
 ---
 
@@ -361,16 +364,40 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 
 ## Recent Updates Summary
 
-### [2026-01-07] — Phase 1C: Real Commit Path Implemented (BFF creates FHIR Media)
+### [2026-01-07] — ✅ Phase 1C Complete: Commit creates FHIR Media in ALEX via Lightsail BFF (desktop + mobile)
 
 **What changed**:
-- ✅ Added `POST /api/medtech/session/commit` to Lightsail BFF; creates FHIR `Media` in ALEX with mandatory `identifier` and `content.data` base64
-- ✅ Updated Vercel `POST /api/medtech/attachments/commit` to proxy to BFF only; presigns mobile `s3Key` to a short-lived `downloadUrl`
-- ✅ Updated widget commit hook to send commit-ready sources; desktop sends `base64Data`, mobile sends `s3Key`
+- ✅ **Lightsail BFF**: Added real endpoint `POST /api/medtech/session/commit` (static IP) that creates FHIR `Media` in ALEX UAT using:
+  - Mandatory `Media.identifier` with system `https://clinicpro.co.nz/image-id` and UUID value
+  - `content.data` base64 (no S3 URL references)
+  - Per-file size enforcement: `< 1MB`
+  - Accepts source either `{ base64Data }` or `{ downloadUrl }` (BFF fetches `downloadUrl` then base64-encodes)
+- ✅ **Vercel (Next.js)**: `POST /api/medtech/attachments/commit` now proxies to BFF only (no direct ALEX calls)
+  - Requires `patientId` in request
+  - For mobile images, presigns `s3Key` to a `downloadUrl` via existing `s3ImageService`
+- ✅ **Widget**: Commit sends commit-ready sources
+  - Desktop: converts `File` to `base64Data`
+  - Mobile: sends `s3Key`
+  - Always includes `patientId` in commit request
 
 **Key constraints honoured**:
 - Only Lightsail BFF calls ALEX (static IP); Vercel does not call ALEX anymore
-- Size re-check enforced in BFF before POST (max 1MB)
+- Size check enforced in BFF before POST (max 1MB)
+
+**What was tested (evidence)**:
+- **Direct BFF smoke test**:
+  - `POST https://api.clinicpro.co.nz/api/medtech/session/commit` returned `status: committed`
+  - Example `mediaId`: `a4fcaddd4b8f24f377eca1c6b889ad76`
+- **Widget UAT (via Vercel logs)**:
+  - `[Medtech Commit] Commit complete { duration: 3330, successCount: 2, errorCount: 0 }`
+  - `POST /api/medtech/attachments/commit` returned `200` with `successCount: 2, errorCount: 0`
+  - Session images endpoint returned `withDownloadUrls: 2`
+  - UI shows green tick (committed) on thumbnails
+- **Health checks (run from Windows)**:
+  - `GET https://api.clinicpro.co.nz/health` OK
+  - `GET https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016` success
+- **Test widget URL used**:
+  - `https://www.clinicpro.co.nz/medtech-images?encounterId=test-enc-001&patientId=14e52e16edb7a435bfa05e307afd008b&facilityId=F2N060-E`
 
 ### [2026-01-06] — 🆕 Task Completion Checker Feature Exploration Started
 
