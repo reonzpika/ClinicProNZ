@@ -4,6 +4,19 @@
 
 ---
 
+## [2026-01-07] — Documentation consolidation: single runbook in PROJECT_SUMMARY.md; Phase 1D test detail in ROADMAP; Media GET is often forbidden
+
+**What changed**:
+- **Docs minimised** for future work:
+  - `PROJECT_SUMMARY.md` is now the **single operational runbook** (how to run tests; where to look for logs).
+  - `DEVELOPMENT_ROADMAP.md` is the **only place** Phase 1D testing steps live.
+  - `PROJECT_RULES.md` updated with: **latest change wins**, **no duplication**, **archive aggressively**.
+- **Corrected assumption**: ALEX commonly forbids `GET /Media` (write-only); Media search is not a reliable verification path.
+
+**Impact**:
+- Less chance of missing the “right doc”; fewer active docs to maintain.
+- Phase 1D now explicitly validates via **Medtech Evolution UI** (Inbox + Daily Record) rather than relying on Media search.
+
 ## [2026-01-07] — Phase 1D UI Validation Unblocked: facilityId propagation + correlationId tracing + Media verify endpoint
 
 **Problem discovered**:
@@ -21,7 +34,7 @@
 
 **Impact**:
 - Phase 1D UI validation can be performed correctly against `F99669-C`.
-- If UI still shows nothing, you can now prove whether Media exists in ALEX for that facility (rules out environment mismatch immediately).
+- Note: ALEX may forbid Media searches; treat the “Media verify endpoint” as best-effort only, not a guaranteed source of truth.
 
 ## [2025-12-09] — UI/UX Specifications Complete + Medtech Evolution Integration Research
 
@@ -96,7 +109,7 @@
 - `ARCHITECTURE_AND_TESTING_GUIDE.md` → `infrastructure/architecture.md`
 - `TESTING_GUIDE_POSTMAN_AND_BFF.md` → `testing/testing-guide.md`
 - `STATUS_DETAILED.md` → `archive/STATUS_DETAILED.md` (deprecated)
-- `alex-api-review-2025-10-30.md` → `reference/alex-api.md`
+- `alex-api-review-2025-10-30.md` → `alex-api.md` (later moved to project root)
 - `GATEWAY_IMPLEMENTATION.md` → `reference/gateway-implementation.md`
 - `images-widget-prd.md` → `reference/product-requirements.md`
 - `FHIR_MCP_SERVER_SETUP.md` → `reference/fhir-mcp-setup.md`

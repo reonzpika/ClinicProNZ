@@ -50,16 +50,20 @@ app.get('/api/medtech/test', async (req, res) => {
     ? req.query.facilityId.trim()
     : null
   const startTime = Date.now()
+  const correlationId = randomUUID()
 
   try {
     const tokenInfo = oauthTokenService.getTokenInfo()
     const patientBundle = await alexApiClient.get(
       `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`,
-      { facilityId },
+      { facilityId, correlationId },
     )
+
+    const firstPatientId = patientBundle?.entry?.[0]?.resource?.id || null
 
     res.json({
       success: true,
+      correlationId,
       duration: Date.now() - startTime,
       tokenInfo: {
         isCached: tokenInfo.isCached,
@@ -70,12 +74,15 @@ app.get('/api/medtech/test', async (req, res) => {
         type: patientBundle.type,
         total: patientBundle.total,
         patientCount: patientBundle.entry?.length || 0,
+        // Minimal patient info for downstream testing (patientId is required by widget).
+        firstPatientId,
       },
     })
   } catch (error) {
     res.status(500).json({
       success: false,
       error: error.message,
+      correlationId,
       duration: Date.now() - startTime,
     })
   }

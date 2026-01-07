@@ -3,7 +3,7 @@ project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
 last_updated: "2026-01-07"
-version: "1.6.1"
+version: "1.7.0"
 tags:
   - integration
   - medtech
@@ -13,356 +13,73 @@ tags:
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 quick_reference:
   current_phase: "Phase 1D"
-  status: "Phase 1C ✅ complete; Phase 1D in progress (Medtech UI validation using local facility)"
-  next_action: "Re-run UI validation using facilityId F99669-C (local Evo) and test NHI ZZZ0016; confirm Media appears in Inbox + Daily Record; use BFF /api/medtech/media to verify Media exists if UI shows nothing"
-  key_blockers: []
+  status: "Phase 1C ✅ complete; Phase 1D in progress (Medtech Evolution UI validation using local facility)"
+  next_action: "Run Phase 1D UI validation (see DEVELOPMENT_ROADMAP.md): resolve local patientId for NHI ZZZ0016 in F99669-C; commit 1 image to F99669-C; confirm it appears in Medtech Evolution Inbox and Daily Record"
+  key_blockers:
+    - "Need local patientId for NHI ZZZ0016 in facility F99669-C"
+    - "ALEX often forbids GET /Media (write-only); do not rely on Media search for verification"
   facility_id: "F2N060-E (hosted UAT API testing) + F99669-C (local Medtech Evolution UI validation)"
 key_docs:
   project_rules: "PROJECT_RULES.md"
-  feature_overview: "features/clinical-images/FEATURE_OVERVIEW.md"
-  task_checker_overview: "features/task-completion-checker/FEATURE_OVERVIEW.md"
   roadmap: "DEVELOPMENT_ROADMAP.md"
-  architecture: "infrastructure/architecture.md"
-  oauth_config: "infrastructure/oauth-and-config.md"
-  bff_setup: "infrastructure/bff-setup.md"
-  testing: "testing/testing-guide.md"
-  gateway_implementation: "reference/gateway-implementation.md"
-  alex_api: "reference/alex-api.md"
+  changelog: "CHANGELOG.md"
+  alex_api: "alex-api.md"
 ---
 
-# 🚨 IMPORTANT: Read Project Rules First
-**Before working on this project, read**: [PROJECT_RULES.md](./PROJECT_RULES.md)
-
----
-
-# Medtech ALEX Integration
-
-## 📋 AI Documentation Update Instructions
-
-**After completing any task, update documentation as follows:**
-
-### 1. Update PROJECT_SUMMARY.md (Always Required)
-- **YAML frontmatter**: Update `last_updated` date, `quick_reference` fields (current_phase, status, next_action, key_blockers, facility_id)
-- **Recent Updates Summary**: Add entry at top of "Recent Updates Summary" section (last 3-5 major updates only)
-- **Current Status**: Update "Current Status" section if status changed
-- **Active Development**: Update "Active Development" section if phase/tasks changed
-- **Risks & Blockers**: Update if blockers resolved or new ones identified
-
-### 2. Update DEVELOPMENT_ROADMAP.md (When Tasks/Phases Change)
-- Mark completed tasks with ✅
-- Update phase status if phase completed
-- Update "Quick Start" section if environment/config changed
-- Update time estimates if actual time differs significantly
-
-### 3. Update STATUS_DETAILED.md (When Component Status Changes)
-- Update component status tables (Infrastructure, API Endpoints, Frontend Components)
-- Update Testing Status section if new tests completed
-- Update Deployment Status if deployment changed
-- **Do NOT add historical decisions/changes** — those go in CHANGELOG.md
-
-### 4. Update CHANGELOG.md (For All Significant Changes)
-- Add new entry at top with date
-- Include: what changed, why, impact, related docs updated
-- Move historical content from STATUS_DETAILED.md here if needed
-
-### 5. Update Other Docs (Only When Content Changes)
-- **TECHNICAL_CONFIG.md**: When config values, endpoints, or code structure changes
-- **UPDATE_ENV_VARIABLES.md**: When environment variables change
-- **TESTING_GUIDE_POSTMAN_AND_BFF.md**: When testing procedures change
-- **GATEWAY_IMPLEMENTATION.md**: When implementation details change
-
-### Rules
-- ✅ **Always update PROJECT_SUMMARY.md** after any task
-- ✅ **Update DEVELOPMENT_ROADMAP.md** when tasks/phases change
-- ✅ **Update STATUS_DETAILED.md** when component status changes
-- ✅ **Add to CHANGELOG.md** for all significant changes
-- ❌ **Do NOT add inter-document references** (only PROJECT_SUMMARY.md references other docs)
-- ❌ **Do NOT add historical decisions to STATUS_DETAILED.md** (use CHANGELOG.md)
+## Read order (for humans and AI)
+- `PROJECT_RULES.md` (hard constraints and workflow)
+- `PROJECT_SUMMARY.md` (this file; operational runbook)
+- `DEVELOPMENT_ROADMAP.md` (Phase plans; Phase 1D testing details live here)
+- `CHANGELOG.md` (history)
 
 ---
 
-## AI Quick Reference
+## Operational runbook (single source of truth)
 
-**Current Phase**: Phase 1C  
-**Status**: ✅ Complete | Commit to ALEX working end-to-end  
-**Next Action**: Propose Phase 1D: verify Media appears in Medtech UI; tighten error handling and observability; decide widget launch mechanism and inbox/task routing (optional)  
-**Key Blockers**: None  
-**Facility ID**: `F2N060-E` (API testing)  
+### Architecture (why there is a BFF)
+- **Vercel (Next.js)**: hosts the widget UI and non-ALEX endpoints (dynamic IP).
+- **Lightsail BFF** `api.clinicpro.co.nz`: the only component that calls **ALEX** (static IP allow-listed by Medtech).
 
-**Where to Find**:
-- **Project Rules**: [`PROJECT_RULES.md`](./PROJECT_RULES.md) - Read this first!
-- **Feature Overview**: [`features/clinical-images/FEATURE_OVERVIEW.md`](./features/clinical-images/FEATURE_OVERVIEW.md) - Architectural decisions
-- **Development Roadmap**: [`DEVELOPMENT_ROADMAP.md`](./DEVELOPMENT_ROADMAP.md) - Implementation tasks
-- **OAuth & Config**: [`infrastructure/oauth-and-config.md`](./infrastructure/oauth-and-config.md) - Environment setup
+### Environments and facility IDs (critical)
+- **`F2N060-E`**: Medtech hosted UAT facility. Use for API-only checks. This will not appear inside your local Medtech Evolution UI.
+- **`F99669-C`**: your local Medtech Evolution facility. Use for UI validation (Inbox and Daily Record).
 
----
+### Canonical endpoints
+- **BFF health**: `GET https://api.clinicpro.co.nz/health`
+- **ALEX connectivity test (via BFF)**: `GET https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016&facilityId=<FACILITY>`
+- **Commit to ALEX (via widget)**: widget calls Vercel route `POST /api/medtech/attachments/commit`, which proxies to BFF.
+- **Commit to ALEX (direct BFF, for smoke tests)**: `POST https://api.clinicpro.co.nz/api/medtech/session/commit`
 
-## Infrastructure & Deployment Context
+### Logs and tracing
+- **Vercel logs**: commit route logs correlationId and returned mediaIds.
+- **Lightsail logs**: `sudo journalctl -u clinicpro-bff -f`
+- **Correlation IDs**:
+  - Commit generates a `correlationId`.
+  - BFF forwards it to ALEX as `mt-correlationid`.
 
-**Last Updated**: 2025-12-15  
-**Purpose**: Document deployment architecture to avoid confusion in future sessions
+### Phase 1D UI validation (where to look)
+- **The detailed test steps live in** `DEVELOPMENT_ROADMAP.md` under Phase 1D.
+- **Key point**: for UI validation you must commit into `F99669-C`.
 
-### Deployment Architecture
+### How to resolve the local patientId for `ZZZ0016` in `F99669-C`
+- Call:
+  - `GET https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016&facilityId=F99669-C`
+- If the response does not include a patientId, update the BFF test endpoint to include it (Lightsail BFF `index.js` can return `patientBundle.entry[0].resource.id`) and redeploy, then re-run the call above.
 
-**Split Between Vercel and Lightsail BFF**
-
-The application is split across two hosting platforms due to Medtech's IP whitelisting requirement:
-
-**Vercel (Dynamic IP)**:
-- **Frontend**: Desktop widget + Mobile page
-- **API Routes**: Session management, S3 presigned URLs, Redis operations
-- **Location**: `/app/api/(integration)/medtech/session/*` (new endpoints for Phase 1)
-- **Deployment**: Auto-deploy on push to main branch (GitHub → Vercel)
-- **Why**: These endpoints don't call Medtech ALEX API, so dynamic IP is fine
-
-**Lightsail BFF (Static IP: 13.236.58.12)**:
-- **Commit Endpoint**: Upload images to Medtech ALEX API
-- **Location**: `/home/deployer/app/` on Lightsail server
-- **Source Code**: `/lightsail-bff/` in main repo (merged from separate repo 2026-01-02)
-- **Deployment**: Auto-deploy via GitHub Actions on push to `lightsail-bff/**`
-- **Why**: Medtech firewall requires whitelisted static IP for ALEX API access
-- **Restart**: `sudo systemctl restart clinicpro-bff`
-
-**Communication Flow**:
-```
-Frontend (Vercel) → Session API (Vercel) → Redis/S3
-Frontend (Vercel) → Commit API (Lightsail) → ALEX API (Medtech)
-```
-
-### Lightsail BFF Auto-Deploy (GitHub Actions)
-
-**Problem**: `rsync` failed with `Permission denied (13)` when running `sudo -u deployer rsync` from `/home/ubuntu/...` because `/home/ubuntu` is typically `0700`.
-
-**Fix**:
-- **Stage deploy upload** to: `/tmp/clinicpro-bff-staging-${SHA}` (where `${SHA}` is the commit SHA used by the workflow).
-- **Permissions**: `chmod -R a+rX` on the staging directory so `deployer` can traverse and read artefacts.
-- **Sync**: `sudo -u deployer rsync -a --delete` from staging to `/home/deployer/app`.
-  - **Rsync excludes**: `.env`, `node_modules`, `.git`, `.github`.
-- **Install**: `npm ci --production --no-audit`.
-- **Restart**: `systemctl restart clinicpro-bff`.
-- **Verify**: `systemctl is-active --quiet clinicpro-bff`.
-- **Failure diagnostics**: on failed start, capture `systemctl status` and recent `journalctl -u clinicpro-bff -n 50`.
-- **Cleanup**: remove the staging directory after deploy.
-
-**Important constraint**: No server-side `git pull` (avoids GitHub credential failures on the instance).
-
-**Outcome**: Lightsail deploy pipeline succeeds end-to-end; final workflow status green.
-
-**Key Files**:
-- **Desktop Widget**: `/app/(medtech)/medtech-images/page.tsx` (already implemented)
-- **Mobile Page**: `/app/(medtech)/medtech-images/mobile/page.tsx` (to be implemented)
-- **Store**: `/src/medtech/images-widget/stores/imageWidgetStore.ts` (existing, no rename needed)
-
-### Infrastructure Services (Already Configured)
-
-| Service | Status | Configuration |
-|---------|--------|---------------|
-| **Redis (Upstash)** | ✅ Active | `https://unique-stallion-12716.upstash.io` + REST token |
-| **Ably** | ✅ Active | Already integrated for real-time sync |
-| **AWS Account** | ✅ Active | Available for S3 bucket creation |
-| **Environment Variables** | ✅ Configured | All stored in Vercel dashboard |
-| **S3 Bucket** | ⏳ To Setup | See `features/clinical-images/SETUP_INSTRUCTIONS.md` |
-
-### Environment Configuration
-- **All environment variables**: Stored in Vercel dashboard (not .env files)
-- **API routes**: Access env vars via `process.env.*`
-- **Client components**: Use `NEXT_PUBLIC_*` prefix for browser access
-- **Deployment**: Auto-redeploy when env vars change (required)
-
-### Testing Configuration
-- **ALEX API Environment**: UAT (`https://alexapiuat.medtechglobal.com/FHIR`)
-- **Test Facility**: `F2N060-E` (Healthier Care)
-- **Test Patient**: NHI `ZZZ0016`, Patient ID `14e52e16edb7a435bfa05e307afd008b`
-- **OAuth**: Client credentials flow (tokens cached for 55 minutes)
-
-### Cost Estimate (Monthly)
-- **S3**: ~$0.31/month (Sydney region, 1-day lifecycle, ~100 GPs)
-- **Redis (Upstash)**: $0/month (free tier sufficient for ~10k commands/day)
-- **Ably**: $0/month (free tier: 200 connections, 100k messages/day)
-- **Vercel**: Existing plan (no additional cost)
-- **Total New Infrastructure**: ~$0.31/month
+### Known ALEX limitations that affect debugging
+- **`Media.identifier` is mandatory** on POST Media.
+- **Images must be < 1MB**.
+- **ALEX commonly forbids `GET /Media`** (write-only permissions); do not rely on Media search for verification. Prefer: commit, then verify in Medtech Evolution UI for Phase 1D.
 
 ---
 
-## Project Overview
-
-**Goal**: Build a clinical images widget that GPs launch from within Medtech Evolution/Medtech32 to capture/upload photos, which are then saved back to the patient's encounter in Medtech via ALEX API.
-
-**Status**: ✅ Code Complete | Integration In Progress
-
-**Key Value Proposition**: Enable GPs to capture clinical images directly from within Medtech, with images instantly available for HealthLink/ALEX referrals.
+## Current status (kept short)
+- **Phase 1C complete**: commit creates FHIR `Media` in ALEX via Lightsail BFF (static IP).
+- **Phase 1D in progress**: commit into local facility `F99669-C`, then confirm it appears in Medtech Evolution UI (Inbox and Daily Record).
 
 ---
 
-## Goals
-
-- **Primary**: Enable GPs to capture clinical images from within Medtech and save directly to patient encounters
-- **Secondary**: Provide mobile QR handoff for phone camera capture
-- **Technical**: Implement FHIR R4 integration with Medtech ALEX API via Integration Gateway
-
----
-
-## Current Status
-
-### Major Milestone: POST Media Validated! ✅ [2025-11-11]
-
-**Widget can upload images to Medtech!** POST Media endpoint working (201 Created). OAuth permissions verified, all critical endpoints tested.
-
-**For detailed status**: See STATUS_DETAILED.md
-
-### High-Level Achievements
-
-- ✅ Infrastructure complete (OAuth, BFF, ALEX API connectivity)
-- ✅ POST Media validated (widget can upload images)
-- ✅ Desktop widget complete (capture, edit, metadata, commit flow)
-- ✅ Mobile upload complete (real backend via Redis + S3) and sync to desktop working
-- ✅ Phase 1C complete: Commit creates FHIR `Media` in ALEX via Lightsail BFF (static IP)
-- ⏳ Confirm committed images appear in Medtech UI (Inbox/Daily Record) for real-world workflow
-- ⏳ Widget launch mechanism needed (from within Medtech Evolution)
-
-### Remaining Questions
-
-1. **Widget launch mechanism** — How to launch widget from Medtech Evolution (iFrame, new tab, etc.)
-2. **Encounter context passing** — How to receive patient/encounter ID from Medtech
-3. **Workflow confirmation** — Confirm committed images appear in Medtech UI in the expected place (Inbox + Daily Record) and are usable for HealthLink/ALEX referrals
-
----
-
-## Active Development
-
-**Current Phase**: Phase 1C - Commit creates FHIR Media in ALEX via Lightsail BFF ✅ COMPLETE
-
-**See**: DEVELOPMENT_ROADMAP.md for complete 3-phase plan (12-18 hours total)
-
-**Next Steps**:
-1. Phase 1D: confirm images appear in Medtech UI (Inbox/Daily Record) and validate end-user workflow
-2. Tighten error handling and observability (clear partial failure reporting, request tracing, OperationOutcome surfacing)
-3. Decide widget launch mechanism and rollout approach (Medtech integration point, authentication, URL signing)
-4. Optional: inbox/task routing decisions (if images need to land in a specific workflow bucket)
-
-**Target Completion**: TBD (depends on Medtech UI validation access and launch mechanism decisions)
-
----
-
-## Architecture Overview
-
-### Integration Flow
-
-```
-Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → Medtech Database
-```
-
-### Components
-
-1. **Medtech Evolution** (GP's Desktop — On-Premises) — Launches widget, passes encounter context
-2. **ClinicPro Images Widget** (Cloud — Vercel) — Frontend: React/Next.js, Desktop & Mobile capture
-3. **Integration Gateway** (Cloud — Lightsail BFF) — OAuth token management, FHIR ↔ REST translation
-4. **Medtech ALEX API** (Medtech Cloud) — OAuth 2.0 authentication, FHIR R4 API
-
-**For detailed architecture**: See ARCHITECTURE_AND_TESTING_GUIDE.md
-
----
-
-## Key Features
-
-- **Desktop**: Capture, edit, annotate, commit images to encounter
-- **Mobile**: QR handoff for phone camera capture
-- **Clinical Metadata**: Body site, laterality, view type, image classification
-- **Integration**: Images instantly available for HealthLink/ALEX referrals
-
----
-
-## Key Decisions & Findings
-
-### Architecture Decision: Integration Gateway [2025-10-31]
-
-**Chosen**: Integration Gateway abstraction layer
-
-**Rationale**: Decouples frontend from FHIR complexity, handles ALEX-specific quirks, enables provider flexibility, simplifies error handling.
-
-**Reference**: See GATEWAY_IMPLEMENTATION.md
-
-### BFF Deployment Strategy [2025-10-31]
-
-**Chosen**: Lightsail BFF with static IP (13.236.58.12)
-
-**Rationale**: Vercel serverless uses dynamic IPs (not allow-listed), BFF provides static IP for Medtech firewall allow-listing.
-
-### Clinical Metadata Limitation [2025-01-15]
-
-**Finding**: Optional Media FHIR elements (body site, laterality, view type, image classification) **cannot be mapped** to Medtech Inbox fields.
-
-**Recommendation**: Continue capturing metadata in frontend for UX, but don't expect it to appear in Medtech. Consider embedding in image if GPs need to see it in Medtech.
-
-### Encounter Linkage [2025-01-15]
-
-**Finding**: Each Media document written to Inbox automatically creates a Daily Record entry against the patient's record.
-
-**Implication**: No need to separately POST DocumentReference or link to encounter — Media resource handles this automatically.
-
----
-
-## Risks & Blockers
-
-### Current Blockers
-
-- None identified
-
-### Medium Risks
-
-- **Widget Launch Mechanism Undocumented** — Unclear how to launch widget from Medtech Evolution. Status: Medtech Evolution installed locally, can test launch mechanisms.
-
-### Resolved Blockers ✅
-
-- ~~ALEX API Firewall Blocking~~ — Resolved (Jan 15, 2025)
-- ~~Clinical Metadata Schema Unknown~~ — Clarified (Jan 15, 2025)
-- ~~UAT Environment Limitations~~ — Resolved (Jan 15, 2025)
-- ~~503 Service Unavailable~~ — Resolved (Nov 11, 2025) — Changed facility ID to `F2N060-E`
-- ~~Facility ID Configuration~~ — Resolved (Nov 11, 2025) — Using `F2N060-E` for testing
-
----
-
-## Resources & Navigation
-
-### Essential Docs (Start Here)
-
-- **🚨 PROJECT RULES**: [`PROJECT_RULES.md`](./PROJECT_RULES.md) - Read first! Constraints, workflow, hard rules
-- **📋 FEATURE OVERVIEW**: [`features/clinical-images/FEATURE_OVERVIEW.md`](./features/clinical-images/FEATURE_OVERVIEW.md) - Architectural decisions, technology stack
-- **📋 DEVELOPMENT ROADMAP**: [`DEVELOPMENT_ROADMAP.md`](./DEVELOPMENT_ROADMAP.md) - 3-phase plan (13-19 hours total) with Quick Start section
-- **⚙️ OAUTH & CONFIG**: [`infrastructure/oauth-and-config.md`](./infrastructure/oauth-and-config.md) - Environment setup, OAuth credentials
-
-### Technical Documentation
-
-**Infrastructure Documentation**:
-- **🏗️ Architecture Guide**: [`infrastructure/architecture.md`](./infrastructure/architecture.md) - **⭐ AUTHORITATIVE SOURCE for Facility ID decisions** - Complete architecture, facility IDs (F2N060-E vs F99669-C), testing approaches
-- **⚙️ OAuth & Config**: [`infrastructure/oauth-and-config.md`](./infrastructure/oauth-and-config.md) - OAuth credentials, environment variables setup, API endpoints
-- **🖥️ BFF Setup**: [`infrastructure/bff-setup.md`](./infrastructure/bff-setup.md) - Lightsail server configuration, operations, troubleshooting
-
-**Feature Documentation** (Clinical Images):
-- **📋 Implementation Requirements**: [`features/clinical-images/implementation-requirements.md`](./features/clinical-images/implementation-requirements.md) - Technical requirements for widget implementation
-- **🧪 Test Results**: [`features/clinical-images/test-results.md`](./features/clinical-images/test-results.md) - FHIR API test results (POST Media validated!)
-
-**Testing Documentation**:
-- **🧪 Testing Guide**: [`testing/testing-guide.md`](./testing/testing-guide.md) - Step-by-step testing instructions (Postman, BFF, OAuth)
-- **✅ OAuth Test Results**: [`testing/OAUTH_TEST_RESULTS.md`](./testing/OAUTH_TEST_RESULTS.md) - OAuth validation results
-
-**Reference Documentation** (Rarely Changing):
-- **📚 ALEX API Reference**: [`reference/alex-api.md`](./reference/alex-api.md) - Complete ALEX API documentation
-- **🏗️ Gateway Implementation**: [`reference/gateway-implementation.md`](./reference/gateway-implementation.md) - Gateway architecture and implementation details
-- **📋 Product Requirements**: [`reference/product-requirements.md`](./reference/product-requirements.md) - Product requirements document
-- **🛠️ FHIR MCP Setup**: [`reference/fhir-mcp-setup.md`](./reference/fhir-mcp-setup.md) - Development tool setup
-
-**Project History**:
-- **📜 Changelog**: [`CHANGELOG.md`](./CHANGELOG.md) - Full project history and major decisions
-
-### External Documentation
-
-- **ALEX API Documentation**: https://alexapidoc.medtechglobal.com/ (Source of Truth)
-- **Medtech Evolution User Guide**: https://insight.medtechglobal.com/download/user-guide-medtech-evolution-layout/ (Widget placement reference)
-
----
-
-## Recent Updates Summary
+## Recent updates (last 3-5 only)
 
 ### [2026-01-07] — Phase 1D Unblock: facilityId must be passed end-to-end (local Evo UI uses F99669-C) + tracing helpers
 
@@ -371,10 +88,7 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
   - Rationale: committing to hosted UAT facility (`F2N060-E`) will not appear in your local Medtech Evolution UI; UI validation requires your local facility (`F99669-C`)
 - ✅ **Request tracing**:
   - Commit now emits a `correlationId` (returned to client and logged) and BFF forwards it to ALEX as `mt-correlationid`
-- ✅ **Media verification helper** (BFF):
-  - `GET /api/medtech/media?patient=<id>&facilityId=<facility>`
-  - or `GET /api/medtech/media?nhi=ZZZ0016&facilityId=F99669-C`
-  - Purpose: prove Media exists in ALEX for the chosen facility even if the Medtech UI does not show it yet
+  - Note: ALEX often forbids `GET /Media`; treat Media search as non-authoritative unless proven working.
 
 **Why this matters**:
 - Prevents false negatives during Phase 1D (commit “success” but nothing in UI) caused by facility mismatch.

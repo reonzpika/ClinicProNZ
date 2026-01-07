@@ -6,7 +6,7 @@
 **Estimated Total Time**: 13-19 hours  
 **Current Phase**: Phase 1C ✅ Complete | Next: Phase 1D (Medtech UI validation + hardening + launch mechanism)
 
-**Feature Overview**: See [Clinical Images Feature Overview](./features/clinical-images/FEATURE_OVERVIEW.md) for architectural decisions and context.
+Note: detailed feature/spec docs have been archived to minimise active docs.
 
 ---
 
@@ -54,7 +54,7 @@ sudo journalctl -u clinicpro-bff -f
 sudo systemctl restart clinicpro-bff
 ```
 
-**Next Immediate Task**: Implement Redis + S3 session storage, then mobile upload UI
+**Next Immediate Task**: Phase 1D UI validation (commit to `F99669-C` and confirm in Medtech Evolution UI)
 
 ---
 
@@ -232,7 +232,7 @@ sessions/${token}/${timestamp}_${uuid}.jpg
 ### 1.3 Desktop/Mobile → Medtech Dataflow Review - 1 hour ✅ COMPLETE
 
 **Completed**: 2026-01-02  
-**Outcome**: Architecture documented in `PHASE_1B_COMPLETE.md`
+**Outcome**: Architecture documented in `archive/2026-01-07-consolidation/PHASE_1B_COMPLETE.md`
 
 **Tasks**:
 - [ ] **Map desktop flow** (20 minutes)
@@ -274,7 +274,7 @@ sessions/${token}/${timestamp}_${uuid}.jpg
 - ✅ Desktop/Mobile → Medtech dataflow documented
 - ✅ Redis + S3 session storage operational
 - ✅ Build successful, production-ready
-- ✅ Testing guide created (`PHASE_1B_TESTING.md`)
+- ✅ Testing guide created (`archive/2026-01-07-consolidation/PHASE_1B_TESTING.md`)
 - ✅ Ready to connect real ALEX API in Phase 2
 
 **Not Included** (deferred):
@@ -398,6 +398,49 @@ const response = await alexApiClient.post('/Media', mediaResource);
 - [ ] **Hardening**: Improve partial failure reporting (per-image errors), map OperationOutcome clearly, add request tracing/correlation IDs
 - [ ] **Launch mechanism**: Decide and implement widget launch path from within Medtech Evolution (context passing + auth)
 - [ ] **Optional workflow routing**: Decide any inbox/task routing behaviour (only if needed)
+
+#### Phase 1D testing steps (UI validation)
+
+**Why Phase 1D is different**:
+- API-only checks can use hosted facility `F2N060-E`, but **UI validation must commit into your local facility `F99669-C`**.
+- ALEX commonly forbids `GET /Media` (write-only); do not rely on Media search for verification. For Phase 1D the source of truth is the **Medtech Evolution UI**.
+
+**Step 1: Confirm ALEX connectivity for local facility**
+- Call:
+  - `GET https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016&facilityId=F99669-C`
+- Expected: `success: true` and `patientCount: 1`
+- If this fails: likely local facility connectivity (Hybrid Connection Manager/Azure Relay); use the returned/logged correlationId to trace in BFF logs.
+
+**Step 2: Resolve the local `patientId` for `ZZZ0016` in `F99669-C`**
+- Preferred: have the BFF test endpoint return the first matched patientId (from the Patient search Bundle).
+- If the endpoint response does not include patientId yet:
+  - Update the BFF `/api/medtech/test` response to include `firstPatientId = patientBundle.entry[0].resource.id`
+  - Deploy BFF
+  - Re-run Step 1 and copy `firstPatientId`
+
+**Step 3: Commit a single image via the widget to local facility**
+- Widget URL (desktop):
+  - `https://www.clinicpro.co.nz/medtech-images?facilityId=F99669-C&patientId=<LOCAL_PATIENT_ID>&encounterId=phase1d-ui-validate`
+- Upload 1 image (< 1MB); press Commit.
+- Record:
+  - commit `correlationId` (response/logs)
+  - created `mediaId` list (from logs)
+  - timestamp
+
+**Step 4: Verify in Medtech Evolution UI (source of truth for Phase 1D)**
+- Login: staff code **ADM**, blank password.
+- Ensure facility is **F99669-C**.
+- Open patient by NHI **ZZZ0016**.
+- Check:
+  - **Inbox**: item around commit timestamp; open; confirm image renders.
+  - **Daily Record**: entry around commit timestamp; open; confirm image renders.
+
+**Decision branch**
+- If commit succeeded and UI shows nothing:
+  - Treat as Medtech workflow expectation mismatch; investigate whether Inbox/Daily Record requires an “Inbox write back” (Communication/DocumentReference) rather than plain `POST /Media`.
+  - Capture: screenshots, correlationId, mediaIds, and relevant BFF logs.
+- If Step 1 fails:
+  - Facility connectivity is broken; check local Hybrid Connection Manager is running and reachable.
 
 **Test Patient** (Two contexts):
 
@@ -656,4 +699,4 @@ if (!patientId) {
 - Added Redis + S3 session storage implementation (Phase 1.0)
 - Updated time estimates: Phase 1 now 6-8 hours (was 4-6)
 - Updated total: 13-19 hours (was 12-18)
-- Added reference to FEATURE_OVERVIEW.md for architectural context
+- Documentation consolidated; detailed feature/spec docs archived
