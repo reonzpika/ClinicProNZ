@@ -8,6 +8,15 @@ import { medtechAPI } from '../services/mock-medtech-api';
 import { useImageWidgetStore } from '../stores/imageWidgetStore';
 import type { CommitRequest, WidgetImage } from '../types';
 
+async function fileToBase64DataUrl(file: File): Promise<string> {
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
 /**
  * Generate filename based on metadata
  */
@@ -74,36 +83,68 @@ export function useCommit() {
         setImageStatus(id, 'uploading');
       });
 
-      // Prepare commit request with renamed files
-      const request: CommitRequest = {
-        encounterId: encounterContext.encounterId,
-        files: imagesToCommit.map((img, index) => {
+      // Prepare commit request with commit-ready sources
+      const files: CommitRequest['files'] = await Promise.all(
+        imagesToCommit.map(async (img, index) => {
           // Generate filename based on metadata
           const newFilename = generateFilename(img, index);
 
           // Update file name in store for display
-          // Note: The actual file object is not sent in CommitRequest,
-          // but we update the name for consistency
-          if (img.file) {
-            useImageWidgetStore.getState().updateImage(img.id, {
-              file: new File([img.file], newFilename, { type: img.file.type }),
-            });
+          const renamedFile = img.file
+            ? new File([img.file], newFilename, { type: img.file.type })
+            : null;
+
+          if (img.file && renamedFile) {
+            useImageWidgetStore.getState().updateImage(img.id, { file: renamedFile });
           }
 
-          return {
-            fileId: img.id,
-            meta: {
-              label: img.metadata.label,
-              bodySite: img.metadata.bodySite,
-              laterality: img.metadata.laterality,
-              view: img.metadata.view,
-              type: img.metadata.type,
-            },
-            alsoInbox: img.commitOptions?.alsoInbox,
-            alsoTask: img.commitOptions?.alsoTask,
-            idempotencyKey: `${encounterContext.encounterId}:${img.id}`,
-          };
+          // Desktop: we still have a File; include base64.
+          if (renamedFile) {
+            const base64Data = await fileToBase64DataUrl(renamedFile);
+            return {
+              fileId: img.id,
+              contentType: renamedFile.type || 'image/jpeg',
+              source: { base64Data },
+              meta: {
+                label: img.metadata.label,
+                bodySite: img.metadata.bodySite,
+                laterality: img.metadata.laterality,
+                view: img.metadata.view,
+                type: img.metadata.type,
+              },
+              alsoInbox: img.commitOptions?.alsoInbox,
+              alsoTask: img.commitOptions?.alsoTask,
+              idempotencyKey: `${encounterContext.encounterId}:${img.id}`,
+            };
+          }
+
+          // Mobile: no File; use stored S3 key so server can presign.
+          if (img.s3Key) {
+            return {
+              fileId: img.id,
+              contentType: 'image/jpeg',
+              source: { s3Key: img.s3Key },
+              meta: {
+                label: img.metadata.label,
+                bodySite: img.metadata.bodySite,
+                laterality: img.metadata.laterality,
+                view: img.metadata.view,
+                type: img.metadata.type,
+              },
+              alsoInbox: img.commitOptions?.alsoInbox,
+              alsoTask: img.commitOptions?.alsoTask,
+              idempotencyKey: `${encounterContext.encounterId}:${img.id}`,
+            };
+          }
+
+          throw new Error(`Cannot commit image ${img.id}; missing File and s3Key`);
         }),
+      );
+
+      const request: CommitRequest = {
+        encounterId: encounterContext.encounterId,
+        patientId: encounterContext.patientId,
+        files,
       };
 
       // Commit to API

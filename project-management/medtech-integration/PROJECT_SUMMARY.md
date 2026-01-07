@@ -12,9 +12,9 @@ tags:
   - api
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 quick_reference:
-  current_phase: "Phase 1B - Mobile Upload & Real-Time Sync"
-  status: "✅ Complete | All Tests Passing"
-  next_action: "Phase 1C - Commit images to ALEX API (FHIR Media resources)"
+  current_phase: "Phase 1C - Commit images to ALEX API (FHIR Media resources)"
+  status: "🔄 In Progress | Wiring real commit path via BFF"
+  next_action: "Deploy BFF + test Commit end-to-end (desktop + mobile)"
   key_blockers: []
   facility_id: "F2N060-E (API testing)"
 key_docs:
@@ -83,9 +83,9 @@ key_docs:
 
 ## AI Quick Reference
 
-**Current Phase**: Phase 1B - Mobile Upload & Real-Time Sync  
-**Status**: ✅ Complete | All Tests Passing  
-**Next Action**: Phase 1C - Commit images to ALEX API (FHIR Media resources)  
+**Current Phase**: Phase 1C - Commit images to ALEX API (FHIR Media resources)  
+**Status**: 🔄 In Progress | Wiring real commit path via BFF  
+**Next Action**: Deploy BFF + test Commit end-to-end (desktop + mobile)  
 **Key Blockers**: None  
 **Facility ID**: `F2N060-E` (API testing)  
 
@@ -360,6 +360,17 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 ## Recent Updates Summary
+
+### [2026-01-07] — Phase 1C: Real Commit Path Implemented (BFF creates FHIR Media)
+
+**What changed**:
+- ✅ Added `POST /api/medtech/session/commit` to Lightsail BFF; creates FHIR `Media` in ALEX with mandatory `identifier` and `content.data` base64
+- ✅ Updated Vercel `POST /api/medtech/attachments/commit` to proxy to BFF only; presigns mobile `s3Key` to a short-lived `downloadUrl`
+- ✅ Updated widget commit hook to send commit-ready sources; desktop sends `base64Data`, mobile sends `s3Key`
+
+**Key constraints honoured**:
+- Only Lightsail BFF calls ALEX (static IP); Vercel does not call ALEX anymore
+- Size re-check enforced in BFF before POST (max 1MB)
 
 ### [2026-01-06] — 🆕 Task Completion Checker Feature Exploration Started
 

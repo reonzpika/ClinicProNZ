@@ -201,8 +201,26 @@ export type UploadInitiateResponse = {
 
 export type CommitRequest = {
   encounterId: string;
+  /**
+   * Patient ID is mandatory for real commit (Phase 1C).
+   * Must be provided by the widget encounter context; the server must not look it up from ALEX.
+   */
+  patientId: string;
   files: Array<{
     fileId: string;
+    /**
+     * Optional for commit-time mapping; used to select a sensible contentType when posting to FHIR.
+     */
+    contentType?: string;
+    /**
+     * Commit-ready source. Exactly one should be provided.
+     * - Desktop: base64Data (from File -> data URL or raw base64)
+     * - Mobile: s3Key (server will presign to a downloadUrl for the BFF to fetch)
+     */
+    source?: {
+      base64Data?: string;
+      s3Key?: string;
+    };
     meta: {
       title?: string;
       label?: string;

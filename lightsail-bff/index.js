@@ -2,9 +2,12 @@ require('dotenv').config()
 const express = require('express')
 const oauthTokenService = require('./services/oauth-token-service')
 const alexApiClient = require('./services/alex-api-client')
+const { randomUUID } = require('crypto')
 
 const app = express()
 app.use(express.json())
+
+const MAX_IMAGE_BYTES = 1024 * 1024 // 1MB
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -72,6 +75,172 @@ app.get('/api/medtech/test', async (req, res) => {
       duration: Date.now() - startTime,
     })
   }
+})
+
+// ============================================================================
+// Medtech: Commit session images to ALEX as FHIR Media
+// ============================================================================
+
+function stripDataUrlPrefix(base64OrDataUrl) {
+  if (typeof base64OrDataUrl !== 'string') return ''
+
+  // Supports: data:image/jpeg;base64,AAAA... and plain base64 AAAA...
+  const commaIndex = base64OrDataUrl.indexOf(',')
+  if (base64OrDataUrl.startsWith('data:') && commaIndex >= 0) {
+    return base64OrDataUrl.slice(commaIndex + 1).trim()
+  }
+  return base64OrDataUrl.trim()
+}
+
+async function downloadUrlToBase64(downloadUrl) {
+  const response = await fetch(downloadUrl, { method: 'GET' })
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => '')
+    throw new Error(`downloadUrl fetch failed: ${response.status} ${errorText}`.trim())
+  }
+
+  const arrayBuffer = await response.arrayBuffer()
+  const bytes = Buffer.from(arrayBuffer)
+  if (bytes.length > MAX_IMAGE_BYTES) {
+    throw new Error(`image too large: ${bytes.length} bytes (max ${MAX_IMAGE_BYTES})`)
+  }
+
+  const contentType = response.headers.get('content-type') || null
+  const base64 = bytes.toString('base64')
+
+  return { base64, contentType, sizeBytes: bytes.length }
+}
+
+function base64ToBytes(base64) {
+  try {
+    return Buffer.from(base64, 'base64')
+  } catch {
+    return null
+  }
+}
+
+app.post('/api/medtech/session/commit', async (req, res) => {
+  const startTime = Date.now()
+
+  const body = req.body || {}
+  const encounterId = body.encounterId
+  const patientId = body.patientId
+  const files = body.files
+
+  if (!encounterId || typeof encounterId !== 'string') {
+    return res.status(400).json({ error: 'encounterId is required' })
+  }
+  if (!patientId || typeof patientId !== 'string') {
+    return res.status(400).json({ error: 'patientId is required' })
+  }
+  if (!Array.isArray(files) || files.length === 0) {
+    return res.status(400).json({ error: 'files array is required' })
+  }
+
+  const results = []
+
+  for (const file of files) {
+    const clientRef = file?.clientRef
+
+    try {
+      if (!clientRef || typeof clientRef !== 'string') {
+        throw new Error('clientRef is required')
+      }
+
+      const source = file?.source || {}
+      const sourceBase64Data = source.base64Data
+      const sourceDownloadUrl = source.downloadUrl
+
+      let base64 = null
+      let contentType = null
+      let sizeBytes = null
+
+      if (typeof sourceBase64Data === 'string' && sourceBase64Data.length > 0) {
+        base64 = stripDataUrlPrefix(sourceBase64Data)
+        const bytes = base64ToBytes(base64)
+        if (!bytes) {
+          throw new Error('invalid base64Data')
+        }
+        sizeBytes = bytes.length
+        if (sizeBytes > MAX_IMAGE_BYTES) {
+          throw new Error(`image too large: ${sizeBytes} bytes (max ${MAX_IMAGE_BYTES})`)
+        }
+        contentType = typeof file?.contentType === 'string' ? file.contentType : null
+      } else if (typeof sourceDownloadUrl === 'string' && sourceDownloadUrl.length > 0) {
+        const downloaded = await downloadUrlToBase64(sourceDownloadUrl)
+        base64 = downloaded.base64
+        contentType = downloaded.contentType || (typeof file?.contentType === 'string' ? file.contentType : null)
+        sizeBytes = downloaded.sizeBytes
+      } else {
+        throw new Error('no image data provided (expected source.base64Data or source.downloadUrl)')
+      }
+
+      const now = new Date().toISOString()
+
+      const title =
+        (typeof file?.title === 'string' && file.title.trim() ? file.title.trim() : null)
+        || (typeof file?.meta?.label === 'string' && file.meta.label.trim() ? file.meta.label.trim() : null)
+        || undefined
+
+      const mediaResource = {
+        resourceType: 'Media',
+        identifier: [{
+          system: 'https://clinicpro.co.nz/image-id',
+          value: randomUUID(),
+        }],
+        status: 'completed',
+        type: {
+          coding: [{
+            system: 'http://terminology.hl7.org/CodeSystem/media-type',
+            code: 'image',
+            display: 'Image',
+          }],
+        },
+        subject: { reference: `Patient/${patientId}` },
+        encounter: { reference: `Encounter/${encounterId}` },
+        createdDateTime: now,
+        content: {
+          contentType: contentType || 'image/jpeg',
+          data: base64,
+          ...(title ? { title } : {}),
+        },
+      }
+
+      console.log('[Medtech Commit] Creating Media', {
+        encounterId,
+        patientId,
+        clientRef,
+        sizeBytes,
+        contentType: mediaResource.content.contentType,
+      })
+
+      const created = await alexApiClient.post('/Media', mediaResource)
+      const mediaId = created?.id
+
+      if (!mediaId) {
+        throw new Error('ALEX did not return Media.id')
+      }
+
+      results.push({
+        clientRef,
+        status: 'committed',
+        mediaId,
+        documentReferenceId: mediaId,
+        warnings: [],
+      })
+    } catch (error) {
+      results.push({
+        clientRef: typeof clientRef === 'string' ? clientRef : undefined,
+        status: 'error',
+        error: error instanceof Error ? error.message : 'Failed to commit file',
+      })
+    }
+  }
+
+  return res.json({
+    files: results,
+    durationMs: Date.now() - startTime,
+  })
 })
 
 // ============================================================================
