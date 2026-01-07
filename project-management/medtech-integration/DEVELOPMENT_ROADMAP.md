@@ -399,11 +399,18 @@ const response = await alexApiClient.post('/Media', mediaResource);
 - [ ] **Launch mechanism**: Decide and implement widget launch path from within Medtech Evolution (context passing + auth)
 - [ ] **Optional workflow routing**: Decide any inbox/task routing behaviour (only if needed)
 
-**Test Patient** (UAT):
+**Test Patient** (Two contexts):
+
+**A) Hosted UAT (API-only checks; not visible in your local Medtech Evolution UI)**
+- Facility: `F2N060-E`
 - Patient ID: `14e52e16edb7a435bfa05e307afd008b`
-- NHI: ZZZ0016
+- NHI: `ZZZ0016`
 - Name: Mr UNRELATED STRING TESTING
-- Facility: F2N060-E
+
+**B) Local Medtech Evolution UI validation (Inbox + Daily Record)**
+- Facility: `F99669-C`
+- Test NHI: `ZZZ0016`
+- Patient ID: resolve via ALEX for this facility before commit
 
 **Verification**:
 - Check BFF logs: `sudo journalctl -u clinicpro-bff -f`

@@ -1,6 +1,6 @@
 # Medtech Integration - Project Rules
 
-**Last Updated**: 2025-12-09
+**Last Updated**: 2026-01-07
 
 ---
 
@@ -40,8 +40,13 @@
 - ❌ **Images must be <1MB** - Compress before upload
 
 ### Testing
-- ❌ **Always use test facility F2N060-E** - Don't use production facility IDs in development
-- ❌ **Test patient ID**: 14e52e16edb7a435bfa05e307afd008b (NHI: ZZZ0016)
+- ❌ **Never use production facility IDs in development**
+- ✅ **Facility selection depends on what you are validating**:
+  - **API-only integration checks (OAuth, FHIR request/response formats)**: use `F2N060-E` (Medtech hosted test facility)
+  - **Medtech Evolution UI validation (Inbox + Daily Record visible in your installed Evo app)**: use `F99669-C` (your local facility)
+- ✅ **Test patient identifiers**:
+  - **UAT hosted facility (`F2N060-E`)**: Patient ID `14e52e16edb7a435bfa05e307afd008b`, NHI `ZZZ0016`
+  - **Local facility (`F99669-C`)**: Test NHI `ZZZ0016` (resolve Patient ID via ALEX for this facility before committing)
 
 ### Sessions
 - ❌ **Sessions are temporary** - 10-minute lifetime, not persistent storage

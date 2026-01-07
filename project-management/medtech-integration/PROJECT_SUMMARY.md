@@ -12,11 +12,11 @@ tags:
   - api
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 quick_reference:
-  current_phase: "Phase 1C"
-  status: "✅ Complete | Commit to ALEX working end-to-end"
-  next_action: "Propose Phase 1D: verify Media appears in Medtech UI; tighten error handling and observability; decide widget launch mechanism and inbox/task routing (optional)"
+  current_phase: "Phase 1D"
+  status: "Phase 1C ✅ complete; Phase 1D in progress (Medtech UI validation using local facility)"
+  next_action: "Re-run UI validation using facilityId F99669-C (local Evo) and test NHI ZZZ0016; confirm Media appears in Inbox + Daily Record; use BFF /api/medtech/media to verify Media exists if UI shows nothing"
   key_blockers: []
-  facility_id: "F2N060-E (API testing)"
+  facility_id: "F2N060-E (hosted UAT API testing) + F99669-C (local Medtech Evolution UI validation)"
 key_docs:
   project_rules: "PROJECT_RULES.md"
   feature_overview: "features/clinical-images/FEATURE_OVERVIEW.md"
@@ -363,6 +363,21 @@ Medtech Evolution → ClinicPro Widget → Integration Gateway → ALEX API → 
 ---
 
 ## Recent Updates Summary
+
+### [2026-01-07] — Phase 1D Unblock: facilityId must be passed end-to-end (local Evo UI uses F99669-C) + tracing helpers
+
+**What changed**:
+- ✅ **Commit now requires `facilityId` end-to-end** (widget → Vercel → Lightsail BFF → ALEX header `mt-facilityid`)
+  - Rationale: committing to hosted UAT facility (`F2N060-E`) will not appear in your local Medtech Evolution UI; UI validation requires your local facility (`F99669-C`)
+- ✅ **Request tracing**:
+  - Commit now emits a `correlationId` (returned to client and logged) and BFF forwards it to ALEX as `mt-correlationid`
+- ✅ **Media verification helper** (BFF):
+  - `GET /api/medtech/media?patient=<id>&facilityId=<facility>`
+  - or `GET /api/medtech/media?nhi=ZZZ0016&facilityId=F99669-C`
+  - Purpose: prove Media exists in ALEX for the chosen facility even if the Medtech UI does not show it yet
+
+**Why this matters**:
+- Prevents false negatives during Phase 1D (commit “success” but nothing in UI) caused by facility mismatch.
 
 ### [2026-01-07] — ✅ Phase 1C Complete: Commit creates FHIR Media in ALEX via Lightsail BFF (desktop + mobile)
 
