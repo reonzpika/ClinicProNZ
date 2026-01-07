@@ -12,10 +12,13 @@ class AlexApiClient {
       method = 'GET',
       body,
       correlationId = randomUUID(),
+      facilityId,
     } = options
 
     const baseUrl = process.env.MEDTECH_API_BASE_URL
-    const facilityId = process.env.MEDTECH_FACILITY_ID
+    const effectiveFacilityId =
+      (typeof facilityId === 'string' && facilityId.trim() ? facilityId.trim() : null)
+      || process.env.MEDTECH_FACILITY_ID
     const url = `${baseUrl}${endpoint}`
 
     try {
@@ -24,7 +27,10 @@ class AlexApiClient {
       const headers = {
         'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/fhir+json',
-        'mt-facilityid': facilityId,
+        'mt-facilityid': effectiveFacilityId,
+        // Request tracing across BFF <-> ALEX.
+        // Documented in ALEX API reference as `mt-correlationid`.
+        'mt-correlationid': correlationId,
       }
 
       const requestOptions = { method, headers }

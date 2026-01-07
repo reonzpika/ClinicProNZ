@@ -206,6 +206,11 @@ export type CommitRequest = {
    * Must be provided by the widget encounter context; the server must not look it up from ALEX.
    */
   patientId: string;
+  /**
+   * Facility ID for the target Medtech environment.
+   * Critical for Phase 1D: your local Medtech Evolution UI may be a different facility (eg F99669-C).
+   */
+  facilityId: string;
   files: Array<{
     fileId: string;
     /**
@@ -246,6 +251,11 @@ export type CommitRequest = {
 };
 
 export type CommitResponse = {
+  /**
+   * Correlation ID for tracing this commit through Vercel logs, BFF logs, and ALEX API.
+   * Useful when a commit "succeeds" but the Medtech UI does not show the expected result.
+   */
+  correlationId?: string;
   files: Array<{
     fileId: string;
     status: 'committed' | 'error';

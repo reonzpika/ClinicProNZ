@@ -4,6 +4,25 @@
 
 ---
 
+## [2026-01-07] — Phase 1D UI Validation Unblocked: facilityId propagation + correlationId tracing + Media verify endpoint
+
+**Problem discovered**:
+- Commits were succeeding but nothing appeared in Medtech Evolution UI.
+- Root cause: commits were being written to **hosted UAT facility `F2N060-E`**, while the installed Medtech Evolution instance uses **local facility `F99669-C`**; you cannot see `F2N060-E` data inside the local UI.
+
+**Changes made**:
+- **Commit now requires `facilityId` end-to-end** (widget → Vercel → Lightsail BFF → ALEX `mt-facilityid`)
+- **Tracing added**:
+  - `correlationId` returned/logged for commits
+  - BFF forwards `mt-correlationid` to ALEX
+- **Verification endpoint added (BFF)**:
+  - `GET /api/medtech/media?patient=<id>&facilityId=<facilityId>`
+  - or `GET /api/medtech/media?nhi=ZZZ0016&facilityId=F99669-C`
+
+**Impact**:
+- Phase 1D UI validation can be performed correctly against `F99669-C`.
+- If UI still shows nothing, you can now prove whether Media exists in ALEX for that facility (rules out environment mismatch immediately).
+
 ## [2025-12-09] — UI/UX Specifications Complete + Medtech Evolution Integration Research
 
 **Completed**:
