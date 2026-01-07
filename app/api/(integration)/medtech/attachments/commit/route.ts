@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
 
     // Phase 1C requirement: patientId must be provided by widget context.
     // We do NOT look up Patient from ALEX inside Vercel.
-    if (!(body as unknown as { patientId?: string }).patientId) {
+    if (!body.patientId) {
       return NextResponse.json(
         { error: 'patientId is required' },
         { status: 400 },
@@ -78,11 +78,11 @@ export async function POST(request: NextRequest) {
       fileCount: body.files.length,
     });
 
-    const patientId = (body as unknown as { patientId: string }).patientId;
+    const { patientId } = body;
 
     // Batch presign download URLs for mobile images (s3Key -> downloadUrl).
     const s3KeysToPresign = body.files
-      .map(f => (f as unknown as { source?: { s3Key?: string } }).source?.s3Key)
+      .map(f => f.source?.s3Key)
       .filter((k): k is string => !!k);
 
     const presignedMap = s3KeysToPresign.length > 0
@@ -93,8 +93,7 @@ export async function POST(request: NextRequest) {
     const bffFiles: BffCommitRequest['files'] = [];
 
     for (const file of body.files) {
-      const source = (file as unknown as { source?: { base64Data?: string; s3Key?: string } }).source;
-      const contentType = (file as unknown as { contentType?: string }).contentType;
+      const { source, contentType } = file;
 
       if (source?.base64Data) {
         bffFiles.push({
