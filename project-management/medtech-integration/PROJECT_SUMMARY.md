@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2026-01-06"
-version: "1.6.0"
+last_updated: "2026-01-07"
+version: "1.6.1"
 tags:
   - integration
   - medtech
@@ -128,6 +128,25 @@ The application is split across two hosting platforms due to Medtech's IP whitel
 Frontend (Vercel) → Session API (Vercel) → Redis/S3
 Frontend (Vercel) → Commit API (Lightsail) → ALEX API (Medtech)
 ```
+
+### Lightsail BFF Auto-Deploy (GitHub Actions)
+
+**Problem**: `rsync` failed with `Permission denied (13)` when running `sudo -u deployer rsync` from `/home/ubuntu/...` because `/home/ubuntu` is typically `0700`.
+
+**Fix**:
+- **Stage deploy upload** to: `/tmp/clinicpro-bff-staging-${SHA}` (where `${SHA}` is the commit SHA used by the workflow).
+- **Permissions**: `chmod -R a+rX` on the staging directory so `deployer` can traverse and read artefacts.
+- **Sync**: `sudo -u deployer rsync -a --delete` from staging to `/home/deployer/app`.
+  - **Rsync excludes**: `.env`, `node_modules`, `.git`, `.github`.
+- **Install**: `npm ci --production --no-audit`.
+- **Restart**: `systemctl restart clinicpro-bff`.
+- **Verify**: `systemctl is-active --quiet clinicpro-bff`.
+- **Failure diagnostics**: on failed start, capture `systemctl status` and recent `journalctl -u clinicpro-bff -n 50`.
+- **Cleanup**: remove the staging directory after deploy.
+
+**Important constraint**: No server-side `git pull` (avoids GitHub credential failures on the instance).
+
+**Outcome**: Lightsail deploy pipeline succeeds end-to-end; final workflow status green.
 
 **Key Files**:
 - **Desktop Widget**: `/app/(medtech)/medtech-images/page.tsx` (already implemented)

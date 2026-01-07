@@ -2,8 +2,8 @@
 project_name: Projects Overview - Mission Control
 project_stage: Operational
 owner: AI Assistant
-last_updated: "2026-01-06"
-version: "4.0.1"
+last_updated: "2026-01-07"
+version: "4.0.2"
 tags:
   - dashboard
   - portfolio
@@ -140,6 +140,7 @@ Start minimal, add folders as project evolves.
 ### Recent Achievements Across Projects
 *[AI will auto-populate this section based on recent milestones and updates]*
 
+- **2026-01-07**: Medtech Integration - ✅ Lightsail BFF deploy fixed (GitHub Actions). SSH key handling now works in `appleboy/scp-action` and `appleboy/ssh-action` by writing the key into `${GITHUB_WORKSPACE}/lightsail.key` with container-readable permissions. Deploy artefacts now stage to `/tmp/clinicpro-bff-staging-${SHA}` (avoids `/home/ubuntu` 0700 traversal issues). Remote deploy uses `sudo -u deployer rsync` from staging to `/home/deployer/app`, runs `npm ci --production --no-audit`, restarts `clinicpro-bff`, and verifies `systemctl is-active --quiet clinicpro-bff`. Added failure diagnostics on service start (`systemctl status` + recent journal). Comment step fixed by adjusting workflow token permissions (`contents: write`) and making it non-blocking.
 - **2026-01-06**: Medtech Integration — 🆕 NEW FEATURE EXPLORATION: Task Completion Checker. Concept: AI-powered tool to extract tasks from consultation notes (labs, prescriptions, referrals) and flag incomplete ones at end of day. Approach: Hybrid (AI extracts, GP confirms, tool verifies). BFF test endpoints added for API validation. Feature folder created: `features/task-completion-checker/`. Next: Deploy BFF, run validation script to confirm note text is accessible.
 - **2026-01-06**: Medtech Integration - 🎉 PHASE 1B COMPLETE: Mobile upload & real-time sync fully tested and production-ready! All 11 tests passing. 6 bugs fixed during testing (duplicate images, metadata sync, QR workflow, image deletion). End-to-end flow validated: Mobile capture → S3 upload → Ably sync → Desktop display. Data lifecycle confirmed (session: 2 hours, S3: 24 hours). 20 image limit enforced. Production deployment: `https://www.clinicpro.co.nz/medtech-images`. Ready for Phase 1C (FHIR commit to ALEX API). Impact: Core workflow validated and ready for GP use.
 - **2026-01-02**: Project Management AI SaaS - 🎉 TODO INTEGRATION: Solved AI memory problem for long sessions. Integrated todo system as persistent checklist - AI cannot mark work "done" with pending todos. Final 3 todos always added when coding: (1) Build/test/fix errors, (2) Update documentation (PROJECT_SUMMARY + PROJECTS_OVERVIEW), (3) Update weekly log. Rules can be forgotten in long context, but incomplete todos remain visible. Immediately dogfooded during implementation (meta!). Examples updated to be generic and reusable for any task. `.cursor/rules/README.md` updated to v6.1.0 with full todo system documentation. Impact: Ensures quality control steps never skipped, even after 200+ message threads.
@@ -329,4 +330,4 @@ Start minimal, add folders as project evolves.
 
 ---
 
-*Dashboard Last Updated: [2026-01-06] - Medtech Integration: New feature exploration started (Task Completion Checker). BFF test endpoints added for API validation. Feature folder and documentation created.*
+*Dashboard Last Updated: [2026-01-07] - Lightsail BFF deploy pipeline fixed and made more reliable (staging in /tmp, rsync-as-deployer, stronger diagnostics).*
