@@ -144,6 +144,7 @@ export function useCommit() {
       const request: CommitRequest = {
         encounterId: encounterContext.encounterId,
         patientId: encounterContext.patientId,
+        facilityId: encounterContext.facilityId,
         files,
       };
 

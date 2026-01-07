@@ -46,12 +46,16 @@ app.get('/api/medtech/token-info', (req, res) => {
 // Medtech: Test FHIR connectivity
 app.get('/api/medtech/test', async (req, res) => {
   const nhi = req.query.nhi || 'ZZZ0016'
+  const facilityId = typeof req.query.facilityId === 'string' && req.query.facilityId.trim()
+    ? req.query.facilityId.trim()
+    : null
   const startTime = Date.now()
 
   try {
     const tokenInfo = oauthTokenService.getTokenInfo()
     const patientBundle = await alexApiClient.get(
-      `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`
+      `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`,
+      { facilityId },
     )
 
     res.json({
@@ -125,6 +129,9 @@ app.post('/api/medtech/session/commit', async (req, res) => {
   const body = req.body || {}
   const encounterId = body.encounterId
   const patientId = body.patientId
+  const facilityId = typeof body.facilityId === 'string' && body.facilityId.trim()
+    ? body.facilityId.trim()
+    : null
   const files = body.files
   const correlationId = typeof body.correlationId === 'string' && body.correlationId.trim()
     ? body.correlationId.trim()
@@ -212,13 +219,14 @@ app.post('/api/medtech/session/commit', async (req, res) => {
       console.log('[Medtech Commit] Creating Media', {
         encounterId,
         patientId,
+        facilityId: facilityId || process.env.MEDTECH_FACILITY_ID,
         clientRef,
         sizeBytes,
         contentType: mediaResource.content.contentType,
         correlationId,
       })
 
-      const created = await alexApiClient.post('/Media', mediaResource, { correlationId })
+      const created = await alexApiClient.post('/Media', mediaResource, { correlationId, facilityId })
       const mediaId = created?.id
 
       if (!mediaId) {
@@ -267,7 +275,7 @@ app.post('/api/medtech/session/commit', async (req, res) => {
  * - We try `patient` first then fall back to `subject=Patient/{id}` if needed.
  */
 app.get('/api/medtech/media', async (req, res) => {
-  const { patient, nhi, count = 10, _sort = '-created' } = req.query
+  const { patient, nhi, count = 10, _sort = '-created', facilityId } = req.query
   const startTime = Date.now()
   const correlationId = randomUUID()
 
@@ -277,7 +285,7 @@ app.get('/api/medtech/media', async (req, res) => {
     if (nhi && !patient) {
       const patientBundle = await alexApiClient.get(
         `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`,
-        { correlationId },
+        { correlationId, facilityId },
       )
       if (patientBundle.entry?.length > 0) {
         patientId = patientBundle.entry[0].resource.id
@@ -293,14 +301,14 @@ app.get('/api/medtech/media', async (req, res) => {
     // Try `patient` search param first.
     let bundle = await alexApiClient.get(
       `/Media?patient=${patientId}&_count=${count}&_sort=${encodeURIComponent(_sort)}`,
-      { correlationId },
+      { correlationId, facilityId },
     )
 
     // Fallback: some servers prefer `subject=Patient/{id}`.
     if (!bundle?.entry || bundle.entry.length === 0) {
       bundle = await alexApiClient.get(
         `/Media?subject=Patient/${patientId}&_count=${count}&_sort=${encodeURIComponent(_sort)}`,
-        { correlationId },
+        { correlationId, facilityId },
       )
     }
 

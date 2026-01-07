@@ -23,6 +23,7 @@ const BFF_BASE_URL = process.env.MEDTECH_BFF_URL || 'https://api.clinicpro.co.nz
 type BffCommitRequest = {
   encounterId: string;
   patientId: string;
+  facilityId: string;
   correlationId?: string;
   files: Array<{
     clientRef: string;
@@ -69,6 +70,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!body.facilityId) {
+      return NextResponse.json(
+        { error: 'facilityId is required' },
+        { status: 400 },
+      );
+    }
+
     if (!body.files || body.files.length === 0) {
       return NextResponse.json(
         { error: 'files array is required' },
@@ -80,9 +88,10 @@ export async function POST(request: NextRequest) {
       encounterId: body.encounterId,
       fileCount: body.files.length,
       correlationId,
+      facilityId: body.facilityId,
     });
 
-    const { patientId } = body;
+    const { patientId, facilityId } = body;
 
     // Batch presign download URLs for mobile images (s3Key -> downloadUrl).
     const s3KeysToPresign = body.files
@@ -153,6 +162,7 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         encounterId: body.encounterId,
         patientId,
+        facilityId,
         correlationId,
         files: bffFiles,
       } satisfies BffCommitRequest),
