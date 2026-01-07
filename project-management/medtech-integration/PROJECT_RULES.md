@@ -7,19 +7,26 @@
 ## Before Starting Work
 
 1. **Read PROJECT_RULES.md** (this file) first
-2. Read **PROJECT_SUMMARY.md** for current status
-3. Read relevant **feature's FEATURE_OVERVIEW.md** for architectural context
-4. Check **DEVELOPMENT_ROADMAP.md** for task details
+2. Read **PROJECT_SUMMARY.md** (single operational runbook + current status)
+3. Check **DEVELOPMENT_ROADMAP.md** for task details (Phase testing detail lives here)
+4. Use **CHANGELOG.md** to resolve conflicts (latest change wins)
 
 ---
 
 ## Documentation Update Workflow
 
+### Documentation Principles (Hard Rules)
+- ✅ **Minimise documents**: prefer merging into the smallest set of active docs
+- ✅ **Single operational runbook**: keep operational instructions only in `PROJECT_SUMMARY.md`
+- ✅ **No duplication**: do not repeat the same instructions across multiple docs
+- ✅ **Latest change wins**: when two docs disagree, the most recently updated statement is considered correct
+  - If unsure which is newest or what the intent was; ask the owner (you)
+- ✅ **Archive aggressively**: move superseded docs into `archive/` (prefer short stubs over copied content)
+
 ### Always Update (After Completing Any Task)
 - ✅ **PROJECT_SUMMARY.md** - Update quick reference, status, recent updates
 
 ### Update When Appropriate
-- **FEATURE_OVERVIEW.md** - Major architectural decisions or technology changes
 - **DEVELOPMENT_ROADMAP.md** - Task completion, phase changes, time estimate updates
 - **CHANGELOG.md** - Significant changes with date, what changed, impact
 
@@ -49,7 +56,10 @@
   - **Local facility (`F99669-C`)**: Test NHI `ZZZ0016` (resolve Patient ID via ALEX for this facility before committing)
 
 ### Sessions
-- ❌ **Sessions are temporary** - 10-minute lifetime, not persistent storage
+- ❌ **Sessions are temporary**
+  - QR token is short-lived (10 minutes)
+  - Encounter session storage is time-limited (currently 2 hours)
+  - Do not rely on sessions for long-term storage
 
 ---
 
