@@ -66,9 +66,9 @@
 ## Workflow Steps (Always Follow)
 
 ### When Making Architectural Decisions
-1. Document decision in FEATURE_OVERVIEW.md
-2. Update PROJECT_SUMMARY.md with reference
-3. Update DEVELOPMENT_ROADMAP.md if phases/tasks affected
+1. Record the decision in `CHANGELOG.md` (what changed; why; impact)
+2. Update `PROJECT_SUMMARY.md` if it changes operational runbook behaviour
+3. Update `DEVELOPMENT_ROADMAP.md` if phases/tasks are affected
 
 ### When Completing Tasks
 1. Mark task complete in DEVELOPMENT_ROADMAP.md
@@ -77,8 +77,8 @@
 
 ### When Discovering New Constraints
 1. Add to PROJECT_RULES.md (this file)
-2. Update FEATURE_OVERVIEW.md if architectural impact
-3. Update PROJECT_SUMMARY.md recent updates section
+2. Update `PROJECT_SUMMARY.md` if it changes how to operate/test/debug
+3. Add a note in `CHANGELOG.md` if it is a significant change
 
 ---
 
