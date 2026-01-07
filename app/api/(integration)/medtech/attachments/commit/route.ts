@@ -1,144 +1,50 @@
 /**
  * POST /api/medtech/attachments/commit
  *
- * Commit images to encounter via ALEX FHIR API
+ * Commit images to encounter via Lightsail BFF (static IP) which calls ALEX FHIR API.
  *
  * Flow:
- * 1. Get encounter and patient info from ALEX API
- * 2. Upload files to S3 (if needed)
- * 3. Create FHIR Media resources
- * 4. POST to ALEX API
+ * 1. Validate request includes encounterId + patientId
+ * 2. Ensure each file has a commit-ready source:
+ *    - Desktop: base64Data provided by the browser
+ *    - Mobile: s3Key is presigned to a downloadUrl (server-side), then passed to BFF
+ * 3. POST to BFF: /api/medtech/session/commit
  */
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { alexApiClient, generateCorrelationId } from '@/src/lib/services/medtech';
-import type { FhirEncounter, FhirMedia, FhirPatient } from '@/src/lib/services/medtech/types';
+import { s3ImageService } from '@/src/lib/services/session-storage';
 import type { CommitRequest, CommitResponse } from '@/src/medtech/images-widget/types';
 
-const BUCKET_NAME = process.env.S3_BUCKET_NAME!;
+const BFF_BASE_URL = process.env.MEDTECH_BFF_URL || 'https://api.clinicpro.co.nz';
 
-/**
- * Get encounter and patient info from ALEX API
- */
-async function getEncounterInfo(encounterId: string, correlationId: string): Promise<{
-  encounter: FhirEncounter;
-  patient: FhirPatient;
-}> {
-  // Get encounter
-  const encounter = await alexApiClient.get<FhirEncounter>(
-    `/Encounter/${encounterId}`,
-    { correlationId },
-  );
+type BffCommitRequest = {
+  encounterId: string;
+  patientId: string;
+  files: Array<{
+    clientRef: string;
+    contentType?: string;
+    title?: string;
+    meta?: unknown;
+    source:
+      | { base64Data: string }
+      | { downloadUrl: string };
+  }>;
+};
 
-  // Get patient reference from encounter
-  const patientRef = encounter.subject?.reference;
-  if (!patientRef) {
-    throw new Error('Encounter missing patient reference');
-  }
-
-  // Extract patient ID from reference (format: "Patient/123" or just "123")
-  const patientId = patientRef.includes('/') ? patientRef.split('/')[1] : patientRef;
-
-  // Get patient
-  const patient = await alexApiClient.get<FhirPatient>(
-    `/Patient/${patientId}`,
-    { correlationId },
-  );
-
-  return { encounter, patient };
-}
-
-/**
- * Create FHIR Media resource from file metadata
- */
-function createMediaResource(
-  s3Url: string,
-  contentType: string,
-  patientId: string,
-  encounterId: string,
-  metadata: CommitRequest['files'][0]['meta'],
-): FhirMedia {
-  const now = new Date().toISOString();
-
-  // Build Media resource
-  const media: FhirMedia = {
-    resourceType: 'Media',
-    status: 'completed',
-    type: {
-      coding: [{
-        system: 'http://terminology.hl7.org/CodeSystem/media-type',
-        code: 'photo',
-        display: 'Photo',
-      }],
-    },
-    subject: {
-      reference: `Patient/${patientId}`,
-    },
-    encounter: {
-      reference: `Encounter/${encounterId}`,
-    },
-    createdDateTime: now,
-    content: {
-      contentType: contentType || 'image/jpeg',
-      url: s3Url, // S3 URL - ALEX API will need to access this
-      // Note: Metadata (bodySite, laterality, view, type) cannot be mapped
-      // to Medtech Inbox fields per project findings. We include them
-      // in the resource for completeness, but they won't appear in Medtech.
-    },
-  };
-
-  // Add optional metadata (won't appear in Medtech Inbox, but included for completeness)
-  if (metadata.bodySite) {
-    media.bodySite = {
-      coding: metadata.bodySite.system
-? [{
-        system: metadata.bodySite.system,
-        code: metadata.bodySite.code,
-        display: metadata.bodySite.display,
-      }]
-: undefined,
-      text: metadata.bodySite.display,
-    };
-  }
-
-  if (metadata.laterality) {
-    media.modality = {
-      coding: metadata.laterality.system
-? [{
-        system: metadata.laterality.system,
-        code: metadata.laterality.code,
-        display: metadata.laterality.display,
-      }]
-: undefined,
-      text: metadata.laterality.display,
-    };
-  }
-
-  if (metadata.view) {
-    media.view = {
-      coding: metadata.view.system
-? [{
-        system: metadata.view.system,
-        code: metadata.view.code,
-        display: metadata.view.display,
-      }]
-: undefined,
-      text: metadata.view.display,
-    };
-  }
-
-  // Add title/label if provided
-  if (metadata.title || metadata.label) {
-    media.content.title = metadata.title || metadata.label;
-  }
-
-  return media;
-}
+type BffCommitResponse = {
+  files: Array<{
+    clientRef: string;
+    status: 'committed' | 'error';
+    mediaId?: string;
+    documentReferenceId?: string;
+    warnings?: string[];
+    error?: string;
+  }>;
+};
 
 export async function POST(request: NextRequest) {
-  const correlationId = generateCorrelationId();
   const startTime = Date.now();
 
   try {
@@ -151,6 +57,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Phase 1C requirement: patientId must be provided by widget context.
+    // We do NOT look up Patient from ALEX inside Vercel.
+    if (!(body as unknown as { patientId?: string }).patientId) {
+      return NextResponse.json(
+        { error: 'patientId is required' },
+        { status: 400 },
+      );
+    }
+
     if (!body.files || body.files.length === 0) {
       return NextResponse.json(
         { error: 'files array is required' },
@@ -159,116 +74,138 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('[Medtech Commit] Starting commit', {
-      correlationId,
       encounterId: body.encounterId,
       fileCount: body.files.length,
     });
 
-    // Step 1: Get encounter and patient info
-    const { encounter, patient } = await getEncounterInfo(body.encounterId, correlationId);
-    const patientId = patient.id || encounter.subject?.reference?.split('/')[1];
+    const patientId = (body as unknown as { patientId: string }).patientId;
 
-    if (!patientId) {
-      throw new Error('Unable to determine patient ID from encounter');
-    }
+    // Batch presign download URLs for mobile images (s3Key -> downloadUrl).
+    const s3KeysToPresign = body.files
+      .map(f => (f as unknown as { source?: { s3Key?: string } }).source?.s3Key)
+      .filter((k): k is string => !!k);
 
-    console.log('[Medtech Commit] Got encounter info', {
-      correlationId,
-      encounterId: encounter.id,
-      patientId,
-    });
+    const presignedMap = s3KeysToPresign.length > 0
+      ? await s3ImageService.generatePresignedDownloadUrls(s3KeysToPresign)
+      : new Map<string, { downloadUrl: string; expiresAt: number }>();
 
-    // Step 2: Process each file
-    // NOTE: Current implementation assumes files are uploaded to S3 first via upload-initiate endpoint.
-    // The fileId should map to an S3 key. If files aren't uploaded yet, we need to modify the flow.
-    const results: CommitResponse['files'] = [];
+    const localErrors = new Map<string, CommitResponse['files'][number]>();
+    const bffFiles: BffCommitRequest['files'] = [];
 
     for (const file of body.files) {
-      try {
-        // TODO: Files need to be uploaded to S3 first via upload-initiate endpoint.
-        // For now, we'll construct S3 key from fileId.
-        // In production, upload-initiate should return S3 keys that map to fileIds.
-        const s3Key = `medtech-images/${body.encounterId}/${file.fileId}.jpg`;
+      const source = (file as unknown as { source?: { base64Data?: string; s3Key?: string } }).source;
+      const contentType = (file as unknown as { contentType?: string }).contentType;
 
-        // Generate presigned URL for S3 object (read access)
-        // Note: ALEX API needs to access this URL, so it should be publicly accessible
-        // or we need to configure ALEX API with S3 access credentials
-        const s3Url = `https://${BUCKET_NAME}.s3.${process.env.AWS_REGION || 'ap-southeast-2'}.amazonaws.com/${s3Key}`;
-
-        // Step 3: Create Media resource
-        const mediaResource = createMediaResource(
-          s3Url,
-          'image/jpeg', // TODO: Get from file metadata
-          patientId,
-          body.encounterId,
-          file.meta,
-        );
-
-        console.log('[Medtech Commit] Creating Media resource', {
-          correlationId,
-          fileId: file.fileId,
-          mediaId: mediaResource.id,
+      if (source?.base64Data) {
+        bffFiles.push({
+          clientRef: file.fileId,
+          contentType: contentType || 'image/jpeg',
+          title: file.meta?.title,
+          meta: file.meta,
+          source: { base64Data: source.base64Data },
         });
-
-        // Step 4: POST to ALEX API
-        const createdMedia = await alexApiClient.post<FhirMedia>(
-          '/Media',
-          mediaResource,
-          { correlationId },
-        );
-
-        console.log('[Medtech Commit] Media created successfully', {
-          correlationId,
-          fileId: file.fileId,
-          mediaId: createdMedia.id,
-        });
-
-        // Success
-        results.push({
-          fileId: file.fileId,
-          status: 'committed',
-          documentReferenceId: createdMedia.id, // Media ID serves as document reference
-          mediaId: createdMedia.id,
-          // Note: Inbox and Task creation would happen here if needed
-          // but for MVP, Media resource automatically creates Daily Record entry
-          warnings: [],
-        });
-      } catch (error) {
-        console.error('[Medtech Commit] File commit failed', {
-          correlationId,
-          fileId: file.fileId,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
-
-        results.push({
-          fileId: file.fileId,
-          status: 'error',
-          error: error instanceof Error ? error.message : 'Failed to commit file',
-        });
+        continue;
       }
+
+      if (source?.s3Key) {
+        const presigned = presignedMap.get(source.s3Key);
+        if (!presigned?.downloadUrl) {
+          localErrors.set(file.fileId, {
+            fileId: file.fileId,
+            status: 'error',
+            error: `Failed to generate presigned downloadUrl for s3Key: ${source.s3Key}`,
+          });
+          continue;
+        }
+
+        bffFiles.push({
+          clientRef: file.fileId,
+          contentType: contentType || 'image/jpeg',
+          title: file.meta?.title,
+          meta: file.meta,
+          source: { downloadUrl: presigned.downloadUrl },
+        });
+        continue;
+      }
+
+      localErrors.set(file.fileId, {
+        fileId: file.fileId,
+        status: 'error',
+        error: 'No commit source provided (expected base64Data or s3Key)',
+      });
+    }
+
+    // If nothing can be committed, return per-file errors.
+    if (bffFiles.length === 0) {
+      return NextResponse.json(
+        { files: body.files.map(f => localErrors.get(f.fileId)!).filter(Boolean) } as CommitResponse,
+        { status: 200 },
+      );
+    }
+
+    // Call Lightsail BFF (static IP); it posts FHIR Media to ALEX.
+    const bffResponse = await fetch(`${BFF_BASE_URL}/api/medtech/session/commit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        encounterId: body.encounterId,
+        patientId,
+        files: bffFiles,
+      } satisfies BffCommitRequest),
+    });
+
+    let bffPayload: BffCommitResponse | null = null;
+    let bffErrorText: string | null = null;
+    try {
+      bffPayload = await bffResponse.json();
+    } catch {
+      bffErrorText = await bffResponse.text().catch(() => null);
+    }
+
+    if (!bffResponse.ok || !bffPayload) {
+      const details = bffPayload ? JSON.stringify(bffPayload) : (bffErrorText || '(no body)');
+      throw new Error(`BFF commit failed: ${bffResponse.status} ${details}`);
+    }
+
+    const bffResultsByFileId = new Map<string, CommitResponse['files'][number]>();
+    for (const r of bffPayload.files || []) {
+      bffResultsByFileId.set(r.clientRef, {
+        fileId: r.clientRef,
+        status: r.status,
+        documentReferenceId: r.documentReferenceId,
+        mediaId: r.mediaId,
+        warnings: r.warnings || [],
+        error: r.error,
+      });
     }
 
     const duration = Date.now() - startTime;
 
     // Check if all files succeeded
-    const successCount = results.filter(r => r.status === 'committed').length;
-    const errorCount = results.filter(r => r.status === 'error').length;
+    const mergedResults: CommitResponse['files'] = body.files.map((f) => {
+      return (
+        bffResultsByFileId.get(f.fileId)
+        || localErrors.get(f.fileId)
+        || { fileId: f.fileId, status: 'error', error: 'Missing commit result' }
+      );
+    });
+
+    const successCount = mergedResults.filter(r => r.status === 'committed').length;
+    const errorCount = mergedResults.filter(r => r.status === 'error').length;
 
     console.log('[Medtech Commit] Commit complete', {
-      correlationId,
       duration,
       successCount,
       errorCount,
     });
 
     return NextResponse.json({
-      files: results,
+      files: mergedResults,
     } as CommitResponse);
   } catch (error) {
     const duration = Date.now() - startTime;
 
     console.error('[Medtech Commit] Commit failed', {
-      correlationId,
       error: error instanceof Error ? error.message : 'Unknown error',
       duration,
     });
@@ -277,7 +214,6 @@ export async function POST(request: NextRequest) {
       {
         error: 'Failed to commit attachments',
         message: error instanceof Error ? error.message : 'Unknown error',
-        correlationId,
       },
       { status: 500 },
     );
