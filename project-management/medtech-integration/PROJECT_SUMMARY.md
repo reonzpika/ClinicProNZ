@@ -23,7 +23,7 @@ key_docs:
   project_rules: "PROJECT_RULES.md"
   roadmap: "DEVELOPMENT_ROADMAP.md"
   changelog: "CHANGELOG.md"
-  alex_api: "reference/alex-api.md"
+  alex_api: "alex-api.md"
 ---
 
 ## Read order (for humans and AI)

@@ -109,7 +109,7 @@
 - `ARCHITECTURE_AND_TESTING_GUIDE.md` → `infrastructure/architecture.md`
 - `TESTING_GUIDE_POSTMAN_AND_BFF.md` → `testing/testing-guide.md`
 - `STATUS_DETAILED.md` → `archive/STATUS_DETAILED.md` (deprecated)
-- `alex-api-review-2025-10-30.md` → `reference/alex-api.md`
+- `alex-api-review-2025-10-30.md` → `alex-api.md` (later moved to project root)
 - `GATEWAY_IMPLEMENTATION.md` → `reference/gateway-implementation.md`
 - `images-widget-prd.md` → `reference/product-requirements.md`
 - `FHIR_MCP_SERVER_SETUP.md` → `reference/fhir-mcp-setup.md`
