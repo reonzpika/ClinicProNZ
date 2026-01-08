@@ -23,6 +23,7 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 - `F99669-C` is offline if the Windows desktop sleeps (Azure Hybrid Connection Manager tunnel drops).
 - Plan: configure the desktop to stay awake (always on) before resuming tests.
 - Note: while away from home desktop, shift to customer-side launch prep (below).
+- Additional blocker (confirmed via hosted facility `F2N060-E`): ALEX UAT returns `403` for FHIR search on non-Patient resources (Task, Communication, Media, DocumentReference, DiagnosticReport, MedicationRequest) even though the OAuth token contains the expected app roles; emailed Medtech support for clarification on search permissions/policy.
 
 ---
 

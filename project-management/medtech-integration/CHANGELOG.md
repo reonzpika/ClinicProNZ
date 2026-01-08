@@ -11,10 +11,26 @@
 - Captured fallback modes if Medtech host capabilities (patient change detection, tab/badge support) are not available.
 
 **Blocker recorded**:
-- ALEX READ endpoints return 403 for required resources (DocumentReference, DiagnosticReport, MedicationRequest, Communication, Task); waiting for Medtech to grant read permissions.
+- ALEX UAT returns 403 for FHIR search on required resources (DocumentReference, DiagnosticReport, MedicationRequest, Communication, Task, Media) even though the OAuth token contains the expected app roles; waiting for Medtech to clarify the permission set/policy required for search operations.
 
 **Impact**:
 - Clear UX direction is set, but implementation is intentionally paused until data access is confirmed and Medtech constraints are verified.
+
+## [2026-01-08] — ALEX UAT: token roles confirmed; search still returns 403; email sent to Medtech
+
+**Evidence collected (direct ALEX calls, hosted facility `F2N060-E`)**:
+- `GET /FHIR/metadata` returns `200`.
+- `GET /FHIR/Patient/{id}` returns `200`.
+- FHIR searches return `403` OperationOutcome "Authorization failed":
+  - `GET /FHIR/Task?_count=1`
+  - `GET /FHIR/Communication?...`
+  - `GET /FHIR/Media?...` (both `patient=` and `subject=` variants)
+
+**Token validation**:
+- Decoded the client-credentials token payload and confirmed `roles[]` includes `patient.task.read`, `patient.media.read`, `patient.communication.generalcommunication.read`, and `patient.communication.outboxwebform.read` (plus other read roles).
+
+**Action**:
+- Sent an email to Medtech support describing the Lightsail static IP BFF setup and the direct ALEX evidence, asking whether ALEX requires additional permissions for FHIR search operations in UAT.
 
 ## [2026-01-07] — Documentation consolidation: single runbook in PROJECT_SUMMARY.md; Phase 1D test detail in ROADMAP; Media GET is often forbidden
 

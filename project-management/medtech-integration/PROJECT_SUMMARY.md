@@ -17,7 +17,7 @@ quick_reference:
   next_action: "Customer-side launch prep while away from home desktop (pricing + pilot list + outreach). When home: run Phase 1D UI validation (see DEVELOPMENT_ROADMAP.md): ensure Hybrid Connection Manager is running (test desktop must be awake); resolve local patientId for NHI ZZZ0016 in F99669-C; commit 1 image to F99669-C; confirm it appears in Medtech Evolution Inbox and Daily Record"
   key_blockers:
     - "Need local patientId for NHI ZZZ0016 in facility F99669-C"
-    - "ALEX often forbids GET /Media (write-only); do not rely on Media search for verification"
+    - "ALEX UAT returns 403 for FHIR search on non-Patient resources (Task, Communication, Media, DocumentReference, DiagnosticReport, MedicationRequest) even though the token contains the expected roles; waiting on Medtech to confirm search permissions/policy"
     - "Waiting on Medtech commercial terms (revenue share/fees/billing route/payment terms) and competitor QuickShot pricing (Intellimed) to finalise pricing strategy"
   facility_id: "F2N060-E (hosted UAT API testing) + F99669-C (local Medtech Evolution UI validation)"
 key_docs:
@@ -92,7 +92,7 @@ Medtech grants permissions at app registration/user profile level. Current known
 ### Known ALEX limitations that affect debugging
 - **`Media.identifier` is mandatory** on POST Media.
 - **Images must be < 1MB**.
-- **ALEX commonly forbids `GET /Media`** (write-only permissions); do not rely on Media search for verification. Prefer: commit, then verify in Medtech Evolution UI for Phase 1D.
+- **ALEX UAT currently returns 403 for FHIR search on non-Patient resources** (Task, Communication, Media, DocumentReference, DiagnosticReport, MedicationRequest), even when the OAuth token includes the expected app roles. Treat search-based verification as blocked until Medtech clarifies the correct permission set/policy for search operations.
 
 ---
 
@@ -142,6 +142,28 @@ Medtech grants permissions at app registration/user profile level. Current known
 
 **Why this matters**:
 - Prevents wasted time chasing “facility offline” issues that are simply the test desktop being asleep.
+
+### [2026-01-08] — ALEX UAT search returns 403 despite roles present; email sent to Medtech for clarification
+
+**What we observed (hosted facility `F2N060-E`)**:
+- Direct ALEX calls from Lightsail (bypassing the BFF) confirm:
+  - `GET /FHIR/metadata` returns `200`.
+  - `GET /FHIR/Patient/{id}` returns `200`.
+  - Any FHIR **search** against non-Patient resources returns `403` with OperationOutcome "Authorization failed", including:
+    - `GET /FHIR/Task?_count=1` (no patient filter)
+    - `GET /FHIR/Communication?...`
+    - `GET /FHIR/Media?...` (including `patient=` and `subject=` variants)
+    - Previously also observed via BFF: DocumentReference, DiagnosticReport, MedicationRequest searches returning `403`.
+
+**Token validation (client credentials)**:
+- Decoded the token payload and confirmed `roles[]` contains the expected app roles, including:
+  - `patient.task.read`
+  - `patient.media.read`
+  - `patient.communication.generalcommunication.read`
+  - `patient.communication.outboxwebform.read`
+
+**Action taken**:
+- Emailed Medtech support with the setup and evidence, asking whether there is an additional permission/policy requirement for FHIR search operations in UAT.
 
 ### [2026-01-07] — ✅ Phase 1C Complete: Commit creates FHIR Media in ALEX via Lightsail BFF (desktop + mobile)
 
