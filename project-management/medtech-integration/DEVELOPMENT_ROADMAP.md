@@ -405,10 +405,10 @@ const response = await alexApiClient.post('/Media', mediaResource);
 - API-only checks can use hosted facility `F2N060-E`, but **UI validation must commit into your local facility `F99669-C`**.
 - ALEX commonly forbids `GET /Media` (write-only); do not rely on Media search for verification. For Phase 1D the source of truth is the **Medtech Evolution UI**.
 
-#### Phase 1D testing steps (read permissions; local facility only) - PARKED
+#### Phase 1D testing steps (read permissions) - PARKED
 
 **Context (2026-01-08)**:
-- Medtech has added the new **read** permissions for our **local facility only** (`F99669-C`).
+- ALEX Support confirmed permissions are assigned at a **profile level**; permissions stay the same no matter the **location/facility** (for example `F2N060-E` and `F99669-C` should have the same permissions if they are using the same profile).
 - `F99669-C` depends on **Azure Hybrid Connection Manager** running on the founder's Windows desktop.
 - If the desktop sleeps, the hybrid tunnel drops and `F99669-C` appears offline; in that state we **cannot** validate the new read permissions.
 
