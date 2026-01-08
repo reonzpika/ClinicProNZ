@@ -47,6 +47,7 @@ key_docs:
 
 ### OAuth permissions (Medtech-managed)
 Medtech grants permissions at app registration/user profile level. Current known required permissions:
+- **Confirmed by ALEX Support (2026-01-08)**: permissions are assigned at a **profile level**; permissions stay the same no matter the **location/facility** (for example `F2N060-E` and `F99669-C` should have the same permissions if they are using the same profile).
 - `patient.media.write` (required for commit; already verified working)
 - `patient.media.read` (added by Medtech; helps with retrieval/verification flows if enabled)
 - `patient.task.read` (added by Medtech; supports task-related workflows)
