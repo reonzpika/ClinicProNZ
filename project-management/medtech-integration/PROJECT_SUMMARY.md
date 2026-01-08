@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2026-01-07"
-version: "1.7.0"
+last_updated: "2026-01-08"
+version: "1.7.1"
 tags:
   - integration
   - medtech
@@ -14,7 +14,7 @@ summary: "Clinical images widget integration with Medtech Evolution/Medtech32 vi
 quick_reference:
   current_phase: "Phase 1D"
   status: "Phase 1C ✅ complete; Phase 1D in progress (Medtech Evolution UI validation using local facility)"
-  next_action: "Run Phase 1D UI validation (see DEVELOPMENT_ROADMAP.md): resolve local patientId for NHI ZZZ0016 in F99669-C; commit 1 image to F99669-C; confirm it appears in Medtech Evolution Inbox and Daily Record"
+  next_action: "Run Phase 1D UI validation (see DEVELOPMENT_ROADMAP.md): ensure Hybrid Connection Manager is running (test desktop must be awake); resolve local patientId for NHI ZZZ0016 in F99669-C; commit 1 image to F99669-C; confirm it appears in Medtech Evolution Inbox and Daily Record"
   key_blockers:
     - "Need local patientId for NHI ZZZ0016 in facility F99669-C"
     - "ALEX often forbids GET /Media (write-only); do not rely on Media search for verification"
@@ -43,6 +43,27 @@ key_docs:
 ### Environments and facility IDs (critical)
 - **`F2N060-E`**: Medtech hosted UAT facility. Use for API-only checks. This will not appear inside your local Medtech Evolution UI.
 - **`F99669-C`**: your local Medtech Evolution facility. Use for UI validation (Inbox and Daily Record).
+  - **Important**: `F99669-C` relies on **Azure Hybrid Connection Manager** running on your Windows machine (Hybrid Connection tunnel). If that PC is asleep/standby/off, local facility connectivity can appear “offline”.
+
+### OAuth permissions (Medtech-managed)
+Medtech grants permissions at app registration/user profile level. Current known required permissions:
+- `patient.media.write` (required for commit; already verified working)
+- `patient.media.read` (added by Medtech; helps with retrieval/verification flows if enabled)
+- `patient.task.read` (added by Medtech; supports task-related workflows)
+- `patient.communication.generalcommunication.read` (added by Medtech; supports inbox/outbox retrieval where applicable)
+- `patient.communication.outboxwebform.read` (added by Medtech; supports outbox web form retrieval)
+
+### Hybrid Connection Manager (local facility `F99669-C`)
+**Context**: Medtech support asked whether “Azure Hybrid Connection Manager” was stopped. In our setup, it is installed on the founder’s **personal desktop** for testing only.
+
+**Implications**:
+- If the desktop goes to **sleep/standby** or is **powered off**, the hybrid connection tunnel drops and `F99669-C` can stop working until the desktop is awake again.
+- This is expected for a test-only setup; plan test windows accordingly.
+
+**Quick checks on Windows**:
+- Ensure the PC is **awake**.
+- Open **Services** (`services.msc`) and confirm **Microsoft Azure Hybrid Connection Manager** is **Running**; restart if needed.
+- If it keeps dropping; disable sleep/standby (at least while plugged in) during test windows.
 
 ### Canonical endpoints
 - **BFF health**: `GET https://api.clinicpro.co.nz/health`
@@ -92,6 +113,20 @@ key_docs:
 
 **Why this matters**:
 - Prevents false negatives during Phase 1D (commit “success” but nothing in UI) caused by facility mismatch.
+
+### [2026-01-08] — Medtech permissions updated + Hybrid Connection Manager test setup clarified
+
+**What changed**:
+- ✅ Medtech confirmed the following permissions were added to our profile:
+  - `patient.media.read`
+  - `patient.task.read`
+  - `patient.communication.generalcommunication.read`
+  - `patient.communication.outboxwebform.read`
+- ✅ Recorded operational constraint for local facility testing (`F99669-C`):
+  - Azure Hybrid Connection Manager runs on the founder’s test desktop; sleep/standby/offline will drop the tunnel and make `F99669-C` appear offline.
+
+**Why this matters**:
+- Prevents wasted time chasing “facility offline” issues that are simply the test desktop being asleep.
 
 ### [2026-01-07] — ✅ Phase 1C Complete: Commit creates FHIR Media in ALEX via Lightsail BFF (desktop + mobile)
 
