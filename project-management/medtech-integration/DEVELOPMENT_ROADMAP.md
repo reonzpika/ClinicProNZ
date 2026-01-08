@@ -1,7 +1,7 @@
 # Medtech Integration - Development Roadmap
 
 **Created**: 2025-11-12  
-**Last Updated**: 2026-01-07  
+**Last Updated**: 2026-01-08  
 **Status**: Phase 1C Complete | Commit to ALEX working end-to-end  
 **Estimated Total Time**: 13-19 hours  
 **Current Phase**: Phase 1C ✅ Complete | Next: Phase 1D (Medtech UI validation + hardening + launch mechanism)
@@ -405,6 +405,36 @@ const response = await alexApiClient.post('/Media', mediaResource);
 - API-only checks can use hosted facility `F2N060-E`, but **UI validation must commit into your local facility `F99669-C`**.
 - ALEX commonly forbids `GET /Media` (write-only); do not rely on Media search for verification. For Phase 1D the source of truth is the **Medtech Evolution UI**.
 
+#### Phase 1D testing steps (read permissions; local facility only) - PARKED
+
+**Context (2026-01-08)**:
+- Medtech has added the new **read** permissions for our **local facility only** (`F99669-C`).
+- `F99669-C` depends on **Azure Hybrid Connection Manager** running on the founder's Windows desktop.
+- If the desktop sleeps, the hybrid tunnel drops and `F99669-C` appears offline; in that state we **cannot** validate the new read permissions.
+
+**Status**: Blocked until Windows desktop is configured as always-on (no sleep) and `F99669-C` is reachable.
+
+**When home (resume checklist)**:
+
+1. **Bring `F99669-C` online**
+   - Wake Windows desktop; ensure **Microsoft Azure Hybrid Connection Manager** service is running.
+
+2. **Connectivity sanity check (local facility)**
+   - `GET https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016&facilityId=F99669-C`
+   - Expected: `success: true`
+
+3. **Read permission smoke tests (local facility)**
+   - Tasks:
+     - `GET https://api.clinicpro.co.nz/api/medtech/tasks?nhi=ZZZ0016&count=5&facilityId=F99669-C`
+   - Communications:
+     - `GET https://api.clinicpro.co.nz/api/medtech/communications?nhi=ZZZ0016&count=5&facilityId=F99669-C`
+   - Media (may still be forbidden depending on ALEX behaviour; record outcome):
+     - `GET https://api.clinicpro.co.nz/api/medtech/media?nhi=ZZZ0016&count=5&_sort=-created&facilityId=F99669-C`
+
+4. **What to record as evidence**
+   - `facilityId`, HTTP status, `correlationId` (if present), and first ~300-500 chars of any OperationOutcome/error.
+   - On 200: record `total` and the first resource `resourceType`.
+
 **Step 1: Confirm ALEX connectivity for local facility**
 - Call:
   - `GET https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016&facilityId=F99669-C`
@@ -693,10 +723,11 @@ if (!patientId) {
 ---
 
 **Document Status**: Active Development Roadmap  
-**Last Updated**: 2025-12-09  
+**Last Updated**: 2026-01-08  
 **Version**: 2.1  
 **Changes**: 
 - Added Redis + S3 session storage implementation (Phase 1.0)
 - Updated time estimates: Phase 1 now 6-8 hours (was 4-6)
 - Updated total: 13-19 hours (was 12-18)
 - Documentation consolidated; detailed feature/spec docs archived
+- Parked Phase 1D read-permissions test plan (local facility `F99669-C` requires Windows desktop always-on)

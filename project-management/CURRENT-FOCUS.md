@@ -1,16 +1,14 @@
 ---
-week: "Week 1, 2026"
-dates: "Jan 1-5, 2026"
-last_updated: "2026-01-02"
+week: "Week 2, 2026"
+dates: "Jan 6-12, 2026"
+last_updated: "2026-01-08"
 ---
 
-# Current Focus - Week 1, 2026
+# Current Focus - Week 2, 2026
 
 ## This Week's ONE Big Win
 
-**What makes this week successful?**
-
-Implement Redis + S3 session storage, mobile upload UI with real backend, and Ably sync (Phase 1 complete). Prepare GP tester list and sign-up form for February launch.
+**Validate the new Medtech read permissions in local facility `F99669-C` and complete Phase 1D Medtech Evolution UI validation (Inbox + Daily Record).**
 
 ---
 
@@ -20,52 +18,37 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 
 ---
 
+## Blocker (Current)
+
+- `F99669-C` is offline if the Windows desktop sleeps (Azure Hybrid Connection Manager tunnel drops).
+- Plan: configure the desktop to stay awake (always on) before resuming tests.
+
+---
+
 ## Active Projects This Week (Max 2)
 
 ### 1. Medtech Integration (PRIMARY)
-**This week's goal**: Complete Phase 1 of development roadmap (Redis + S3 session storage + mobile UI + mobile→desktop sync + dataflow review)
-**Customer action needed**: Draft GP email, create sign-up form, coordinate with Ting
-**Time allocation**: 16-20 hours (2-3 project days available after GP work)
+**This week's goal**: Phase 1D validation and hardening.
+
+**Next testing session (when home; `F99669-C` online)**:
+- Connectivity: `GET https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016&facilityId=F99669-C`
+- Read tests:
+  - Tasks: `GET https://api.clinicpro.co.nz/api/medtech/tasks?nhi=ZZZ0016&count=5&facilityId=F99669-C`
+  - Communications: `GET https://api.clinicpro.co.nz/api/medtech/communications?nhi=ZZZ0016&count=5&facilityId=F99669-C`
+  - Media: `GET https://api.clinicpro.co.nz/api/medtech/media?nhi=ZZZ0016&count=5&_sort=-created&facilityId=F99669-C`
+- UI validation: commit 1 image to `F99669-C`, then confirm it appears in Medtech Evolution (Inbox + Daily Record).
+- Evidence to capture: `facilityId`, HTTP status, correlationId (if present), and first resourceType on success.
 
 ### 2. PM AI SaaS (SECONDARY)
-**This week's goal**: Weekly planning system working (you're using it now)
-**Customer action needed**: None (internal dogfooding)
-**Time allocation**: 2-3 hours (maintenance/improvements as needed)
-
----
-
-## Other Projects (Not This Week)
-
-- **ClinicPro**: Maintenance mode (used daily by founder; no active development)
-- **GP Voices**: Ting handles LinkedIn (2-3 posts/week; founder approval only)
-- **R&D Grant**: Awaiting decision (expected end of January; no action until then)
-
----
-
-## Daily Breakdown (Phase 1 Tasks)
-
-**Day 1 (Jan 2, Today)** - ~6 hours
-- Morning: Review current codebase + existing Redis/Ably setup
-- Afternoon: Implement Session Storage (Redis + S3 setup + API routes)
-- Output: Session API routes working and tested
-
-**Day 2 (Next project day)** - ~6 hours
-- Morning: Mobile Upload UI (replace alert() with real backend)
-- Afternoon: Mobile compression + loading/error states
-- Output: Mobile can upload images to session storage
-
-**Day 3 (Next project day)** - ~6 hours
-- Morning: Mobile → Desktop sync (Ably integration)
-- Afternoon: Test complete flow + Dataflow review + Customer work (2 hours)
-- Output: Phase 1 complete, GP email drafted, form created
+**This week's goal**: Maintenance only.
 
 ---
 
 ## Today's Priority
 
-**Updated daily**: The ONE thing to do today
+**Updated daily**: The ONE thing to do today.
 
-**Jan 2**: ✅ COMPLETE - Phase 1B implementation (Redis + S3 + 5 API endpoints + Mobile page + Desktop Ably sync) + Build fixes + Environment setup (S3 bucket + env vars)
+**Jan 8**: Get `F99669-C` online (Windows desktop always-on), then run the local read tests and capture evidence.
 
 ---
 
@@ -73,28 +56,11 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 
 **Target**: 5 contacts (30% of time = customer/business work)
 
-**This week's focus**: Prepare for February Image feature testing
+**This week's focus**: Tester follow-up once Phase 1D UI validation is confirmed.
 
-**Types of contact** (low-bar options):
-- Text GP with screenshot/question (30 sec)
-- Quick feedback survey (1 min)
-- Casual coffee chat (30 min)
-- Email update to GP list (1 hour)
-- LinkedIn engagement (via Ting)
-- PHO outreach email
-
-**This week's targets** (3 actions committed):
-- [ ] Action #2: Draft email to GP list announcing Image feature (1 hour) - Send end of week after Phase 1 complete
-- [ ] Action #3: Create Google Form for tester sign-ups (30 min) - Simple form: name, clinic, email, phone
-- [ ] Action #5: Coordinate with Ting on LinkedIn content plan for Image feature launch (15 min) - Quick Slack/call
-
-**Deferred to next week**:
-- Text 2-3 GPs about early access (will do after email sent)
-- Review PHO contact list for partnership outreach
-- Check pricing willingness with known GPs
-
-**Completed**:
-- ✅ [Will update as contacts are made]
+**This week's targets**:
+- [ ] 1-2 messages to GP testers (post Phase 1D confirmation)
+- [ ] Coordinate with Ting: one post when Phase 1D is confirmed
 
 ---
 
@@ -104,82 +70,3 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 - **MRR**: $0 | Target: $500 by end Q1, $8k by end 2026
 - **Features Launched**: 0/5 | Target: 1 by Jan 31, 5 by end 2026
 - **Customer Contacts This Week**: 0/5
-
----
-
-## Time Allocation This Week
-
-**Target**: 70% building | 30% customer/business
-
-**Planned**:
-- Building/Development: 16-20 hours (Phase 1 Medtech)
-- Customer/Business work: 2 hours (email, form, Ting coordination)
-- GP clinical work: 32 hours (4 days)
-- **Total project work**: 18-22 hours across 2-3 days
-
-**Actual** (update Friday):
-- Building/Development: [X hours]
-- Customer/Business work: [Y hours]
-- GP clinical work: [Z hours]
-
----
-
-## Notes & Decisions
-
-*Quick notes about this week's focus*
-
-**Context for Week 1:**
-- Q1 primary goal: Launch Image feature by Jan 31 (3.5 weeks away)
-- R&D grant decision expected end of January (impacts rest of year planning)
-- Two-scenario planning: Grant approved (30 hrs/week R&D) vs rejected (full Medtech focus)
-- First revenue must happen in 2026; zero revenue in 2025 not acceptable
-- Kill signal: No paying customers by Feature #2 (Q2) → pivot or kill Medtech
-
-**This Week's Focus:**
-- **Phase 1.0**: Redis + S3 session storage (2 hours with AI tools)
-- **Phase 1.1**: Mobile upload UI with real backend (2-3 hours)
-- **Phase 1.2**: Mobile → Desktop sync via Ably (1-2 hours)
-- **Phase 1.3**: Dataflow review and documentation (1 hour)
-- **Customer prep**: GP email, sign-up form, Ting coordination (2 hours)
-
-**Time Reality:**
-- Have 2-3 project days available (16-24 hours after GP work)
-- Allocated 16-20 hours for Medtech (realistic for Phase 1 completion)
-- Roadmap estimates 6-8 hours Phase 1; likely 4-6 hours with AI
-
-**Blockers to Watch:**
-- Awaiting R&D grant decision (no action until received)
-- Redis/S3 setup might need environment variables configured
-
-**Key Decisions:**
-- Week 1 dedicated to Phase 1 foundation (mobile upload + sync)
-- Week 2 will be testing, debugging, and preparing for Phase 2
-- Customer outreach focused on preparing testers (launch email end of week)
-
----
-
-## Week 1 Success Criteria
-
-**Development** (Phase 1 Complete):
-- ✅ Redis + S3 session storage implemented and tested
-- ✅ Mobile upload UI working with real backend (no more alert())
-- ✅ Mobile → Desktop sync working via Ably (images appear automatically)
-- ✅ Complete dataflow documented (Mobile → Desktop → Medtech)
-
-**Customer Prep** (Ready for February Launch):
-- ✅ GP email drafted and sent to list
-- ✅ Google Form created for tester sign-ups
-- ✅ Ting coordinated on LinkedIn content timing
-
-**Next Week Setup**:
-- Ready to start Phase 2 (Backend Integration - connect real ALEX API)
-- GP tester list forming (waiting for sign-ups)
-
----
-
-**How to use this file:**
-- Update Sunday evening or Monday morning (weekly planning)
-- Update "Today's Priority" each morning
-- Check off customer contacts as you do them
-- Update metrics every Friday (weekly review)
-- Keep it current; this is your single source of truth
