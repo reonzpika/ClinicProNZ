@@ -14,10 +14,11 @@ summary: "Clinical images widget integration with Medtech Evolution/Medtech32 vi
 quick_reference:
   current_phase: "Phase 1D"
   status: "Phase 1C ✅ complete; Phase 1D in progress (Medtech Evolution UI validation using local facility)"
-  next_action: "Run Phase 1D UI validation (see DEVELOPMENT_ROADMAP.md): ensure Hybrid Connection Manager is running (test desktop must be awake); resolve local patientId for NHI ZZZ0016 in F99669-C; commit 1 image to F99669-C; confirm it appears in Medtech Evolution Inbox and Daily Record"
+  next_action: "Customer-side launch prep while away from home desktop (pricing + pilot list + outreach). When home: run Phase 1D UI validation (see DEVELOPMENT_ROADMAP.md): ensure Hybrid Connection Manager is running (test desktop must be awake); resolve local patientId for NHI ZZZ0016 in F99669-C; commit 1 image to F99669-C; confirm it appears in Medtech Evolution Inbox and Daily Record"
   key_blockers:
     - "Need local patientId for NHI ZZZ0016 in facility F99669-C"
     - "ALEX often forbids GET /Media (write-only); do not rely on Media search for verification"
+    - "Waiting on Medtech commercial terms (revenue share/fees/billing route/payment terms) and competitor QuickShot pricing (Intellimed) to finalise pricing strategy"
   facility_id: "F2N060-E (hosted UAT API testing) + F99669-C (local Medtech Evolution UI validation)"
 key_docs:
   project_rules: "PROJECT_RULES.md"
@@ -101,6 +102,19 @@ Medtech grants permissions at app registration/user profile level. Current known
 ---
 
 ## Recent updates (last 3-5 only)
+
+### [2026-01-08] — Customer-side launch prep started (end-of-Jan launch readiness)
+
+**What changed**:
+- Started customer discovery and competitive intel gathering for the Medtech Images launch.
+- Sent two information requests:
+  - **Medtech**: request commercial terms (revenue share %, any platform fees, billing route whether direct billing allowed, payment terms).
+  - **Intellimed (QuickShot)**: request pricing and inclusions (per clinic vs per GP, setup fee, monthly vs one-off, feature scope).
+- Posted in NZ GP Facebook group to learn current real-world workflow for clinical photos (personal vs practice phone), tools used (QuickShot/alternatives), pain points (file size/resizing), and asked for DMs.
+
+**Why this matters**:
+- Pricing and positioning cannot be finalised in a vacuum; need both competitor pricing and Medtech commercial constraints.
+- Community responses will directly shape the differentiation message and onboarding friction points to solve first.
 
 ### [2026-01-07] — Phase 1D Unblock: facilityId must be passed end-to-end (local Evo UI uses F99669-C) + tracing helpers
 

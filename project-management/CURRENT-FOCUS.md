@@ -22,6 +22,7 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 
 - `F99669-C` is offline if the Windows desktop sleeps (Azure Hybrid Connection Manager tunnel drops).
 - Plan: configure the desktop to stay awake (always on) before resuming tests.
+- Note: while away from home desktop, shift to customer-side launch prep (below).
 
 ---
 
@@ -48,7 +49,16 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 
 **Updated daily**: The ONE thing to do today.
 
-**Jan 8**: Get `F99669-C` online (Windows desktop always-on), then run the local read tests and capture evidence.
+**Jan 8**: Customer-side launch prep for Medtech Images (while not home). Then when home: get `F99669-C` online (Windows desktop always-on), run local read tests, and capture Phase 1D evidence.
+
+**Customer-side actions completed (Jan 8)**:
+- Emailed Medtech requesting **commercial terms** (revenue share, fees, billing route, payment terms).
+- Emailed Intellimed requesting **QuickShot pricing + inclusions**.
+- Posted in NZ GP Facebook group asking how clinicians handle clinical photos (personal vs practice phone), QuickShot alternatives, workflow steps, cost, and file-size/resizing pain points; invited DMs.
+
+**Waiting on**:
+- Medtech commercial terms reply (expected within a few business days).
+- Intellimed/QuickShot pricing reply (expected within a few business days).
 
 ---
 
@@ -59,7 +69,9 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 **This week's focus**: Tester follow-up once Phase 1D UI validation is confirmed.
 
 **This week's targets**:
+- [x] Ask GP community how they currently handle clinical photos (FB post; request DMs for pricing/workflow)
 - [ ] 1-2 messages to GP testers (post Phase 1D confirmation)
+- [ ] 5 short outreach touches total this week (texts/calls count)
 - [ ] Coordinate with Ting: one post when Phase 1D is confirmed
 
 ---
@@ -69,4 +81,4 @@ Launch Image feature by Jan 31 + Get grant decision + Get 5-10 paying clinics by
 - **Paying Clinics**: 0 | Target: 5 by end Q1, 20 by end 2026
 - **MRR**: $0 | Target: $500 by end Q1, $8k by end 2026
 - **Features Launched**: 0/5 | Target: 1 by Jan 31, 5 by end 2026
-- **Customer Contacts This Week**: 0/5
+- **Customer Contacts This Week**: 1/5
