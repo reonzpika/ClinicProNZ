@@ -172,17 +172,29 @@ Medtech grants permissions at app registration/user profile level. Current known
 - Note format: SOAP structure with Plan section, free text
 
 **What Was Created**:
-- Feature folder: `features/task-completion-checker/`
-- Feature overview: `features/task-completion-checker/FEATURE_OVERVIEW.md`
 - BFF test endpoints: 5 new endpoints in `/lightsail-bff/index.js`
-- Validation script: `/scripts/validate-task-checker-via-bff.ts`
+- Validation script: `/scripts/validate-task-checker-via-bff.ts` (via BFF) and `/scripts/validate-task-checker-api.ts` (direct; needs creds)
 
 **Next Steps**:
 1. Deploy BFF with new endpoints (merge to main)
 2. Run validation script to confirm note text is accessible
 3. If feasible, proceed to AI prompt design and MVP
 
-**Documentation**: See `features/task-completion-checker/FEATURE_OVERVIEW.md` for full details.
+**Documentation**:
+- Background overview (archived snapshot): `archive/2026-01-07-consolidation/features/task-completion-checker/FEATURE_OVERVIEW.md`
+- UX decision (current): `features/task-completion-checker/UX_DECISION.md`
+
+### [2026-01-08] — Task Completion Checker UX direction documented (Claude.ai); reassess after ALEX READ unblocked
+
+**Decision**:
+- Preferred UX is **passive background checking** with a dedicated Task Checker surface (tab) and queue-based processing; designed to be non-interrupting during consults.
+
+**Blockers**:
+- ALEX READ currently returns 403 for required resources (DocumentReference, DiagnosticReport, MedicationRequest, Communication, Task); waiting on Medtech to grant read permissions.
+- Passive triggers depend on Medtech host capabilities (patient context change detection and/or supported surface for badge/tab); treat as pending until confirmed.
+
+**Reassess point**:
+- Once ALEX READ is granted and note text is retrievable, rerun `/scripts/validate-task-checker-via-bff.ts` and then reassess feasibility, latency, and extraction accuracy before implementing MVP.
 ### [2026-01-06] — ✅ Phase 1B Testing Complete & Production Ready
 
 **Testing Complete** (~3 hours across 2 days):

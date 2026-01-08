@@ -4,6 +4,18 @@
 
 ---
 
+## [2026-01-08] — Task Completion Checker; UX direction documented (Claude.ai); waiting on ALEX READ permissions
+
+**What changed**:
+- Documented the preferred UX approach for the Task Completion Checker feature: **passive background checking** with a dedicated Task Checker surface and a rate-limited queue.
+- Captured fallback modes if Medtech host capabilities (patient change detection, tab/badge support) are not available.
+
+**Blocker recorded**:
+- ALEX READ endpoints return 403 for required resources (DocumentReference, DiagnosticReport, MedicationRequest, Communication, Task); waiting for Medtech to grant read permissions.
+
+**Impact**:
+- Clear UX direction is set, but implementation is intentionally paused until data access is confirmed and Medtech constraints are verified.
+
 ## [2026-01-07] — Documentation consolidation: single runbook in PROJECT_SUMMARY.md; Phase 1D test detail in ROADMAP; Media GET is often forbidden
 
 **What changed**:
