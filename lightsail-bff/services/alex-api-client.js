@@ -51,7 +51,10 @@ class AlexApiClient {
 
       if (!response.ok) {
         const errorText = await response.text()
-        throw new Error(`ALEX API error: ${response.status} ${errorText}`)
+        const err = new Error(`ALEX API error: ${response.status} ${errorText}`)
+        err.statusCode = response.status
+        err.correlationId = correlationId
+        throw err
       }
 
       const data = await response.json()

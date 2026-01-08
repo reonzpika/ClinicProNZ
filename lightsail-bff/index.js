@@ -9,6 +9,32 @@ app.use(express.json())
 
 const MAX_IMAGE_BYTES = 1024 * 1024 // 1MB
 
+function coerceFacilityId(raw) {
+  return typeof raw === 'string' && raw.trim() ? raw.trim() : null
+}
+
+function shouldForceRefresh(raw) {
+  if (raw === true) return true
+  if (typeof raw !== 'string') return false
+  return raw === '1' || raw.toLowerCase() === 'true'
+}
+
+function respondWithAlexError(res, error, fallback) {
+  const statusCode = (error && typeof error.statusCode === 'number' && error.statusCode >= 100)
+    ? error.statusCode
+    : (fallback || 500)
+
+  const correlationId = (error && typeof error.correlationId === 'string' && error.correlationId.trim())
+    ? error.correlationId.trim()
+    : undefined
+
+  res.status(statusCode).json({
+    success: false,
+    error: error instanceof Error ? error.message : 'Unknown error',
+    ...(correlationId ? { correlationId } : {}),
+  })
+}
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.json({ 
@@ -46,13 +72,15 @@ app.get('/api/medtech/token-info', (req, res) => {
 // Medtech: Test FHIR connectivity
 app.get('/api/medtech/test', async (req, res) => {
   const nhi = req.query.nhi || 'ZZZ0016'
-  const facilityId = typeof req.query.facilityId === 'string' && req.query.facilityId.trim()
-    ? req.query.facilityId.trim()
-    : null
+  const facilityId = coerceFacilityId(req.query.facilityId)
+  const forceRefresh = shouldForceRefresh(req.query.forceRefresh)
   const startTime = Date.now()
   const correlationId = randomUUID()
 
   try {
+    if (forceRefresh) {
+      await oauthTokenService.forceRefresh()
+    }
     const tokenInfo = oauthTokenService.getTokenInfo()
     const patientBundle = await alexApiClient.get(
       `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`,
@@ -79,9 +107,9 @@ app.get('/api/medtech/test', async (req, res) => {
       },
     })
   } catch (error) {
-    res.status(500).json({
+    res.status(error?.statusCode || 500).json({
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       correlationId,
       duration: Date.now() - startTime,
     })
@@ -282,11 +310,16 @@ app.post('/api/medtech/session/commit', async (req, res) => {
  * - We try `patient` first then fall back to `subject=Patient/{id}` if needed.
  */
 app.get('/api/medtech/media', async (req, res) => {
-  const { patient, nhi, count = 10, _sort = '-created', facilityId } = req.query
+  const { patient, nhi, count = 10, _sort = '-created' } = req.query
+  const facilityId = coerceFacilityId(req.query.facilityId)
+  const forceRefresh = shouldForceRefresh(req.query.forceRefresh)
   const startTime = Date.now()
   const correlationId = randomUUID()
 
   try {
+    if (forceRefresh) {
+      await oauthTokenService.forceRefresh()
+    }
     let patientId = patient
 
     if (nhi && !patient) {
@@ -328,9 +361,9 @@ app.get('/api/medtech/media', async (req, res) => {
       media: bundle.entry?.map(e => e.resource) || [],
     })
   } catch (error) {
-    res.status(500).json({
+    res.status(error?.statusCode || 500).json({
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       duration: Date.now() - startTime,
       correlationId,
     })
@@ -344,29 +377,37 @@ app.get('/api/medtech/media', async (req, res) => {
 // Get DocumentReference (consultation notes) for a patient
 app.get('/api/medtech/documents', async (req, res) => {
   const { patient, nhi, count = 5 } = req.query
+  const facilityId = coerceFacilityId(req.query.facilityId)
+  const forceRefresh = shouldForceRefresh(req.query.forceRefresh)
   const startTime = Date.now()
+  const correlationId = randomUUID()
 
   try {
+    if (forceRefresh) {
+      await oauthTokenService.forceRefresh()
+    }
     let patientId = patient
 
     // If NHI provided, first look up patient ID
     if (nhi && !patient) {
       const patientBundle = await alexApiClient.get(
-        `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`
+        `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`,
+        { correlationId, facilityId },
       )
       if (patientBundle.entry?.length > 0) {
         patientId = patientBundle.entry[0].resource.id
       } else {
-        return res.status(404).json({ success: false, error: 'Patient not found' })
+        return res.status(404).json({ success: false, error: 'Patient not found', correlationId })
       }
     }
 
     if (!patientId) {
-      return res.status(400).json({ success: false, error: 'patient or nhi parameter required' })
+      return res.status(400).json({ success: false, error: 'patient or nhi parameter required', correlationId })
     }
 
     const bundle = await alexApiClient.get(
-      `/DocumentReference?patient=${patientId}&_count=${count}&_sort=-date`
+      `/DocumentReference?patient=${patientId}&_count=${count}&_sort=-date`,
+      { correlationId, facilityId },
     )
 
     res.json({
@@ -377,10 +418,11 @@ app.get('/api/medtech/documents', async (req, res) => {
       documents: bundle.entry?.map(e => e.resource) || [],
     })
   } catch (error) {
-    res.status(500).json({
+    res.status(error?.statusCode || 500).json({
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       duration: Date.now() - startTime,
+      correlationId,
     })
   }
 })
@@ -388,28 +430,36 @@ app.get('/api/medtech/documents', async (req, res) => {
 // Get DiagnosticReport (lab results) for a patient
 app.get('/api/medtech/labs', async (req, res) => {
   const { patient, nhi, count = 5 } = req.query
+  const facilityId = coerceFacilityId(req.query.facilityId)
+  const forceRefresh = shouldForceRefresh(req.query.forceRefresh)
   const startTime = Date.now()
+  const correlationId = randomUUID()
 
   try {
+    if (forceRefresh) {
+      await oauthTokenService.forceRefresh()
+    }
     let patientId = patient
 
     if (nhi && !patient) {
       const patientBundle = await alexApiClient.get(
-        `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`
+        `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`,
+        { correlationId, facilityId },
       )
       if (patientBundle.entry?.length > 0) {
         patientId = patientBundle.entry[0].resource.id
       } else {
-        return res.status(404).json({ success: false, error: 'Patient not found' })
+        return res.status(404).json({ success: false, error: 'Patient not found', correlationId })
       }
     }
 
     if (!patientId) {
-      return res.status(400).json({ success: false, error: 'patient or nhi parameter required' })
+      return res.status(400).json({ success: false, error: 'patient or nhi parameter required', correlationId })
     }
 
     const bundle = await alexApiClient.get(
-      `/DiagnosticReport?patient=${patientId}&_count=${count}&_sort=-date`
+      `/DiagnosticReport?patient=${patientId}&_count=${count}&_sort=-date`,
+      { correlationId, facilityId },
     )
 
     res.json({
@@ -420,10 +470,11 @@ app.get('/api/medtech/labs', async (req, res) => {
       reports: bundle.entry?.map(e => e.resource) || [],
     })
   } catch (error) {
-    res.status(500).json({
+    res.status(error?.statusCode || 500).json({
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       duration: Date.now() - startTime,
+      correlationId,
     })
   }
 })
@@ -431,28 +482,36 @@ app.get('/api/medtech/labs', async (req, res) => {
 // Get MedicationRequest (prescriptions) for a patient
 app.get('/api/medtech/prescriptions', async (req, res) => {
   const { patient, nhi, count = 5 } = req.query
+  const facilityId = coerceFacilityId(req.query.facilityId)
+  const forceRefresh = shouldForceRefresh(req.query.forceRefresh)
   const startTime = Date.now()
+  const correlationId = randomUUID()
 
   try {
+    if (forceRefresh) {
+      await oauthTokenService.forceRefresh()
+    }
     let patientId = patient
 
     if (nhi && !patient) {
       const patientBundle = await alexApiClient.get(
-        `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`
+        `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`,
+        { correlationId, facilityId },
       )
       if (patientBundle.entry?.length > 0) {
         patientId = patientBundle.entry[0].resource.id
       } else {
-        return res.status(404).json({ success: false, error: 'Patient not found' })
+        return res.status(404).json({ success: false, error: 'Patient not found', correlationId })
       }
     }
 
     if (!patientId) {
-      return res.status(400).json({ success: false, error: 'patient or nhi parameter required' })
+      return res.status(400).json({ success: false, error: 'patient or nhi parameter required', correlationId })
     }
 
     const bundle = await alexApiClient.get(
-      `/MedicationRequest?patient=${patientId}&_count=${count}&_sort=-date`
+      `/MedicationRequest?patient=${patientId}&_count=${count}&_sort=-date`,
+      { correlationId, facilityId },
     )
 
     res.json({
@@ -463,10 +522,11 @@ app.get('/api/medtech/prescriptions', async (req, res) => {
       prescriptions: bundle.entry?.map(e => e.resource) || [],
     })
   } catch (error) {
-    res.status(500).json({
+    res.status(error?.statusCode || 500).json({
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       duration: Date.now() - startTime,
+      correlationId,
     })
   }
 })
@@ -474,28 +534,36 @@ app.get('/api/medtech/prescriptions', async (req, res) => {
 // Get Communication (referrals/messages) for a patient
 app.get('/api/medtech/communications', async (req, res) => {
   const { patient, nhi, count = 5 } = req.query
+  const facilityId = coerceFacilityId(req.query.facilityId)
+  const forceRefresh = shouldForceRefresh(req.query.forceRefresh)
   const startTime = Date.now()
+  const correlationId = randomUUID()
 
   try {
+    if (forceRefresh) {
+      await oauthTokenService.forceRefresh()
+    }
     let patientId = patient
 
     if (nhi && !patient) {
       const patientBundle = await alexApiClient.get(
-        `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`
+        `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`,
+        { correlationId, facilityId },
       )
       if (patientBundle.entry?.length > 0) {
         patientId = patientBundle.entry[0].resource.id
       } else {
-        return res.status(404).json({ success: false, error: 'Patient not found' })
+        return res.status(404).json({ success: false, error: 'Patient not found', correlationId })
       }
     }
 
     if (!patientId) {
-      return res.status(400).json({ success: false, error: 'patient or nhi parameter required' })
+      return res.status(400).json({ success: false, error: 'patient or nhi parameter required', correlationId })
     }
 
     const bundle = await alexApiClient.get(
-      `/Communication?patient=${patientId}&_count=${count}&_sort=-sent`
+      `/Communication?patient=${patientId}&_count=${count}&_sort=-sent`,
+      { correlationId, facilityId },
     )
 
     res.json({
@@ -506,10 +574,11 @@ app.get('/api/medtech/communications', async (req, res) => {
       communications: bundle.entry?.map(e => e.resource) || [],
     })
   } catch (error) {
-    res.status(500).json({
+    res.status(error?.statusCode || 500).json({
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       duration: Date.now() - startTime,
+      correlationId,
     })
   }
 })
@@ -517,28 +586,36 @@ app.get('/api/medtech/communications', async (req, res) => {
 // Get Task resources for a patient
 app.get('/api/medtech/tasks', async (req, res) => {
   const { patient, nhi, count = 5 } = req.query
+  const facilityId = coerceFacilityId(req.query.facilityId)
+  const forceRefresh = shouldForceRefresh(req.query.forceRefresh)
   const startTime = Date.now()
+  const correlationId = randomUUID()
 
   try {
+    if (forceRefresh) {
+      await oauthTokenService.forceRefresh()
+    }
     let patientId = patient
 
     if (nhi && !patient) {
       const patientBundle = await alexApiClient.get(
-        `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`
+        `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`,
+        { correlationId, facilityId },
       )
       if (patientBundle.entry?.length > 0) {
         patientId = patientBundle.entry[0].resource.id
       } else {
-        return res.status(404).json({ success: false, error: 'Patient not found' })
+        return res.status(404).json({ success: false, error: 'Patient not found', correlationId })
       }
     }
 
     if (!patientId) {
-      return res.status(400).json({ success: false, error: 'patient or nhi parameter required' })
+      return res.status(400).json({ success: false, error: 'patient or nhi parameter required', correlationId })
     }
 
     const bundle = await alexApiClient.get(
-      `/Task?patient=${patientId}&_count=${count}`
+      `/Task?patient=${patientId}&_count=${count}`,
+      { correlationId, facilityId },
     )
 
     res.json({
@@ -549,10 +626,11 @@ app.get('/api/medtech/tasks', async (req, res) => {
       tasks: bundle.entry?.map(e => e.resource) || [],
     })
   } catch (error) {
-    res.status(500).json({
+    res.status(error?.statusCode || 500).json({
       success: false,
-      error: error.message,
+      error: error instanceof Error ? error.message : 'Unknown error',
       duration: Date.now() - startTime,
+      correlationId,
     })
   }
 })
