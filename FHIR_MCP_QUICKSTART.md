@@ -73,7 +73,7 @@ The FHIR context automatically activates when you work with:
 - Files in `src/lib/fhir/`
 - Any files matching `*fhir*.{ts,tsx}` or `*medtech*.{ts,tsx}`
 
-See `.cursor/rules/fhir-medtech-development.mdc` for full details.
+See `.cursor/rules/project-medtech-integration.mdc` for full details.
 
 ## Example Queries
 
@@ -172,5 +172,5 @@ The standard FHIR MCP server **cannot** connect directly to the ALEX API because
 
 For questions or issues:
 1. Check existing documentation in `project-management/medtech-integration/`
-2. Review the context-aware rule: `.cursor/rules/fhir-medtech-development.mdc`
+2. Review the context-aware rule: `.cursor/rules/project-medtech-integration.mdc`
 3. Consult the FHIR R4 specification for resource details

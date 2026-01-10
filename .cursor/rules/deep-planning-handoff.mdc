@@ -150,10 +150,10 @@ Topic-specific additions:
 - **Market**: NZ healthcare, Medtech PMS dominant (3,000+ GPs use it)
 - **Current challenge**: Handling multiple projects, customer outreach feels hard
 
-[If question is about specific project with PROJECT_RULES.md, add:]
-**Project-Specific Constraints (from PROJECT_RULES.md)**
+[If question is about a specific project, add:]
+**Project-Specific Constraints (from project rules)**
 
-[Include relevant constraints from the project's PROJECT_RULES.md file]
+[Include relevant constraints from the project's referenced rules (prefer `PROJECT_SUMMARY.md` frontmatter `key_docs.project_rules` if present)]
 
 Example for Medtech:
 - Infrastructure: BFF must have static IP (Medtech firewall requirement)
@@ -200,7 +200,7 @@ Ready when you are. Let's think this through deeply.
 - Relevant tech stack details (based on topic)
 - Past attempts (from CHANGELOG.md, PROJECT_SUMMARY.md)
 - Recent context (from weekly logs if relevant)
-- **Project-specific constraints** (from PROJECT_RULES.md if question is about specific project)
+- **Project-specific constraints** (from the project's referenced rules, if question is about a specific project)
   - Example: If discussing Medtech, include hard constraints (static IP, FHIR requirements, test facility IDs)
 
 **Never include:**

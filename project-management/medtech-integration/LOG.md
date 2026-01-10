@@ -1,5 +1,9 @@
 # Project Log - Medtech Integration
 
+## Project rules (current)
+- The canonical Medtech Integration rules are now consolidated in `.cursor/rules/project-medtech-integration.mdc`.
+- Historical log entries may mention older file names (for example `PROJECT_RULES.md`); treat those as historical context.
+
 ## 2026-01-10 Fri
 ### Milestone: Consolidate logging into `LOG.md`
 - Legacy changelog history has been migrated into this file.

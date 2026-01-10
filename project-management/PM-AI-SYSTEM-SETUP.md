@@ -52,15 +52,12 @@ A complete Project Management AI assistant system integrated into Cursor AI.
    - Validates Claude's recommendations against codebase
    - Routes to implementation or documentation
 
-6. **fhir-medtech-development.mdc** (Optional, loaded for Medtech work)
-   - Medtech-specific guidance (unchanged)
+6. **project-medtech-integration.mdc** (Scoped, auto-activates for Medtech/ALEX work)
+   - Medtech-specific guidance (ALEX/FHIR constraints, debugging, facility conventions, doc workflow)
 
-**Project-Specific Rules** (not in .cursor/rules):
-- Some projects have `PROJECT_RULES.md` in their project folder
-- Example: `/project-management/medtech-integration/PROJECT_RULES.md`
-- Contains: Hard constraints, workflows, testing requirements, tech stack rules
-- AI automatically reads these when working on that project
-- PROJECT_SUMMARY.md will indicate if PROJECT_RULES.md exists (see warning at top)
+**Project-Specific Rules**:
+- Prefer consolidating project rules into scoped Cursor rules (in `.cursor/rules/`) to avoid duplication.
+- Use per-project `PROJECT_SUMMARY.md` as the operational runbook, and `LOG.md` as the chronological evidence trail.
 
 **Deleted Old Rules**:
 - ~~mandatory-overview-first.mdc~~ (replaced by ai-role-and-context.mdc)
@@ -368,7 +365,7 @@ AI automatically detects:
 
 5. **Trust the process**: System designed around your specific challenges
 
-6. **Check PROJECT_RULES.md**: Some projects (like Medtech) have specific constraints; AI reads these automatically
+6. **Check project constraints**: Some projects (like Medtech) have specific constraints; these are captured in scoped `.cursor/rules/*` files so they auto-activate in relevant code/docs.
 
 ---
 
@@ -380,7 +377,7 @@ AI automatically detects:
 - `/workspace/.cursor/rules/accountability-system.mdc`
 - `/workspace/.cursor/rules/library-first-approach.mdc`
 - `/workspace/.cursor/rules/deep-planning-handoff.mdc` (NEW - Claude.ai integration)
-- `/workspace/.cursor/rules/fhir-medtech-development.mdc`
+- `/workspace/.cursor/rules/project-medtech-integration.mdc` (Medtech/ALEX scoped)
 
 **Tracking** (your data):
 - `/workspace/project-management/CURRENT-WORK.md` (priorities and active queue)
@@ -389,8 +386,7 @@ AI automatically detects:
 - `/workspace/project-management/[project]/LOG.md` (per-project progress, blockers, and milestones)
 
 **Project-Specific** (when applicable):
-- `/workspace/project-management/[project]/PROJECT_RULES.md` (project constraints - if exists)
-- Example: Medtech Integration has PROJECT_RULES.md with hard constraints (static IP requirement, FHIR spec compliance, test facility IDs, etc.)
+- Prefer scoped Cursor rules under `/workspace/.cursor/rules/` for project constraints (auto-activation, avoids duplicated docs).
 
 **Result**:
 A PM AI system that acts like a technical co-founder who understands your business context, challenges you strategically, plans code properly, and keeps you accountable to your 2026 revenue goals.
