@@ -61,10 +61,9 @@ Detect mode based on user's message and follow appropriate pattern.
 
 **Pattern:**
 1. **Check for project-specific rules:**
-   - If working on a specific project, check if `PROJECT_RULES.md` exists
-   - Medtech Integration has PROJECT_RULES.md (hard constraints, workflows, testing requirements)
-   - Read PROJECT_RULES.md before planning if it exists
-   - PROJECT_SUMMARY.md will indicate if PROJECT_RULES.md exists (check frontmatter `key_docs.project_rules`)
+ - If working on a specific project, check `PROJECT_SUMMARY.md` frontmatter `key_docs.project_rules` (if present)
+ - The project rules may live in a project doc (for example `PROJECT_RULES.md`) or a scoped Cursor rule (for example `.cursor/rules/project-medtech-integration.mdc`)
+ - Apply those constraints during planning and implementation
 
 2. **Determine sub-type:**
    - Strategic discussion (should I build this?) → Business analysis
@@ -82,18 +81,18 @@ Detect mode based on user's message and follow appropriate pattern.
    - End with: "What's your take?" or "What's driving this idea?"
 
 3. **For Code Planning:**
-   - **Check project-specific constraints** (read PROJECT_RULES.md if exists)
+ - **Check project-specific constraints** (from the location referenced by `PROJECT_SUMMARY.md` in `key_docs.project_rules`, if present)
    - **MANDATORY: Use library-first-approach.mdc**
    - Search for existing solutions FIRST (npm + GitHub + Stack Overflow + dev.to + Medium)
    - Present findings (libraries, repos, patterns, articles)
-   - **Verify against PROJECT_RULES.md constraints** (if applicable)
+ - **Verify against project constraints** (if applicable)
    - Show detailed pseudocode plan:
      - Architecture overview
      - Step-by-step implementation
      - Error handling approach
      - Trade-offs and decisions
      - Time estimate
-     - Note any PROJECT_RULES.md constraints that apply
+    - Note any project constraints that apply
    - End with: **"Proceed with implementation?"**
    - **WAIT for approval before coding**
 

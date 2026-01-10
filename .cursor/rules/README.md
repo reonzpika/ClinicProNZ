@@ -39,10 +39,8 @@ Rules load in two ways:
 - `project-management.mdc` (scoped to `project-management/**`)
   - Canonical project docs and strict anti-duplication policy.
   - **Approval-gated** documentation updates (propose first; only edit after approval).
-- `project-medtech-integration.mdc` (scoped to `project-management/medtech-integration/**`)
-  - Medtech documentation placement rules plus facility IDs and ALEX invariants.
-- `fhir-medtech-development.mdc` (scoped to FHIR/Medtech-related code and docs)
-  - FHIR R4 and ALEX constraints; recommends using MCP FHIR tools against HAPI for learning/prototyping.
+- `project-medtech-integration.mdc` (scoped to Medtech/ALEX code and docs)
+  - ALEX (FHIR) constraints, debugging flow, facility conventions, and Medtech project documentation placement rules.
 - `deep-planning-handoff.mdc` (keyword-triggered, not always-on)
   - When you explicitly ask for “deep planning”, generates a Claude.ai prompt and then validates the returned recommendations against this repo.
 

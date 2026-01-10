@@ -21,14 +21,14 @@ quick_reference:
     - "Waiting on Medtech commercial terms (revenue share/fees/billing route/payment terms) and competitor QuickShot pricing (Intellimed) to finalise pricing strategy"
   facility_id: "F2N060-E (hosted UAT API testing) + F99669-C (local Medtech Evolution UI validation)"
 key_docs:
-  project_rules: "PROJECT_RULES.md"
+  project_rules: ".cursor/rules/project-medtech-integration.mdc"
   roadmap: "DEVELOPMENT_ROADMAP.md"
   changelog: "LOG.md"
   alex_api: "alex-api.md"
 ---
 
 ## Read order (for humans and AI)
-- `PROJECT_RULES.md` (hard constraints and workflow)
+- `.cursor/rules/project-medtech-integration.mdc` (hard constraints, ALEX/FHIR rules, debugging)
 - `PROJECT_SUMMARY.md` (this file; operational runbook)
 - `DEVELOPMENT_ROADMAP.md` (Phase plans; Phase 1D testing details live here)
 - `LOG.md` (project history and log)
@@ -325,7 +325,7 @@ Bring `F99669-C` online (desktop always-on, Hybrid Connection Manager running), 
   - Moved feature docs to `features/clinical-images/`
   - Consolidated config docs: `oauth-and-config.md`
   - Archived deprecated docs
-- **New docs**: PROJECT_RULES.md, FEATURE_OVERVIEW.md, LOG.md
+- **New docs**: `.cursor/rules/project-medtech-integration.mdc` (project rules), FEATURE_OVERVIEW.md, LOG.md
 - **Updated time estimate**: Phase 1 now 6-8 hours (was 4-6) due to Redis + S3 implementation
 
 ### [2025-11-12] — 📚 Documentation Consolidation & Streamlining

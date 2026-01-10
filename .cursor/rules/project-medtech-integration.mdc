@@ -1,28 +1,105 @@
 ---
-description: "Medtech Integration project-specific constraints and doc workflow"
+description: "Medtech Integration: ALEX (FHIR) + infrastructure constraints + doc workflow"
 alwaysApply: false
 globs:
-  - project-management/medtech-integration/**
+  - "app/(medtech)/**"
+  - "app/**/medtech/**"
+  - "app/api/**/medtech/**"
+  - "src/medtech/**"
+  - "src/lib/services/medtech/**"
+  - "lightsail-bff/**"
+  - "project-management/medtech-integration/**"
 version: "1.0.0"
 priority: HIGH
 last_updated: "2026-01-10"
 ---
 
-# Medtech Integration Project Rules (Project Management Layer)
+# Medtech Integration Project Rules
 
 ## Purpose
-Ensure documentation and testing notes for Medtech Integration remain accurate and operationally useful.
-This file complements the global project-management rules and the project’s own `PROJECT_RULES.md`.
+Keep Medtech Integration work safe, debuggable, and consistent:
+- ALEX (FHIR) integration rules and “known-good” request shapes
+- Infrastructure constraints (static IP allow-listing)
+- Testing conventions (facility IDs, what each is for)
+- Documentation workflow (where to record evidence vs runbooks)
 
-## Canonical facility usage
-- Hosted UAT API testing: `F2N060-E`.
-- Local Medtech Evolution UI validation: `F99669-C` (requires Windows desktop tunnel staying awake).
+## Canonical documentation (do not duplicate)
+- **ALEX docs (canonical)**: `https://alexapidoc.medtechglobal.com/`
+- **Local runbook (this repo)**: `project-management/medtech-integration/PROJECT_SUMMARY.md`
 
-## Key invariants
-- Only the Lightsail BFF (static IP allow-listed) should call ALEX directly.
-- Record ALEX anomalies with direct evidence (status codes, OperationOutcome snippets, correlation IDs).
+Keep local docs short; store only “our conventions”, “known gotchas”, and “how to debug quickly”.
+
+## Hard constraints (never violate)
+
+### Architecture and network
+- **Only the Lightsail BFF calls ALEX** (static IP allow-listed). Vercel must not call ALEX directly.
+- **Facility ID must be propagated end-to-end** (widget → Vercel → BFF → ALEX header `mt-facilityid`).
+
+### Testing safety
+- **Never use production facility IDs in development**.
+
+### FHIR and payload rules (ALEX-specific)
+- **FHIR R4 spec is authoritative**; check the spec and ALEX docs, do not assume behaviour.
+- **Images must be < 1MB** before upload; compress before POST.
+- **FHIR `Media.identifier` is mandatory on POST** (include `system` and `value`).
+
+## Canonical facility usage (what to use, when)
+- **API-only integration checks** (OAuth, FHIR request/response formats): use `F2N060-E` (Medtech hosted test facility).
+- **Medtech Evolution UI validation** (Inbox + Daily Record visible in your installed Evo app): use `F99669-C` (local facility; requires the Windows desktop tunnel staying awake).
+
+## ALEX request basics (what must be correct)
+
+### Base URLs
+- UAT: `https://alexapiuat.medtechglobal.com/FHIR`
+- Production: `https://alexapi.medtechglobal.com/FHIR`
+
+### Required headers
+- `Authorization: Bearer <token>`
+- `Content-Type: application/fhir+json` (required for POST/PUT/PATCH; safe for GET too)
+- `mt-facilityid: <FACILITY>`
+
+### Recommended header (debugging)
+- `mt-correlationid: <uuid>`; helps Medtech trace requests in logs.
+
+## Known ALEX gotchas (high signal)
+- **URL shape matters**: avoid double-appending `/FHIR`; keep the case consistent.
+- **Search query shape matters**: do not assume a 403 is “missing roles” until you have tried the documented query form.
+  - Known working: `GET /FHIR/Patient?identifier=<system>|<value>`
+  - For Media (per ALEX support): `GET /FHIR/Media?patient.identifier=<system>|<value>`
+
+## When you hit errors or uncertainty (required behaviour)
+If you encounter a `401/403/404/500`, an unexpected OperationOutcome, or you are unsure which URL/query/header shape ALEX expects:
+- **First**: consult the canonical ALEX docs at `https://alexapidoc.medtechglobal.com/` (search within the page for the relevant resource and examples).
+- **Second**: cross-check our local runbook (`PROJECT_SUMMARY.md`) for known-good endpoints, facility IDs, and current operational notes.
+- **If still unclear**: contact Medtech ALEX support and include the minimum debugging packet:
+  - Exact request URL (no secrets)
+  - Facility ID used
+  - Timestamp (NZ time)
+  - Correlation ID (`mt-correlationid` if available; otherwise the app-generated correlationId)
+  - Status code and the OperationOutcome body
+  - Confirmation the call was made from the allow-listed Lightsail IP via BFF (not Vercel)
+
+## Quick debugging flow (preferred)
+- BFF health: `GET https://api.clinicpro.co.nz/health`
+- Patient test: `GET https://api.clinicpro.co.nz/api/medtech/test?nhi=<NHI>&facilityId=<FACILITY>`
+- Media verify: `GET https://api.clinicpro.co.nz/api/medtech/media?nhi=<NHI>&facilityId=<FACILITY>&count=<N>`
+
+When debugging 403s:
+- Confirm facility ID and base URL first.
+- Then confirm the query parameter format matches the ALEX docs (and any ALEX support examples).
+
+## Implementation hygiene
+- Prefer small, purpose-built BFF endpoints for validation over ad-hoc scripts.
+- Keep a small number of “known-good” curl/Postman requests checked in (or captured in `PROJECT_SUMMARY.md`) for fast regression tests.
 
 ## Documentation placement
-- Current state and next pick-up point: `PROJECT_SUMMARY.md`.
-- Evidence, experiments, and comms: `LOG.md` (chronological).
-- Legacy history: `CHANGELOG.md` exists; do not duplicate its content into `LOG.md`. New work goes into `LOG.md`.
+- **Current state and next pick-up point (runbook)**: `PROJECT_SUMMARY.md`
+- **Evidence, experiments, comms, decisions (chronological)**: `LOG.md`
+- **Work planning and phases**: `DEVELOPMENT_ROADMAP.md`
+
+### Documentation principles
+- **Minimise documents**: prefer merging into the smallest set of active docs.
+- **Single operational runbook**: keep operational instructions only in `PROJECT_SUMMARY.md`.
+- **No duplication**: do not repeat the same instructions across multiple docs.
+- **Latest change wins**: if two docs disagree, the most recently updated statement is considered correct.
+- **Archive aggressively**: move superseded docs into `archive/`; prefer short stubs over copied content.
