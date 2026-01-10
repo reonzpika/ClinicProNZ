@@ -11,13 +11,13 @@
 **Change from v6.0**: Added `session-workflow.mdc` as always-loaded with integrated todo system for persistent memory.
 
 **Why**: 
-- AI forgets critical final steps (documentation, build verification, weekly log) after long coding sessions
+- AI forgets critical final steps (documentation, build verification, project logging) after long coding sessions
 - Rules get buried in long context (200+ messages) but incomplete todos remain visible
 - Uses todo system as persistent checklist that AI cannot ignore
 
 **How it works**:
 - When AI enters DOING mode (writes/modifies code), todos are automatically created
-- Final 3 todos ALWAYS added: (1) Build/test/fix errors, (2) Update documentation, (3) Update weekly log
+- Final 3 todos ALWAYS added: (1) Build/test/fix errors, (2) Propose doc updates, (3) Update project LOG.md (if significant)
 - AI cannot mark work "done" with pending todos
 - Incomplete todos remain visible throughout session as memory mechanism
 
@@ -25,7 +25,7 @@
 - ✅ Quality control steps never skipped, even in 200+ message threads
 - ✅ Documentation always completed
 - ✅ Build verification mandatory before finishing
-- ✅ Weekly log tracking automated
+- ✅ Project log tracking supported
 - ✅ Visual progress tracking throughout work session
 
 ---
@@ -74,24 +74,24 @@
 
 **File**: `mandatory-overview-first.mdc` (~50 lines, ~250 tokens)
 
-**Purpose**: Single instruction - read PROJECTS_OVERVIEW.md before anything else.
+**Purpose**: Single instruction - read the project management entry points before anything else.
 
 **Why it works**: So simple AI can't misinterpret. No competing instructions, no escape hatches.
 
 ---
 
-### Level 1: Navigation (Embedded in Overview)
+### Level 1: Navigation (Portfolio)
 
-**File**: `/project-management/PROJECTS_OVERVIEW.md`
+**Files**:
+- `/project-management/CURRENT-WORK.md`
+- `/project-management/PORTFOLIO.md`
 
 **Contains**:
-1. **YAML keyword registry** - Maps keywords to project folders
-2. **AI Navigation Instructions** - What to do after reading overview:
-   - Match query to project via keywords
-   - Load that project's PROJECT_SUMMARY.md
-   - Handle new projects, general queries, ambiguous requests
+1. One-line status per project
+2. Paths to each project folder
+3. Pointers to each project’s `PROJECT_SUMMARY.md` and `LOG.md`
 
-**Why embedded**: Instructions are IN the file AI must read. Can't skip navigation logic.
+**Note**: `PROJECTS_OVERVIEW.md` is now deprecated and only kept as a stub pointing to `PORTFOLIO.md`.
 
 ---
 
@@ -132,7 +132,7 @@
 
 **Key Innovation**: 
 - When AI enters DOING mode, todos automatically created
-- Final 3 todos ALWAYS added: Build/test/fix, Update docs, Update weekly log
+- Final 3 todos ALWAYS added: Build/test/fix, Propose doc updates, Update project LOG.md (if significant)
 - AI cannot mark work "done" with pending todos
 - Works even in 200+ message conversations
 
@@ -160,11 +160,9 @@
 User: "I want to work on medtech"
 
 AI Process:
-1. Reads mandatory-overview-first.mdc → "Read overview"
-2. Reads PROJECTS_OVERVIEW.md
-3. Sees navigation instructions
-4. Checks keyword registry: "medtech" → medtech-integration folder
-5. Reads /project-management/medtech-integration/PROJECT_SUMMARY.md
+1. Reads `CURRENT-WORK.md` and `PORTFOLIO.md`
+2. Identifies the relevant project folder from `PORTFOLIO.md`
+3. Reads `/project-management/medtech-integration/PROJECT_SUMMARY.md`
 6. Opening PROJECT_SUMMARY.md triggers glob → project-work-rules.mdc loads
 7. Now has full context + all work rules
 8. Follows workflow: Discuss → Approve → Implement → Update
@@ -176,9 +174,8 @@ AI Process:
 User: "What's 2+2?"
 
 AI Process:
-1. Reads mandatory-overview-first.mdc → "Read overview"
-2. Reads PROJECTS_OVERVIEW.md
-3. Sees navigation instructions: "Not project-related? Answer directly"
+1. Reads `CURRENT-WORK.md` and `PORTFOLIO.md`
+2. Detects query is not project-related
 4. Responds: "4"
 5. Adds: "Not related to your projects, but let me know if you need anything else!"
 ```
@@ -189,10 +186,9 @@ AI Process:
 User: "Create new mobile app project"
 
 AI Process:
-1. Reads mandatory-overview-first.mdc → "Read overview"
-2. Reads PROJECTS_OVERVIEW.md
-3. Checks keywords: No match for "mobile app"
-4. Navigation says: "Ask if new project"
+1. Reads `CURRENT-WORK.md` and `PORTFOLIO.md`
+2. Sees no matching project in `PORTFOLIO.md`
+3. Asks whether this is a new project and gathers details
 5. AI asks: "Is this: (A) New project, (B) Related to existing, (C) General?"
 6. User: "New project"
 7. AI asks details, creates PROJECT_SUMMARY.md, updates overview
@@ -214,12 +210,15 @@ AI Process:
 └── README.md (This file)
 
 /project-management/
-├── PROJECTS_OVERVIEW.md (Contains navigation + keyword registry, Level 1)
+├── CURRENT-WORK.md (Root ops doc: priorities + active queue)
+├── PORTFOLIO.md (Root navigation: one-line per project)
+├── PROJECTS_OVERVIEW.md (Deprecated stub; points to PORTFOLIO.md)
 ├── [project-name]/
 │   ├── PROJECT_SUMMARY.md (Required for each project)
-│   └── PROJECT_RULES.mdc (Optional project-specific rules)
-├── weekly-logs/
-│   └── YYYY-WW.md (Weekly accomplishments, decisions, metrics)
+│   ├── LOG.md (Chronological log with evidence)
+│   └── PROJECT_RULES.md (Optional project-specific rules)
+├── archive/
+│   └── weekly-logs-pre-2026-01/ (Historical only; not maintained)
 └── ...
 ```
 
@@ -229,7 +228,7 @@ AI Process:
 
 ### 1. Overview First (Always)
 
-Before responding to ANY query, AI must read PROJECTS_OVERVIEW.md. No exceptions.
+Before responding to most project-management queries, AI should read `CURRENT-WORK.md` and `PORTFOLIO.md`.
 
 ### 2. Navigation is Embedded
 
@@ -250,8 +249,8 @@ session-workflow.mdc implements todo-driven workflow to solve the "AI forgets af
 1. When AI enters DOING mode (writes/modifies code), todos automatically created
 2. Final 3 todos ALWAYS added (in this order):
    - Build, test, and fix all errors
-   - Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)
-   - Update weekly log (if significant milestone)
+   - Propose documentation updates (PROJECT_SUMMARY + PORTFOLIO + CURRENT-WORK if needed)
+   - Update project LOG.md (if significant milestone)
 3. AI updates todo status as progressing (pending → in_progress → completed)
 4. AI cannot mark work "done" with pending todos
 
@@ -268,7 +267,7 @@ session-workflow.mdc implements todo-driven workflow to solve the "AI forgets af
 3. [Third implementation step] - pending
 4. Build, test, and fix all errors - pending
 5. Update documentation (PROJECT_SUMMARY + PROJECTS_OVERVIEW) - pending
-6. Update weekly log (if significant) - pending
+6. Update project LOG.md (if significant) - pending
 ```
 
 ### 4. Discuss Before Implementing
@@ -279,11 +278,10 @@ session-workflow.mdc implements todo-driven workflow to solve the "AI forgets af
 
 ### 5. Dashboard Sync is Mandatory
 
-When PROJECT_SUMMARY.md changes, PROJECTS_OVERVIEW.md MUST update:
-- Active Projects Index (dates, stage)
-- Highlights (achievements, blockers)
-- Schedule (upcoming/past events)
-- Project Details (summary, status)
+When a project’s state changes materially, update:
+- The project’s `PROJECT_SUMMARY.md` (current state and next pick-up point)
+- `PORTFOLIO.md` (one-line status, if it changed)
+- `CURRENT-WORK.md` (priorities and active queue, if it changed)
 
 ### 6. Ad-Hoc Templates
 
@@ -296,9 +294,9 @@ No template files. Generate project structures on-the-fly based on:
 
 ## Project-Specific Rules
 
-Projects can have unique rules in `[project-folder]/PROJECT_RULES.mdc`:
+Projects can have unique rules in `[project-folder]/PROJECT_RULES.md` (or scoped `.cursor/rules/project-*.mdc` when needed):
 
-**Example**: `medtech-integration/PROJECT_RULES.mdc`
+**Example**: `medtech-integration/PROJECT_RULES.md`
 ```yaml
 ---
 alwaysApply: false
@@ -323,11 +321,11 @@ globs:
 
 **Test 1**: Project query
 - Say: "work on medtech"
-- Expected: AI reads overview → matches keyword → loads project summary → discusses (doesn't implement immediately)
+- Expected: AI reads `CURRENT-WORK.md` + `PORTFOLIO.md` → loads project summary → discusses (doesn't implement immediately)
 
 **Test 2**: New project
 - Say: "create new project for X"
-- Expected: AI reads overview → no keyword match → asks if new project → creates after details gathered
+- Expected: AI reads `CURRENT-WORK.md` + `PORTFOLIO.md` → sees no matching project → asks if new project → creates after details gathered
 
 **Test 3**: General query
 - Say: "what's React hooks?"
@@ -335,7 +333,7 @@ globs:
 
 **Test 4**: Dashboard sync
 - Edit any PROJECT_SUMMARY.md
-- Expected: PROJECTS_OVERVIEW.md also updates (index, highlights, schedule, details)
+- Expected: `PORTFOLIO.md` updates if the one-line status changed; `CURRENT-WORK.md` updates if priorities/queue changed
 
 **Test 5**: Todo system
 - Say: "build a login form"
@@ -347,13 +345,13 @@ globs:
 
 **System is working when**:
 - ✅ AI always reads overview first (no codebase exploration before context)
-- ✅ AI matches queries to projects via keywords accurately
+- ✅ AI identifies the relevant project quickly via `PORTFOLIO.md` and project summaries
 - ✅ AI discusses before implementing code changes
 - ✅ Dashboard stays synchronized with project summaries
 - ✅ No unnecessary files created during discussions
 - ✅ AI creates todos when entering DOING mode
 - ✅ AI completes all todos (build/docs/log) before marking done
-- ✅ Documentation and weekly logs consistently updated
+- ✅ Documentation and project logs consistently updated
 
 **System needs tuning when**:
 - ❌ AI explores codebase before reading overview
@@ -373,25 +371,14 @@ globs:
 2. AI reads overview (per Level 0 rule)
 3. AI asks details: stage, type, needs
 4. AI creates folder + PROJECT_SUMMARY.md
-5. AI adds to PROJECTS_OVERVIEW.md:
-   - Add to project_keywords in YAML
-   - Add row to Active Projects Index
-   - Add to Project Details section
+5. AI adds to `PORTFOLIO.md` (one-line status + path)
+6. AI adds any immediate work to `CURRENT-WORK.md` (if relevant)
 
 ### Updating Rules
 
 **For general rules**: Edit `project-work-rules.mdc`
 
-**For project-specific rules**: Create/edit `[project-folder]/PROJECT_RULES.mdc`
-
-**For navigation logic**: Edit PROJECTS_OVERVIEW.md navigation instructions section
-
-### Keywords Not Matching
-
-If AI doesn't match query to project:
-1. Check PROJECTS_OVERVIEW.md YAML `project_keywords`
-2. Add missing keywords to relevant project
-3. Save and test
+**For project-specific rules**: Create/edit `[project-folder]/PROJECT_RULES.md` (or a scoped `.cursor/rules/project-*.mdc` file when needed)
 
 ---
 
@@ -432,8 +419,7 @@ If AI doesn't match query to project:
 
 **What was consolidated**:
 - Everything merged into `project-work-rules.mdc`
-- Navigation moved to PROJECTS_OVERVIEW.md
-- Project registry moved to PROJECTS_OVERVIEW.md YAML
+- Portfolio navigation moved to `PORTFOLIO.md` (legacy `PROJECTS_OVERVIEW.md` now a stub)
 
 **What survived**:
 - `library-first-approach.mdc` (workspace-level rule)
@@ -445,7 +431,7 @@ If AI doesn't match query to project:
 
 The system is now simple enough to understand in one read:
 1. Read overview first (mandatory-overview-first.mdc)
-2. Follow navigation in overview (PROJECTS_OVERVIEW.md)
+2. Follow navigation in `CURRENT-WORK.md` + `PORTFOLIO.md`
 3. Apply work rules consistently (project-work-rules.mdc - always loaded)
 4. Use todo system for memory persistence (session-workflow.mdc - always loaded)
 

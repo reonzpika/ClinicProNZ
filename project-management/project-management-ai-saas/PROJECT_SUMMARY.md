@@ -30,6 +30,10 @@ summary: "Conversation-driven AI project management for solo founders. Documenta
 
 **Stage Transition**: Moved from Validation → Build (2025-11-09) as working prototype is now complete and in active use
 
+## Next Session: Pick Up Here
+
+Maintenance only. Next time you touch this, focus on the smallest improvement that helps daily use of the system or makes Ting’s testing easier.
+
 **MVP Strategy** (FOCUSED):
 - **Target**: Startups only (founders, indie hackers, small startup teams)
 - **Core**: SaaS version of our current project management system
@@ -876,7 +880,7 @@ Action: Implemented 9 conversational triggers for autonomous updates
 
 ### Todo List Integration for Memory Persistence
 
-**Problem Identified**: After long coding sessions, AI forgets critical final steps (documentation, build verification, weekly log updates) even when explicitly stated in rules. Rules get buried in long context.
+**Problem Identified**: After long coding sessions, AI forgets critical final steps (documentation, build verification, project logging) even when explicitly stated in rules. Rules get buried in long context.
 
 **Solution Implemented**: Integrated todo system as persistent memory/checklist that AI cannot ignore.
 
@@ -884,8 +888,8 @@ Action: Implemented 9 conversational triggers for autonomous updates
 - Any time AI enters DOING mode (writes/modifies code), todos are automatically created
 - Final 3 todos ALWAYS added when coding:
   1. Build, test, and fix all errors
-  2. Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)
-  3. Update weekly log (if significant milestone)
+  2. Propose documentation updates (PROJECT_SUMMARY + PORTFOLIO + CURRENT-WORK if needed)
+  3. Update project LOG.md (if significant milestone)
 - AI cannot mark work as "done" with pending todos
 - Incomplete todos remain visible throughout session as checklist
 
@@ -908,8 +912,8 @@ Action: Implemented 9 conversational triggers for autonomous updates
 - Todo structure: implementation steps + 3 final todos (always at end)
 - Status updates: pending → in_progress → completed
 - Build step includes: compile, fix errors, test feature, cleanup debug code
-- Documentation step includes: PROJECT_SUMMARY.md, PROJECTS_OVERVIEW.md, technical docs
-- Weekly log step: conditional (only for significant milestones)
+- Documentation step includes: project `PROJECT_SUMMARY.md` plus root `PORTFOLIO.md` and `CURRENT-WORK.md` if needed (apply after approval)
+- Project log step: conditional (only for significant milestones; update the relevant project `LOG.md`)
 
 **Validation**: This improvement was immediately dogfooded - the implementation itself used the todo system to ensure all steps completed (meta!).
 

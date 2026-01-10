@@ -97,6 +97,10 @@ risks:
 **Organisation:** NexWave Solutions Ltd  
 **Grant Type:** Callaghan Innovation - New to R&D Grant  
 **Project Duration:** 27 Jan 2026 - 26 Jan 2028 (24 months)  
+
+## Next Session: Pick Up Here
+
+If there is no new grant decision, keep this in maintenance mode. Next time you touch it, do the smallest update that increases readiness for the decision (eg capture any new correspondence, clarify next steps, and keep the project status current).
 **Total Eligible Costs:** $716,926 (NZD excl. GST)  
 **Grant Request:** $286,770 (40%)  
 **Co-Funding:** $430,156 (60% from shareholder funds + GP clinical work income)

@@ -13,16 +13,15 @@ last_updated: "2026-01-01"
 
 When user says generic greeting ("hi", "hello", "hey", "what's up", "yo", etc.):
 
-1. Read: `CURRENT-FOCUS.md`, `PROJECTS_OVERVIEW.md`, `2026-ANNUAL-PLANNING.md`
+1. Read: `CURRENT-WORK.md`, `PORTFOLIO.md`
 2. Provide briefing (keep concise, under 12 lines)
 
 **Format:**
 ```
 [Greeting], ready to work.
 
-📍 Today: [Today's priority from CURRENT-FOCUS.md or "Not set"]
-🎯 Week: [This week's ONE big win or "Not defined"]  
-📊 Status: [Paying clinics] | [MRR] | [Features shipped]
+📍 Priorities: [Top priorities from CURRENT-WORK.md]
+📊 Status: [Key metrics if present in CURRENT-WORK.md]
 
 ━━━ ACTIVE PROJECTS ━━━
 1. **[Project Name]** (PRIMARY) - [Current status/goal]
@@ -32,8 +31,8 @@ When user says generic greeting ("hi", "hello", "hey", "what's up", "yo", etc.):
 
 ━━━ COMMON ACTIONS ━━━
 • "what should i work on?" - Daily task recommendation
-• "plan today" - Set today's priority
-• "plan week" - Weekly planning session
+• "plan today" - Update CURRENT-WORK.md active queue
+• "plan week" - Update CURRENT-WORK.md priorities
 • "daily check" - Quick standup
 • "weekly review" - Week review + planning next week
 • "check progress" - Metrics and goal tracking
@@ -149,8 +148,8 @@ Detect mode based on user's message and follow appropriate pattern.
 
 5. **Complete final todos (ALWAYS before reporting done):**
    - Build, test, and fix all errors
-   - Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)
-   - Update weekly log (if significant milestone)
+   - Propose documentation updates (PROJECT_SUMMARY.md + PORTFOLIO.md + CURRENT-WORK.md if needed); apply after user approval
+   - Update project LOG.md (if significant milestone); apply after user approval
    - Mark all todos completed
 
 6. **Report completion:**
@@ -187,12 +186,12 @@ Detect mode based on user's message and follow appropriate pattern.
    - "Anything blocking you?"
 
    **Weekly Review:**
-   - "Did you hit this week's ONE big win?" (YES/NO + why)
+   - "Did you hit this week's primary priority?" (YES/NO + why)
    - "How many customer conversations?" (number + what learned)
    - "Time split: Building vs Customer/Business?" (rough hours)
    - "Key decisions made this week?"
    - "What's blocking progress?"
-   - "Next week's ONE big win?"
+   - "What are next week's top priorities?"
 
    **Monthly Review:**
    - Review quarterly goals from annual planning
@@ -208,7 +207,7 @@ Detect mode based on user's message and follow appropriate pattern.
 
 3. **End with action:**
    - Set next period's priorities
-   - Ask: "Should I update CURRENT-FOCUS.md?" or "Should I create weekly log?"
+   - Ask: "Should I update CURRENT-WORK.md?" or "Should I add an entry to a project LOG.md?"
    - **ONLY create/update docs if user confirms**
 
 **Critical Rules:**
@@ -258,16 +257,16 @@ Detect mode based on user's message and follow appropriate pattern.
 3. [Third implementation step] - pending
 ...
 N-2. Build, test, and fix all errors - pending
-N-1. Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md) - pending
-N. Update weekly log (if significant milestone) - pending
+N-1. Propose documentation updates (PROJECT_SUMMARY.md + PORTFOLIO.md + CURRENT-WORK.md if needed) - pending
+N. Update project LOG.md (if significant milestone) - pending
 ```
 
 **For simple work (< 3 steps):**
 ```
 1. [Implementation task] - in_progress
 2. Build, test, and fix all errors - pending
-3. Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md) - pending
-4. Update weekly log (if significant milestone) - pending
+3. Propose documentation updates (PROJECT_SUMMARY.md + PORTFOLIO.md + CURRENT-WORK.md if needed) - pending
+4. Update project LOG.md (if significant milestone) - pending
 ```
 
 **The 3 final todos are ALWAYS added when coding.**
@@ -291,15 +290,16 @@ N. Update weekly log (if significant milestone) - pending
 
 **Update documentation:**
 - Update `/project-management/[project]/PROJECT_SUMMARY.md` (status, milestones, decisions)
-- Update `/project-management/PROJECTS_OVERVIEW.md` (recent achievements, add new milestone)
+- Update `/project-management/PORTFOLIO.md` (one-line project status only)
+- Update `/project-management/CURRENT-WORK.md` (priorities and active queue) if needed
 - Update technical docs if relevant (API docs, architecture, etc.)
 - Add/update code comments for complex logic
 
-**Update weekly log:**
+**Update project log:**
 - Only if significant milestone reached
-- Location: `/project-management/weekly-logs/YYYY-WW.md`
-- Include: accomplishments, decisions, blockers, metrics
-- Ask user: "Was this significant enough for weekly log?"
+- Location: `/project-management/[project]/LOG.md`
+- Include: progress, evidence, decisions, blockers
+- Ask user: "Should I add an entry to the project log?"
 
 **Critical Rule:**
 > **Never report work as "done" with pending todos. Check todo list before completion. If ANY todos are pending, complete them first.**
@@ -320,8 +320,8 @@ TodoWrite({
     { id: "3", content: "[Third implementation step]", status: "pending" },
     // ... more implementation steps as needed
     { id: "N-2", content: "Build, test, and fix all errors", status: "pending" },
-    { id: "N-1", content: "Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)", status: "pending" },
-    { id: "N", content: "Update weekly log (if significant)", status: "pending" }
+    { id: "N-1", content: "Propose documentation updates (PROJECT_SUMMARY.md + PORTFOLIO.md + CURRENT-WORK.md if needed)", status: "pending" },
+    { id: "N", content: "Update project LOG.md (if significant)", status: "pending" }
   ]
 })
 ```
@@ -335,8 +335,8 @@ TodoWrite({
     { id: "2", content: "Implement authentication logic", status: "pending" },
     { id: "3", content: "Add error handling", status: "pending" },
     { id: "4", content: "Build, test, and fix all errors", status: "pending" },
-    { id: "5", content: "Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)", status: "pending" },
-    { id: "6", content: "Update weekly log (if significant)", status: "pending" }
+    { id: "5", content: "Propose documentation updates (PROJECT_SUMMARY.md + PORTFOLIO.md + CURRENT-WORK.md if needed)", status: "pending" },
+    { id: "6", content: "Update project LOG.md (if significant)", status: "pending" }
   ]
 })
 ```
@@ -348,8 +348,8 @@ TodoWrite({
   todos: [
     { id: "1", content: "Fix TypeScript error in user service", status: "in_progress" },
     { id: "2", content: "Build, test, and fix all errors", status: "pending" },
-    { id: "3", content: "Update documentation (PROJECT_SUMMARY.md + PROJECTS_OVERVIEW.md)", status: "pending" },
-    { id: "4", content: "Update weekly log (if significant)", status: "pending" }
+    { id: "3", content: "Propose documentation updates (PROJECT_SUMMARY.md + PORTFOLIO.md + CURRENT-WORK.md if needed)", status: "pending" },
+    { id: "4", content: "Update project LOG.md (if significant)", status: "pending" }
   ]
 })
 ```
@@ -401,12 +401,12 @@ AI: [Tests feature in browser] → works
 AI: [Marks todo 4 completed, moves to todo 5]
 ↓
 AI: [Updates PROJECT_SUMMARY.md with new feature]
-AI: [Updates PROJECTS_OVERVIEW.md with achievement]
+AI: [Proposes updates to PORTFOLIO.md (and CURRENT-WORK.md if needed); applies after approval]
 AI: [Marks todo 5 completed, moves to todo 6]
 ↓
-AI: "This was a significant feature. Update weekly log?"
+AI: "This was a significant feature. Should I add an entry to the project LOG.md?"
 User: "yes"
-AI: [Updates weekly log]
+AI: [Updates project LOG.md]
 AI: [Marks todo 6 completed]
 ↓
 AI: "Done. All todos completed. User profile page implemented and documented."
@@ -439,8 +439,8 @@ DOING: Create todos (implementation steps + 3 final todos)
        Write the code
        Update todo status as progressing
        Build, test, fix errors
-       Update documentation (PROJECT_SUMMARY + PROJECTS_OVERVIEW)
-       Update weekly log (if significant)
+       Propose doc updates (PROJECT_SUMMARY + PORTFOLIO + CURRENT-WORK if needed); apply after approval
+       Update project LOG.md (if significant); apply after approval
        Mark all todos completed
 ```
 
@@ -452,7 +452,7 @@ DOING: Create todos (fix + 3 final todos)
        Implement fix
        Build, test, fix errors
        Update documentation (if needed)
-       Update weekly log (if significant)
+       Update project LOG.md (if significant)
        Mark all todos completed
 ```
 
@@ -462,7 +462,7 @@ REVIEWING: Ask questions + analyze progress
 ↓ (Discussion)
 THINKING: "Based on this, next week should focus on X"
 ↓ (User confirms)
-DOING: Update CURRENT-FOCUS.md (if approved)
+DOING: Update CURRENT-WORK.md (if approved)
 ```
 
 ---

@@ -18,5 +18,5 @@ The primary documentation for this project is located in the main `/docs/` direc
 ## Quick Links
 
 - [Project Summary](../PROJECT_SUMMARY.md)
-- [Projects Overview](../../PROJECTS_OVERVIEW.md)
+- [Portfolio](../../PORTFOLIO.md)
 

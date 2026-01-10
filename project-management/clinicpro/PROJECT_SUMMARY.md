@@ -23,6 +23,10 @@ summary: "Full-stack Next.js SaaS application providing AI-assisted medical scri
 
 **Key Value Proposition**: AI-powered clinical documentation assistance, reducing administrative burden for GPs and improving note quality and consistency.
 
+## Next Session: Pick Up Here
+
+Maintenance only. If you touch ClinicPro this week, keep it to stability fixes; prioritise Medtech Phase 1D validation and customer work.
+
 ---
 
 ## Current Status [2025-01-15]

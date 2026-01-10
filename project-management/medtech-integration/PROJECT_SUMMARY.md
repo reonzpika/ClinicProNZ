@@ -100,6 +100,10 @@ Medtech grants permissions at app registration/user profile level. Current known
 - **Phase 1C complete**: commit creates FHIR `Media` in ALEX via Lightsail BFF (static IP).
 - **Phase 1D in progress**: commit into local facility `F99669-C`, then confirm it appears in Medtech Evolution UI (Inbox and Daily Record).
 
+## Next Session: Pick Up Here
+
+Bring `F99669-C` online (desktop always-on, Hybrid Connection Manager running), then run Phase 1D UI validation (commit 1 image into `F99669-C`; confirm Inbox + Daily Record). If Medtech replies about ALEX UAT search 403, update the approach accordingly.
+
 ---
 
 ## Recent updates (last 3-5 only)
