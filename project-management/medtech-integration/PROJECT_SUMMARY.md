@@ -23,7 +23,7 @@ quick_reference:
 key_docs:
   project_rules: "PROJECT_RULES.md"
   roadmap: "DEVELOPMENT_ROADMAP.md"
-  changelog: "CHANGELOG.md"
+  changelog: "LOG.md"
   alex_api: "alex-api.md"
 ---
 
@@ -31,7 +31,7 @@ key_docs:
 - `PROJECT_RULES.md` (hard constraints and workflow)
 - `PROJECT_SUMMARY.md` (this file; operational runbook)
 - `DEVELOPMENT_ROADMAP.md` (Phase plans; Phase 1D testing details live here)
-- `CHANGELOG.md` (history)
+- `LOG.md` (project history and log)
 
 ---
 
@@ -319,7 +319,7 @@ Bring `F99669-C` online (desktop always-on, Hybrid Connection Manager running), 
   - Moved feature docs to `features/clinical-images/`
   - Consolidated config docs: `oauth-and-config.md`
   - Archived deprecated docs
-- **New docs**: PROJECT_RULES.md, FEATURE_OVERVIEW.md, CHANGELOG.md
+- **New docs**: PROJECT_RULES.md, FEATURE_OVERVIEW.md, LOG.md
 - **Updated time estimate**: Phase 1 now 6-8 hours (was 4-6) due to Redis + S3 implementation
 
 ### [2025-11-12] — 📚 Documentation Consolidation & Streamlining
@@ -330,7 +330,7 @@ Bring `F99669-C` online (desktop always-on, Hybrid Connection Manager running), 
 - Removed inter-document references from all docs except PROJECT_SUMMARY.md
 - Streamlined for better AI navigation (docs only accessible via PROJECT_SUMMARY.md references)
 
-**For full history**: See CHANGELOG.md
+**For full history**: See `LOG.md`
 
 ### [2025-11-12] — 📋 Development Roadmap Created & Updated (3-Phase Plan)
 

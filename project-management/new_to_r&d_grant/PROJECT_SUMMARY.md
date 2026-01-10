@@ -14,7 +14,7 @@ tags:
 summary: R&D grant proposal for building a NZ-sovereign clinical LLM to assist NZ GPs with inbox management (Inbox Helper) and care gap monitoring (Care Gap Finder), integrated across both Medtech and Indici PMSs. 24-month project with lean MVPs released to early adopters, plus Years 3-5 roadmap for HealthHub NZ patient-facing app. Team: Founder + Ting R&D Operations Lead + Developer. Includes architecture validation R&D, NZ-LLM training, equity-focused algorithms, and multi-PMS generalisation. Co-funding from $200k shareholder funds (two-account structure) plus GP income. Cashflow strategically managed with planned drawdowns.
 links:
   - name: Changelog (All Updates)
-    path: CHANGELOG.md
+    path: LOG.md
   - name: Revised Objectives (24 Months)
     path: 00-admin-and-governance/revised-objectives-24-months.md
   - name: Project Master Index
@@ -143,7 +143,7 @@ This project proposes building a New Zealand-sovereign clinical AI assistant to 
 The project is organized into 7 main directories:
 
 ### Root Level
-- `CHANGELOG.md` - Complete version history and all project updates (single source of truth for changes)
+- `LOG.md` - Complete version history and all project updates (single source of truth for changes)
 - `PROJECT_SUMMARY.md` - This document - comprehensive project overview
 
 ### 00-admin-and-governance/

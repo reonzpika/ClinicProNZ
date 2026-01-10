@@ -269,7 +269,7 @@
 4. ✅ `OBJECTIVE-3-AGGRESSIVE-TRIM-SUMMARY.md` - Trim summary
 5. ✅ `OBJECTIVE-4-AGGRESSIVE-TRIM-SUMMARY.md` - Trim summary
 6. ✅ `ALL-OBJECTIVES-FINAL-STATUS.md` - This document
-7. ✅ `CHANGELOG.md` - Complete version history (v4.0, v4.1, v4.2)
+7. ✅ `LOG.md` - Complete version history (v4.0, v4.1, v4.2)
 8. ✅ `PROJECT_SUMMARY.md` - Updated to v4.2
 
 ---

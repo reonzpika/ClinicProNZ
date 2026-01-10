@@ -215,7 +215,7 @@ Complete revision of all 6 R&D Activities questions with research emphasis, arch
 ### **Core Application Files:**
 1. ✅ `forge-application-narrative.md` - All 6 R&D Activities questions completely revised
 2. ✅ `PROJECT_SUMMARY.md` - Core R&D questions updated, version to 3.6
-3. ✅ `CHANGELOG.md` - Comprehensive v3.6 entry added
+3. ✅ `LOG.md` - Comprehensive v3.6 entry added
 4. ✅ `capability-development-portal-answer.md` - Header updated
 
 ### **Deleted (No Longer Needed):**

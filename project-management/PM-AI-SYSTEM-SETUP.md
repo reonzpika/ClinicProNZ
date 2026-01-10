@@ -386,7 +386,7 @@ AI automatically detects:
 - `/workspace/project-management/CURRENT-WORK.md` (priorities and active queue)
 - `/workspace/project-management/PORTFOLIO.md` (project list and navigation)
 - `/workspace/project-management/2026-ANNUAL-PLANNING.md` (annual goals)
-- `/workspace/project-management/PROJECTS_OVERVIEW.md` (deprecated stub; points to PORTFOLIO.md)
+- `/workspace/project-management/[project]/LOG.md` (per-project progress, blockers, and milestones)
 
 **Project-Specific** (when applicable):
 - `/workspace/project-management/[project]/PROJECT_RULES.md` (project constraints - if exists)

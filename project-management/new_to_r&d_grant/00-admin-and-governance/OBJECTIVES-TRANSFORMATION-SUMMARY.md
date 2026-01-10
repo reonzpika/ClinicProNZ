@@ -321,7 +321,7 @@ and benchmark it vs GPT-4 on NZ-specific tasks...
 
 ### **Core Documents:**
 1. ✅ `revised-objectives-24-months.md` - Complete rewrite (v3.0 → v4.0)
-2. ✅ `CHANGELOG.md` - Comprehensive v4.0 entry
+2. ✅ `LOG.md` - Comprehensive v4.0 entry
 3. ✅ `PROJECT_SUMMARY.md` - Version updated to 4.0, milestone added
 4. ✅ `OBJECTIVES-TRANSFORMATION-SUMMARY.md` - This document (comprehensive before/after)
 
