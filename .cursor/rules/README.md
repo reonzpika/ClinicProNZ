@@ -1,450 +1,80 @@
-# Cursor AI Rules System
+# Cursor AI Rules (`.cursor/rules/`)
 
-**Version**: 6.1.0 (Todo Integration for Memory Persistence)  
-**Last Updated**: 2026-01-02  
-**Architecture**: 4 always-loaded files + embedded navigation
+This folder contains the Cursor rule files that shape how the coding agent works in this repo.
 
----
-
-## What Changed in v6.1
-
-**Change from v6.0**: Added `session-workflow.mdc` as always-loaded with integrated todo system for persistent memory.
-
-**Why**: 
-- AI forgets critical final steps (documentation, build verification, project logging) after long coding sessions
-- Rules get buried in long context (200+ messages) but incomplete todos remain visible
-- Uses todo system as persistent checklist that AI cannot ignore
-
-**How it works**:
-- When AI enters DOING mode (writes/modifies code), todos are automatically created
-- Final 3 todos ALWAYS added: (1) Build/test/fix errors, (2) Propose doc updates, (3) Update project LOG.md (if significant)
-- AI cannot mark work "done" with pending todos
-- Incomplete todos remain visible throughout session as memory mechanism
-
-**Impact**: 
-- ✅ Quality control steps never skipped, even in 200+ message threads
-- ✅ Documentation always completed
-- ✅ Build verification mandatory before finishing
-- ✅ Project log tracking supported
-- ✅ Visual progress tracking throughout work session
+The core goals are:
+- Keep work focused and customer-driven (accountability + prioritisation).
+- Enforce a consistent workflow (THINKING → approval → DOING; build and quality checks; documentation proposals).
+- Keep project management docs low-duplication and easy to rehydrate at the start of a new chat.
+- Apply extra constraints automatically when working on Medtech/FHIR integrations.
 
 ---
 
-## What Changed in v6.0
+## How rules load
 
-**Change from v5.0**: Added Part 2 (Documentation Rules) to `project-work-rules.mdc`.
-
-**Why**: 
-- Prevent AI from creating unnecessary files (consolidation over proliferation)
-- Enforce referencing new files in main docs (AI context awareness)
-- Clarify when to update documentation (major milestones only, not every small change)
-
-**Impact**: 
-- ✅ Fewer scattered files, more consolidated documentation
-- ✅ All new files guaranteed to be referenced in PROJECT_SUMMARY.md or FEATURE_OVERVIEW.md
-- ✅ No session summaries or temporary files
-- ✅ Documentation updates only when appropriate (not after every change)
+Rules load in two ways:
+- **Always-on**: `alwaysApply: true` rules are always in context.
+- **Scoped**: rules with `globs:` are applied when you work in matching paths.
 
 ---
 
-## What Changed in v5.0
+## Current rule files (source of truth)
 
-**Change from v4.0**: Moved `project-work-rules.mdc` from context-loaded (via glob pattern) to always-loaded.
+### Always-on
+- `ai-role-and-context.mdc`
+  - Defines the agent’s role (technical co-founder + PM) and communication standards (NZ English; no em dashes).
+  - Defines the “read these first” project docs: `project-management/CURRENT-WORK.md`, `project-management/PORTFOLIO.md`.
+- `session-workflow.mdc`
+  - Mode detection (THINKING, DOING, REVIEWING).
+  - Requires approval before implementation when planning features.
+  - Uses a todo-driven checklist so build, docs proposals, and logging do not get skipped.
+- `accountability-system.mdc`
+  - Weekly focus and customer contact tracking; encourages 30% customer/business work.
+  - Limits active build projects to 1–2 per week.
+- `library-first-approach.mdc`
+  - Prefer libraries and proven patterns before building from scratch.
+  - If “web search” is unavailable in the runtime, fall back to: `package.json`, existing code patterns, and GitHub (`gh`) lookup.
 
-**Why**: Core workflow rules (discuss → approve → implement → update) should be consistently available across all interactions. The file is lightweight and contains essential patterns that apply to all project work.
-
-**Impact**: 
-- ✅ More consistent behavior across all interactions
-- ✅ No need to wait for PROJECT_SUMMARY.md to open
-- ✅ Simplified architecture (3 always-loaded files instead of 2 + conditional loading)
-
----
-
-## What Changed in v4.0
-
-**Problem in v3.x**: 15 files, 1,200+ lines always-loaded, AI overwhelmed with competing instructions, would bypass "read overview first" checkpoint.
-
-**Solution in v4.0**: Radical simplification with hard-gated multi-level system.
-
----
-
-## System Architecture
-
-### Level 0: The Gate (Always-Loaded)
-
-**File**: `mandatory-overview-first.mdc` (~50 lines, ~250 tokens)
-
-**Purpose**: Single instruction - read the project management entry points before anything else.
-
-**Why it works**: So simple AI can't misinterpret. No competing instructions, no escape hatches.
+### Scoped (auto-activates by path)
+- `project-management.mdc` (scoped to `project-management/**`)
+  - Canonical project docs and strict anti-duplication policy.
+  - **Approval-gated** documentation updates (propose first; only edit after approval).
+- `project-medtech-integration.mdc` (scoped to `project-management/medtech-integration/**`)
+  - Medtech documentation placement rules plus facility IDs and ALEX invariants.
+- `fhir-medtech-development.mdc` (scoped to FHIR/Medtech-related code and docs)
+  - FHIR R4 and ALEX constraints; recommends using MCP FHIR tools against HAPI for learning/prototyping.
+- `deep-planning-handoff.mdc` (keyword-triggered, not always-on)
+  - When you explicitly ask for “deep planning”, generates a Claude.ai prompt and then validates the returned recommendations against this repo.
 
 ---
 
-### Level 1: Navigation (Portfolio)
+## Canonical project documentation (in `/project-management/`)
 
-**Files**:
-- `/project-management/CURRENT-WORK.md`
-- `/project-management/PORTFOLIO.md`
+Root docs:
+- `CURRENT-WORK.md`: priorities, active queue, constraints, and metrics.
+- `PORTFOLIO.md`: one-line project statuses and navigation pointers.
+- `2026-ANNUAL-PLANNING.md`: company goals and kill signals (use for strategic/quarterly work).
 
-**Contains**:
-1. One-line status per project
-2. Paths to each project folder
-3. Pointers to each project’s `PROJECT_SUMMARY.md` and `LOG.md`
+Per-project docs (in `/project-management/<project>/`):
+- `PROJECT_SUMMARY.md`: current state and the next pick-up point (not chronological).
+- `LOG.md`: chronological evidence and decisions.
 
-**Note**: `PROJECTS_OVERVIEW.md` is now deprecated and only kept as a stub pointing to `PORTFOLIO.md`.
-
----
-
-### Level 2: Work & Documentation Rules (Always-Loaded)
-
-**File**: `project-work-rules.mdc` (~140 lines, ~700 tokens)
-
-**Loads when**: Always (alwaysApply: true)
-
-**Contains**:
-- **Part 1**: Work workflow (discuss → approve → implement → update when appropriate)
-- **Part 2**: Documentation rules (consolidation first, new file requirements, AI context awareness)
-- **Validation checklist**
-- **Writing style guidelines** (no em dashes)
-
-**Why always-loaded**: Core workflow and documentation patterns should be available at all times to ensure consistent behavior and prevent file proliferation.
+Legacy docs may exist (deprecated):
+- `PROJECTS_OVERVIEW.md` (deprecated; points to `PORTFOLIO.md`)
+- `CURRENT-FOCUS.md` (deprecated; points to `CURRENT-WORK.md`)
 
 ---
 
-### Level 3: Session Workflow & Todo System (Always-Loaded)
+## Updating these rules
 
-**File**: `session-workflow.mdc` (~500 lines, ~2,500 tokens)
+When a rule mentions a path, keep it aligned with the real repo layout.
 
-**Loads when**: Always (alwaysApply: true)
-
-**Contains**:
-- **Session initialization**: Briefing format, common actions
-- **Mode detection**: THINKING, DOING, REVIEWING modes with patterns
-- **Todo list integration**: Automatic todo creation, mandatory final 3 todos, progress tracking
-- **Universal work pattern**: THINKING → DOING → REVIEWING flow
-- **Session ending checklist**: Incomplete todo detection
-
-**Why always-loaded**: 
-- Prevents AI from forgetting critical steps after long sessions
-- Uses todo visibility as persistent memory mechanism
-- Ensures quality control steps never skipped (build/docs/log)
-- Rules can be buried in long context, but incomplete todos remain visible
-
-**Key Innovation**: 
-- When AI enters DOING mode, todos automatically created
-- Final 3 todos ALWAYS added: Build/test/fix, Propose doc updates, Update project LOG.md (if significant)
-- AI cannot mark work "done" with pending todos
-- Works even in 200+ message conversations
+Preferred changes:
+- Update scoped globs when folders move (for example, `src/medtech/**` rather than `src/components/medtech/**`).
+- Keep process rules in `session-workflow.mdc`, and documentation policy in `project-management.mdc`.
 
 ---
 
-## Token Efficiency
+## Historical note
 
-| Version | Always-Loaded | Context-Loaded | Total |
-|---------|---------------|----------------|-------|
-| v3.1 | ~1,200 lines (~6,000 tokens) | ~500 lines | ~1,700 lines |
-| v4.0 | ~50 lines (~250 tokens) | ~800 lines | ~850 lines |
-| v5.0 | ~120 lines (~600 tokens) | ~0 lines | ~120 lines |
-| v6.0 | ~190 lines (~950 tokens) | ~0 lines | ~190 lines |
-| v6.1 | ~690 lines (~3,450 tokens) | ~0 lines | ~690 lines |
-
-**v6.1 changes**: Added session-workflow.mdc (~500 lines) with todo integration for persistent memory. Trade-off: Higher token cost but ensures critical steps never forgotten in long sessions.
-
----
-
-## How It Works
-
-### Example 1: Project Query
-
-```
-User: "I want to work on medtech"
-
-AI Process:
-1. Reads `CURRENT-WORK.md` and `PORTFOLIO.md`
-2. Identifies the relevant project folder from `PORTFOLIO.md`
-3. Reads `/project-management/medtech-integration/PROJECT_SUMMARY.md`
-6. Opening PROJECT_SUMMARY.md triggers glob → project-work-rules.mdc loads
-7. Now has full context + all work rules
-8. Follows workflow: Discuss → Approve → Implement → Update
-```
-
-### Example 2: General Query
-
-```
-User: "What's 2+2?"
-
-AI Process:
-1. Reads `CURRENT-WORK.md` and `PORTFOLIO.md`
-2. Detects query is not project-related
-4. Responds: "4"
-5. Adds: "Not related to your projects, but let me know if you need anything else!"
-```
-
-### Example 3: New Project
-
-```
-User: "Create new mobile app project"
-
-AI Process:
-1. Reads `CURRENT-WORK.md` and `PORTFOLIO.md`
-2. Sees no matching project in `PORTFOLIO.md`
-3. Asks whether this is a new project and gathers details
-5. AI asks: "Is this: (A) New project, (B) Related to existing, (C) General?"
-6. User: "New project"
-7. AI asks details, creates PROJECT_SUMMARY.md, updates overview
-```
-
----
-
-## File Structure
-
-```
-.cursor/rules/
-├── mandatory-overview-first.mdc (Always-loaded, Level 0)
-├── project-work-rules.mdc (Always-loaded, Level 2)
-├── session-workflow.mdc (Always-loaded, Level 3) ← NEW in v6.1
-├── accountability-system.mdc (Workspace rule, always-loaded)
-├── ai-role-and-context.mdc (Workspace rule, always-loaded)
-├── library-first-approach.mdc (Workspace rule, always-loaded)
-├── fhir-medtech-development.mdc (Technical FHIR rules, on-demand)
-└── README.md (This file)
-
-/project-management/
-├── CURRENT-WORK.md (Root ops doc: priorities + active queue)
-├── PORTFOLIO.md (Root navigation: one-line per project)
-├── PROJECTS_OVERVIEW.md (Deprecated stub; points to PORTFOLIO.md)
-├── [project-name]/
-│   ├── PROJECT_SUMMARY.md (Required for each project)
-│   ├── LOG.md (Chronological log with evidence)
-│   └── PROJECT_RULES.md (Optional project-specific rules)
-├── archive/
-│   └── weekly-logs-pre-2026-01/ (Historical only; not maintained)
-└── ...
-```
-
----
-
-## Key Rules
-
-### 1. Overview First (Always)
-
-Before responding to most project-management queries, AI should read `CURRENT-WORK.md` and `PORTFOLIO.md`.
-
-### 2. Navigation is Embedded
-
-All navigation logic lives in the overview file itself:
-- Keyword registry (YAML)
-- Matching instructions
-- What to do for new projects, general queries, ambiguous requests
-
-### 3. Work Rules Always Available
-
-project-work-rules.mdc is always loaded to ensure consistent workflow behavior. The rules are lightweight (~140 lines) and contain essential workflow patterns (discuss → approve → implement → update) that should apply to all interactions.
-
-### 3a. Todo System for Persistent Memory
-
-session-workflow.mdc implements todo-driven workflow to solve the "AI forgets after long sessions" problem:
-
-**How it works**:
-1. When AI enters DOING mode (writes/modifies code), todos automatically created
-2. Final 3 todos ALWAYS added (in this order):
-   - Build, test, and fix all errors
-   - Propose documentation updates (PROJECT_SUMMARY + PORTFOLIO + CURRENT-WORK if needed)
-   - Update project LOG.md (if significant milestone)
-3. AI updates todo status as progressing (pending → in_progress → completed)
-4. AI cannot mark work "done" with pending todos
-
-**Why it works**:
-- Rules can be buried in 200+ message context
-- Incomplete todos remain visible throughout session
-- Acts as persistent checklist AI cannot ignore
-- Visual reminder of what still needs doing
-
-**Example todo structure**:
-```
-1. [First implementation step] - in_progress
-2. [Second implementation step] - pending
-3. [Third implementation step] - pending
-4. Build, test, and fix all errors - pending
-5. Update documentation (PROJECT_SUMMARY + PROJECTS_OVERVIEW) - pending
-6. Update project LOG.md (if significant) - pending
-```
-
-### 4. Discuss Before Implementing
-
-"Work on X", "improve Y", "fix Z" → Discuss first, get approval, then implement.
-
-"Implement X", "build Y" → Verify scope, then proceed.
-
-### 5. Dashboard Sync is Mandatory
-
-When a project’s state changes materially, update:
-- The project’s `PROJECT_SUMMARY.md` (current state and next pick-up point)
-- `PORTFOLIO.md` (one-line status, if it changed)
-- `CURRENT-WORK.md` (priorities and active queue, if it changed)
-
-### 6. Ad-Hoc Templates
-
-No template files. Generate project structures on-the-fly based on:
-- Project stage (Ideation/Validation/Build/Operational)
-- Project type (SaaS/marketplace/research/grant)
-- Specific needs (discussed with user)
-
----
-
-## Project-Specific Rules
-
-Projects can have unique rules in `[project-folder]/PROJECT_RULES.md` (or scoped `.cursor/rules/project-*.mdc` when needed):
-
-**Example**: `medtech-integration/PROJECT_RULES.md`
-```yaml
----
-alwaysApply: false
-globs: 
-  - "**/medtech-integration/PROJECT_SUMMARY.md"
----
-
-# Medtech Integration Specific Rules
-
-- Always validate FHIR compliance
-- Check API rate limits before bulk operations
-- Medical data requires extra security validation
-```
-
-**When to use**: Only when project has unique requirements not covered by general rules.
-
----
-
-## Testing the System
-
-### Quick Test
-
-**Test 1**: Project query
-- Say: "work on medtech"
-- Expected: AI reads `CURRENT-WORK.md` + `PORTFOLIO.md` → loads project summary → discusses (doesn't implement immediately)
-
-**Test 2**: New project
-- Say: "create new project for X"
-- Expected: AI reads `CURRENT-WORK.md` + `PORTFOLIO.md` → sees no matching project → asks if new project → creates after details gathered
-
-**Test 3**: General query
-- Say: "what's React hooks?"
-- Expected: AI reads overview → determines not project-related → answers briefly → mentions if relevant to projects
-
-**Test 4**: Dashboard sync
-- Edit any PROJECT_SUMMARY.md
-- Expected: `PORTFOLIO.md` updates if the one-line status changed; `CURRENT-WORK.md` updates if priorities/queue changed
-
-**Test 5**: Todo system
-- Say: "build a login form"
-- Expected: AI creates todos with final 3 (build/docs/log), updates status as progressing, cannot say "done" until all completed
-
----
-
-## Success Metrics
-
-**System is working when**:
-- ✅ AI always reads overview first (no codebase exploration before context)
-- ✅ AI identifies the relevant project quickly via `PORTFOLIO.md` and project summaries
-- ✅ AI discusses before implementing code changes
-- ✅ Dashboard stays synchronized with project summaries
-- ✅ No unnecessary files created during discussions
-- ✅ AI creates todos when entering DOING mode
-- ✅ AI completes all todos (build/docs/log) before marking done
-- ✅ Documentation and project logs consistently updated
-
-**System needs tuning when**:
-- ❌ AI explores codebase before reading overview
-- ❌ AI implements changes without discussion/approval
-- ❌ Dashboard gets out of sync with project summaries
-- ❌ AI creates test reports or interim docs during exploration
-- ❌ AI marks work "done" with pending todos
-- ❌ AI skips build verification or documentation updates
-
----
-
-## Maintenance
-
-### Adding New Project
-
-1. User requests new project
-2. AI reads overview (per Level 0 rule)
-3. AI asks details: stage, type, needs
-4. AI creates folder + PROJECT_SUMMARY.md
-5. AI adds to `PORTFOLIO.md` (one-line status + path)
-6. AI adds any immediate work to `CURRENT-WORK.md` (if relevant)
-
-### Updating Rules
-
-**For general rules**: Edit `project-work-rules.mdc`
-
-**For project-specific rules**: Create/edit `[project-folder]/PROJECT_RULES.md` (or a scoped `.cursor/rules/project-*.mdc` file when needed)
-
----
-
-## Philosophy
-
-**v4.0 Design Principles**:
-
-1. **Simplicity over completeness** - Fewer rules, clearer behavior
-2. **Instructions as data** - Navigation in overview file, not separate rules
-3. **Context before rules** - Load rules only when context is loaded
-4. **Hard gates over soft reminders** - Make it impossible to bypass, not just discouraged
-5. **Trust the overview** - Single source of truth for navigation
-
----
-
-## Comparison to v3.x
-
-| Aspect | v3.x | v4.0 |
-|--------|------|------|
-| Always-loaded rules | 9 files, ~1,200 lines | 1 file, ~50 lines |
-| Navigation logic | Scattered across multiple files | Embedded in overview |
-| Enforcement | Soft (🛑 emojis, "MANDATORY" labels) | Hard (technical gates) |
-| Context loading | AI discretion | Forced by system |
-| Complexity | High (load order, dependencies) | Low (read overview, that's it) |
-| Maintainability | 15 files to manage | 2 core files + overview |
-
----
-
-## Migration from v3.x
-
-**What was deleted**:
-- All `/core/` rules (9 files)
-- All `/communication/` rules (5 files)
-- All `/project-management/` rules (6 files)
-- All `/technical/` rules (1 file)
-- All meta-documentation (5 files)
-- All template files (10 files)
-
-**What was consolidated**:
-- Everything merged into `project-work-rules.mdc`
-- Portfolio navigation moved to `PORTFOLIO.md` (legacy `PROJECTS_OVERVIEW.md` now a stub)
-
-**What survived**:
-- `library-first-approach.mdc` (workspace-level rule)
-- `fhir-medtech-development.mdc` (technical FHIR rules)
-
----
-
-## Questions?
-
-The system is now simple enough to understand in one read:
-1. Read overview first (mandatory-overview-first.mdc)
-2. Follow navigation in `CURRENT-WORK.md` + `PORTFOLIO.md`
-3. Apply work rules consistently (project-work-rules.mdc - always loaded)
-4. Use todo system for memory persistence (session-workflow.mdc - always loaded)
-
-That's it. No complex dependencies, no load orders, no competing instructions.
-
----
-
-**Version**: 6.1.0  
-**Status**: ✅ Production Ready  
-**Last Updated**: 2026-01-02
-
-**Key v6.1 Innovation**: Todo system as persistent memory mechanism. Solves "AI forgets critical steps after long sessions" by making incomplete todos always visible, even when rules get buried in context.
-
----
-
-*Built for clarity, maintained for simplicity.*
+Some older internal documentation referenced additional rule files (for example, `mandatory-overview-first.mdc` and `project-work-rules.mdc`). In the current repo state, those files are not present; the active workflow is defined by the files listed above.
