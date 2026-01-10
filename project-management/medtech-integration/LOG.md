@@ -17,6 +17,21 @@
 
 ---
 
+## 2026-01-10 Sat
+### Learning: ALEX UAT search works; our query shape was wrong (Defne)
+
+**What we learned**:
+- ALEX support confirmed the token roles are correct.
+- Media search in UAT can work when using **identifier-based chained search**, for example:
+  - `GET /FHIR/Media?patient.identifier=https://standards.digital.health.nz/ns/nhi-id|<NHI>`
+- Our previous Media verification attempts using `patient=<patientId>` and `subject=Patient/<patientId>` returned `403 Authorization failed` in UAT.
+
+**Change made**:
+- Updated the Lightsail BFF `/api/medtech/media` endpoint to require `nhi` and query using `patient.identifier` only (no fallback).
+
+**Impact**:
+- Unblocks reliable “read/verify” for Media in UAT, aligning with ALEX support guidance; reduces time wasted chasing auth issues that are actually URL/query-shape issues.
+
 ## Legacy changelog (migrated from the former `CHANGELOG.md` on 2026-01-10)
 
 **Purpose**: Track significant changes, decisions, and milestones over time.
