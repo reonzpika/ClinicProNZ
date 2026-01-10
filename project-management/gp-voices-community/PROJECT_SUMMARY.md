@@ -25,6 +25,10 @@ summary: "Mobile-first Discourse community site for ClinicPro GPs. Custom theme 
 
 **Key Value Proposition**: Provide a focused community space for GPs to discuss ClinicPro features, share best practices, and receive curated news and updates. Comment-first UX encourages engagement over traditional forum posting.
 
+## Next Session: Pick Up Here
+
+Maintenance/validation only. If you pick this up next, the single highest leverage task is to validate whether Ting’s LinkedIn experiment is producing GP (not vendor) engagement; then decide whether to continue or pause.
+
 ---
 
 ## Current Status [2025-01-15]

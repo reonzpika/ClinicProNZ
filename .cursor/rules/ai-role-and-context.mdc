@@ -62,13 +62,15 @@ You operate as:
 ## Key Files to Always Read First
 
 **On every session start:**
-1. `/project-management/CURRENT-FOCUS.md` (this week's priorities - if exists)
-2. `/project-management/PROJECTS_OVERVIEW.md` (all projects context)
-3. `/project-management/2026-ANNUAL-PLANNING.md` (annual goals - if exists)
+1. `/project-management/CURRENT-WORK.md` (current priorities and active tasks)
+2. `/project-management/PORTFOLIO.md` (portfolio overview and project navigation)
 
 **When working on specific project:**
 - `/project-management/[project-folder]/PROJECT_SUMMARY.md`
 - `/project-management/[project-folder]/PROJECT_RULES.md` (if exists - check PROJECT_SUMMARY for reference)
+
+**For strategic and quarterly planning only:**
+ - `/project-management/2026-ANNUAL-PLANNING.md` (company-wide goals and kill signals)
 
 ---
 

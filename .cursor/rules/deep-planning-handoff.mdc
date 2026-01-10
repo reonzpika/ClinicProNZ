@@ -32,7 +32,7 @@ For deep strategic discussions that benefit from unlimited conversation length:
 - Code planning (needs file access)
 - Debugging (needs codebase)
 - Quick questions (needs tracking files)
-- Weekly reviews (needs CURRENT-FOCUS.md)
+- Reviews and progress checks (use CURRENT-WORK.md + project LOG.md files)
 
 ---
 
@@ -76,7 +76,7 @@ After your discussion there, bring the summary/decision back here.
 
 **Current Projects (5 Total)**
 
-[Read PROJECTS_OVERVIEW.md and list current projects with status]
+[Read PORTFOLIO.md and list current projects with status]
 
 Example format:
 1. **Medtech Integration** (PRIMARY FOCUS)
@@ -100,7 +100,7 @@ Example:
 
 **Current Metrics**
 
-[Read CURRENT-FOCUS.md for latest metrics]
+[Read CURRENT-WORK.md for latest metrics]
 
 - Paying clinics: [X]
 - MRR: $[X]
@@ -189,9 +189,9 @@ Ready when you are. Let's think this through deeply.
 
 **Always include:**
 - User context (who, what, why)
-- Current projects + status (from PROJECTS_OVERVIEW.md)
+- Current projects + status (from PORTFOLIO.md)
 - 2026 goals (from 2026-ANNUAL-PLANNING.md)
-- Current metrics (from CURRENT-FOCUS.md)
+- Current metrics (from CURRENT-WORK.md)
 - Core tech stack
 - The specific question
 - What user needs (challenge, advise, recommend)
@@ -257,7 +257,7 @@ For each claim:
 
 **Project status:**
 - Check PROJECT_SUMMARY.md
-- Check CURRENT-FOCUS.md metrics
+- Check CURRENT-WORK.md metrics
 - Verify against reality
 
 **Resource estimates:**
@@ -323,9 +323,9 @@ This is a strategic/architectural decision.
 
 Documents to update:
 - [PROJECT_SUMMARY.md] - Project status change
-- [PROJECTS_OVERVIEW.md] - Portfolio update
-- [2026-ANNUAL-PLANNING.md] - Goal adjustment
-- [CURRENT-FOCUS.md] - Active project list
+- [PORTFOLIO.md] - Portfolio update
+- [CURRENT-WORK.md] - Priorities and active work queue
+- [2026-ANNUAL-PLANNING.md] - Goal adjustment (only if company-level change)
 - [New doc if needed] - Architecture/decision documentation
 
 Should I update these documents to reflect this decision?
@@ -377,13 +377,12 @@ Ready to proceed with step 1?
 ```
 Proposed next steps:
 
-1. Update PROJECTS_OVERVIEW.md
+1. Update PORTFOLIO.md
    - Move [project] to [new status]
    - Update priorities
    
-2. Update CURRENT-FOCUS.md
-   - Remove [project] from active list
-   - Adjust weekly goals
+2. Update CURRENT-WORK.md
+   - Adjust priorities and active queue
    
 3. Document decision rationale
    - Why: [reason]
@@ -425,7 +424,7 @@ Start with Phase 1 documentation?
 - Uses documentation rules (ask before creating docs)
 
 ### Works with accountability-system.mdc:
-- Strategic decisions may update CURRENT-FOCUS.md
+- Strategic decisions may update CURRENT-WORK.md
 - May affect active project list
 
 ### Works with library-first-approach.mdc:
@@ -456,8 +455,8 @@ Validating...
 This is a strategic decision (Type B).
 
 Documents to update:
-- PROJECTS_OVERVIEW.md (move ClinicPro to "Archived - Personal Use")
-- CURRENT-FOCUS.md (remove from active projects)
+- PORTFOLIO.md (move ClinicPro to "Archived - Personal Use")
+- CURRENT-WORK.md (remove from active work queue)
 - 2026-ANNUAL-PLANNING.md (adjust goals to Medtech-focused)
 
 Should I update these to reflect the pivot?

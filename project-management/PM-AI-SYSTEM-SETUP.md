@@ -73,15 +73,20 @@ A complete Project Management AI assistant system integrated into Cursor AI.
 
 ### 2. Tracking Files
 
-**CURRENT-FOCUS.md** - Single source of truth
-- Location: `/project-management/CURRENT-FOCUS.md`
-- Contains: This week's ONE big win, active projects (max 2), today's priority, customer outreach targets, quick metrics
-- Update: Weekly (Sunday/Monday) + daily priority each morning
+**CURRENT-WORK.md** - Root-level ops doc (canonical)
+- Location: `/project-management/CURRENT-WORK.md`
+- Contains: Top priorities, active work queue, recent context, constraints, and quick metrics
+- Update: Whenever priorities or blockers change (or when you ask)
 
-**Weekly Logs** - Progress tracking
-- Location: `/project-management/weekly-logs/2026-WXX.md`
-- Contains: Weekly plan, daily log, customer conversations, decisions, blockers, end-of-week review
-- Update: Throughout week + mandatory Friday review
+**PORTFOLIO.md** - Root-level project navigation (canonical)
+- Location: `/project-management/PORTFOLIO.md`
+- Contains: One-line status per project and links to each project folder
+- Update: When a project’s one-line status materially changes
+
+**Per-project LOG.md** - Progress tracking (canonical)
+- Location: `/project-management/[project]/LOG.md`
+- Contains: Chronological progress, evidence, decisions, blockers
+- Update: When there is a meaningful milestone/blocker/decision (AI should propose and ask for approval)
 
 ---
 
@@ -96,8 +101,8 @@ A complete Project Management AI assistant system integrated into Cursor AI.
 Hey, ready to work.
 
 📍 Today: [Today's priority]
-🎯 Week: [This week's ONE big win]
-📊 Status: [Paying clinics | MRR | Features]
+📍 Priorities: [Top priorities]
+📊 Status: [Key metrics]
 
 ━━━ ACTIVE PROJECTS ━━━
 1. [Project] (PRIMARY) - [Status]
@@ -208,15 +213,15 @@ Proceed with step 1?
 **You say**: "weekly review"
 
 **AI prompts**:
-1. Did you hit this week's ONE big win? (YES/NO + why)
+1. Did you hit this week's primary priority? (YES/NO + why)
 2. How many customer conversations? (number + learnings)
 3. Time split: Building vs Customer/Business?
 4. Key decisions or blockers?
-5. Next week's ONE big win?
+5. Next week priorities?
 
-**AI asks**: "Should I create weekly log for this?"
+**AI asks**: "Should I update CURRENT-WORK.md and add any entries to project LOG.md files?"
 
-**Only creates log if you approve**
+**Only updates docs if you approve**
 
 ---
 
@@ -225,14 +230,14 @@ Proceed with step 1?
 **You say**: "what should i work on?"
 
 **AI checks**:
-1. CURRENT-FOCUS.md (this week's big win, today's priority)
+1. CURRENT-WORK.md (priorities, queue, blockers, metrics)
 2. Active project count (warns if 3+)
 3. Customer outreach status (gentle reminder if 0 by Wednesday)
 4. Suggests ONE specific task
 
 **Response format**:
 ```
-This week's focus: [ONE big win]
+This week's top priority: [primary priority]
 Active projects: [1-2 projects]
 
 Today's recommendation: [ONE specific task]
@@ -287,22 +292,18 @@ AI automatically detects:
 
 ## Next Steps
 
-### 1. Initialize CURRENT-FOCUS.md
+### 1. Initialize CURRENT-WORK.md
 
 **Do this now** (Sunday evening or Monday morning):
-1. Open `/project-management/CURRENT-FOCUS.md`
-2. Set this week's ONE big win
-3. Define 1-2 active projects
-4. List 5 customer outreach targets
-5. Set today's priority
+1. Open `/project-management/CURRENT-WORK.md`
+2. Set top priorities and active work queue (max 10)
+3. Capture blockers and key constraints
+4. Update quick metrics if needed
 
 ### 2. Start Week 1 Log
 
-**Optional but recommended**:
-- Open `/project-management/weekly-logs/2026-W01.md`
-- Fill in "This Week's Plan" section
-- Update daily as you work
-- Complete Friday review
+**Optional**:
+- Ensure each active project has a `LOG.md` entry when something meaningful changes (milestone, blocker, decision).
 
 ### 3. Test the System
 
@@ -321,11 +322,11 @@ AI automatically detects:
 **You said you struggle with**:
 1. Handling multiple projects → System limits to 2 active
 2. Customer outreach uncomfortable → System provides low-bar options and reminders
-3. Don't know what to work on → System suggests ONE task based on weekly goal
+3. Don't know what to work on → System suggests ONE task based on current priorities
 4. Too much building, not enough business → System tracks 70/30 split and reminds
 
 **System responds by**:
-- Keeping focus clear (ONE big win per week)
+- Keeping focus clear (top priorities and a single recommended next task)
 - Making customer work feel easier (text = counts as contact)
 - Suggesting specific actions (not generic "do customer work")
 - Staying in chat for discussions (only docs when decided)
@@ -336,17 +337,17 @@ AI automatically detects:
 ## Maintenance
 
 **Weekly** (Sunday/Monday):
-- Update CURRENT-FOCUS.md (new week's goals)
+- Update CURRENT-WORK.md (new week's priorities and queue)
 - Plan customer outreach targets
 
 **Daily** (each morning):
-- Update "Today's Priority" in CURRENT-FOCUS.md
+- Update CURRENT-WORK.md if priorities changed
 - Ask AI: "what should i work on?"
 
 **Friday** (end of week):
 - Run "weekly review" with AI
-- Update metrics in CURRENT-FOCUS.md
-- Create weekly log (if significant decisions made)
+- Update metrics in CURRENT-WORK.md if needed
+- Add entries to relevant project `LOG.md` files (if significant)
 
 **Monthly/Quarterly**:
 - Check 2026-ANNUAL-PLANNING.md goals
@@ -361,7 +362,7 @@ AI automatically detects:
 
 2. **Use low-bar customer actions**: Text to GP = customer work (takes 30 seconds)
 
-3. **ONE big win per week**: Resist urge to do everything; focus compounds
+3. **Priorities matter**: Keep a clear top priority; avoid trying to do everything at once.
 
 4. **Let AI search first**: Don't assume you need to build from scratch
 
@@ -382,10 +383,10 @@ AI automatically detects:
 - `/workspace/.cursor/rules/fhir-medtech-development.mdc`
 
 **Tracking** (your data):
-- `/workspace/project-management/CURRENT-FOCUS.md` (single source of truth)
-- `/workspace/project-management/weekly-logs/` (progress logs)
+- `/workspace/project-management/CURRENT-WORK.md` (priorities and active queue)
+- `/workspace/project-management/PORTFOLIO.md` (project list and navigation)
 - `/workspace/project-management/2026-ANNUAL-PLANNING.md` (annual goals)
-- `/workspace/project-management/PROJECTS_OVERVIEW.md` (all projects)
+- `/workspace/project-management/PROJECTS_OVERVIEW.md` (deprecated stub; points to PORTFOLIO.md)
 
 **Project-Specific** (when applicable):
 - `/workspace/project-management/[project]/PROJECT_RULES.md` (project constraints - if exists)
@@ -396,4 +397,4 @@ A PM AI system that acts like a technical co-founder who understands your busine
 
 ---
 
-*System ready to use. Start by initializing CURRENT-FOCUS.md, then say "hi" to AI.*
+*System ready to use. Start by updating CURRENT-WORK.md, then say "hi" to AI.*

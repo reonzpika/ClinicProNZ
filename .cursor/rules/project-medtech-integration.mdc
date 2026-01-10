@@ -1,0 +1,28 @@
+---
+description: "Medtech Integration project-specific constraints and doc workflow"
+alwaysApply: false
+globs:
+  - project-management/medtech-integration/**
+version: "1.0.0"
+priority: HIGH
+last_updated: "2026-01-10"
+---
+
+# Medtech Integration Project Rules (Project Management Layer)
+
+## Purpose
+Ensure documentation and testing notes for Medtech Integration remain accurate and operationally useful.
+This file complements the global project-management rules and the project’s own `PROJECT_RULES.md`.
+
+## Canonical facility usage
+- Hosted UAT API testing: `F2N060-E`.
+- Local Medtech Evolution UI validation: `F99669-C` (requires Windows desktop tunnel staying awake).
+
+## Key invariants
+- Only the Lightsail BFF (static IP allow-listed) should call ALEX directly.
+- Record ALEX anomalies with direct evidence (status codes, OperationOutcome snippets, correlation IDs).
+
+## Documentation placement
+- Current state and next pick-up point: `PROJECT_SUMMARY.md`.
+- Evidence, experiments, and comms: `LOG.md` (chronological).
+- Legacy history: `CHANGELOG.md` exists; do not duplicate its content into `LOG.md`. New work goes into `LOG.md`.

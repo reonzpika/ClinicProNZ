@@ -1,0 +1,63 @@
+---
+description: "Project management documentation system for /project-management"
+alwaysApply: false
+globs:
+  - project-management/**
+version: "1.0.0"
+priority: HIGH
+last_updated: "2026-01-10"
+---
+
+# Project Management Documentation System
+
+## Purpose
+Keep project management docs low-duplication and fast to rehydrate at the start of a new chat.
+Root docs are overview and current work; project folders hold detail and evidence.
+
+## Canonical documents
+
+### Root level (`/project-management/`)
+- `CURRENT-WORK.md`: current priorities, active task queue, recent context, constraints, and metrics.
+- `PORTFOLIO.md`: project list, one-line status per project, and navigation pointers.
+- `2026-ANNUAL-PLANNING.md`: company-wide goals and kill signals (read only for strategic/quarterly work).
+
+Legacy files may exist for backward compatibility:
+- `CURRENT-FOCUS.md` (deprecated; points to `CURRENT-WORK.md`)
+- `PROJECTS_OVERVIEW.md` (deprecated; points to `PORTFOLIO.md`)
+
+### Per-project folder (`/project-management/<project>/`)
+- `PROJECT_SUMMARY.md`: current status, next session pick-up point, and short plan (not chronological).
+- `LOG.md`: chronological log with evidence and decisions (not current state).
+
+## Read order (by intent)
+- Session start, what to work on: `CURRENT-WORK.md`, then `PORTFOLIO.md`.
+- Status of a specific project: that project’s `PROJECT_SUMMARY.md`.
+- What happened and why (evidence): that project’s `LOG.md` (latest entries first).
+
+## Anti-duplication policy (strict)
+- Current status lives in `PROJECT_SUMMARY.md` only.
+- Chronological narrative and evidence live in `LOG.md` only.
+- Root docs must not repeat project detail; use pointers to `PROJECT_SUMMARY.md` or `LOG.md`.
+- Do not paste long logs into summaries; summaries should link to log entries by date.
+
+## Update workflow (approval-gated)
+
+### When the user explicitly requests documentation changes
+Update immediately.
+
+### When you notice a meaningful milestone, blocker change, or decision
+Propose updates first and ask for approval:
+
+Proposed update format:
+1. `project-management/<project>/LOG.md`: what entry you’ll add
+2. `project-management/<project>/PROJECT_SUMMARY.md`: what you’ll change
+3. `project-management/CURRENT-WORK.md` or `project-management/PORTFOLIO.md`: if needed
+
+Then ask: "Should I proceed with these updates?"
+Do not edit files until approved.
+
+## Style
+- NZ English spelling.
+- Concise, bullet-first.
+- No em dashes; use full stops or semicolons.
+- Dates: `YYYY-MM-DD DDD` (example: `2026-01-10 Fri`).
