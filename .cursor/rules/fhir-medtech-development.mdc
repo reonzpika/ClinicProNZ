@@ -20,6 +20,20 @@ This rule auto-activates when working with Medtech/ALEX integration files.
 
 Keep local docs short; store only “our conventions”, “known gotchas”, and “how to debug quickly”.
 
+## When you hit errors or uncertainty (required behaviour)
+
+If you encounter a `401/403/404/500`, an unexpected OperationOutcome, or you are unsure which URL/query/header shape ALEX expects:
+
+- **First**: consult the canonical ALEX docs at `https://alexapidoc.medtechglobal.com/` (search within the page for the relevant resource and examples).
+- **Second**: cross-check our local runbook (`PROJECT_SUMMARY.md`) for the known-good BFF endpoints and facility IDs.
+- **If still unclear**: prompt the user to contact **Medtech ALEX support** and include the minimum debugging packet:
+  - The exact request URL (no secrets)
+  - Facility ID used
+  - Timestamp (NZ time)
+  - Correlation ID (`mt-correlationid` if available; otherwise the app-generated correlationId)
+  - Status code + the OperationOutcome body
+  - Confirmation the call was made from the **allow-listed** Lightsail IP via BFF (not Vercel)
+
 ## Hard constraints (architecture)
 
 - **Only the Lightsail BFF calls ALEX** (static IP allow-listed). Vercel must not call ALEX directly.
