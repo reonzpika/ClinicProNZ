@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2026-01-08"
-version: "1.7.1"
+last_updated: "2026-01-10"
+version: "1.7.2"
 tags:
   - integration
   - medtech
@@ -17,7 +17,7 @@ quick_reference:
   next_action: "Customer-side launch prep while away from home desktop (pricing + pilot list + outreach). When home: run Phase 1D UI validation (see DEVELOPMENT_ROADMAP.md): ensure Hybrid Connection Manager is running (test desktop must be awake); resolve local patientId for NHI ZZZ0016 in F99669-C; commit 1 image to F99669-C; confirm it appears in Medtech Evolution Inbox and Daily Record"
   key_blockers:
     - "Need local patientId for NHI ZZZ0016 in facility F99669-C"
-    - "ALEX UAT returns 403 for FHIR search on non-Patient resources (Task, Communication, Media, DocumentReference, DiagnosticReport, MedicationRequest) even though the token contains the expected roles; waiting on Medtech to confirm search permissions/policy"
+    - "ALEX UAT reads/search are sensitive to URL/query shape; Media verify should use `patient.identifier`; other resources may still return 403 depending on query parameters; keep validating with ALEX support examples"
     - "Waiting on Medtech commercial terms (revenue share/fees/billing route/payment terms) and competitor QuickShot pricing (Intellimed) to finalise pricing strategy"
   facility_id: "F2N060-E (hosted UAT API testing) + F99669-C (local Medtech Evolution UI validation)"
 key_docs:
@@ -72,6 +72,7 @@ Medtech grants permissions at app registration/user profile level. Current known
 - **ALEX connectivity test (via BFF)**: `GET https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016&facilityId=<FACILITY>`
 - **Commit to ALEX (via widget)**: widget calls Vercel route `POST /api/medtech/attachments/commit`, which proxies to BFF.
 - **Commit to ALEX (direct BFF, for smoke tests)**: `POST https://api.clinicpro.co.nz/api/medtech/session/commit`
+- **Media verification (via BFF)**: `GET https://api.clinicpro.co.nz/api/medtech/media?nhi=<NHI>&facilityId=<FACILITY>&count=<N>`
 
 ### Logs and tracing
 - **Vercel logs**: commit route logs correlationId and returned mediaIds.
@@ -92,7 +93,12 @@ Medtech grants permissions at app registration/user profile level. Current known
 ### Known ALEX limitations that affect debugging
 - **`Media.identifier` is mandatory** on POST Media.
 - **Images must be < 1MB**.
-- **ALEX UAT currently returns 403 for FHIR search on non-Patient resources** (Task, Communication, Media, DocumentReference, DiagnosticReport, MedicationRequest), even when the OAuth token includes the expected app roles. Treat search-based verification as blocked until Medtech clarifies the correct permission set/policy for search operations.
+- **ALEX UAT reads/search are sensitive to the exact URL and query shape**:
+  - Patient search by identifier is known-working: `GET /FHIR/Patient?identifier=<system>|<value>`
+  - ALEX support (Defne) demonstrated Media search by patient.identifier works:
+    - `GET /FHIR/Media?patient.identifier=<system>|<value>`
+  - Our earlier Media reads using `patient=<patientId>` and `subject=Patient/<patientId>` returned `403 Authorization failed` in UAT even when token roles looked correct.
+  - Takeaway: if you see 403s on “reads”, first verify the **base URL** and **search parameter format** matches the ALEX docs and ALEX support examples.
 
 ---
 

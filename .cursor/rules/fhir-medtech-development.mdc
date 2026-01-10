@@ -1,94 +1,84 @@
 ---
-description: FHIR and Medtech Development Guidelines with MCP Tools
+description: Medtech ALEX (FHIR) development guidelines (practical, no MCP)
 globs:
-  - "app/(medtech)/**"
-  - "src/components/medtech/**"
-  - "src/lib/fhir/**"
-  - "src/hooks/fhir/**"
-  - "**/*fhir*.{ts,tsx}"
-  - "**/*medtech*.{ts,tsx}"
+  - "app/**/medtech/**"
+  - "app/api/**/medtech/**"
+  - "src/medtech/**"
+  - "src/lib/services/medtech/**"
+  - "lightsail-bff/**"
   - "project-management/medtech-integration/**"
 ---
 
-# FHIR and Medtech Development Guidelines
+# Medtech ALEX (FHIR) development guidelines
 
-This rule auto-activates when working with FHIR or Medtech-related files.
+This rule auto-activates when working with Medtech/ALEX integration files.
 
-## MCP Tools Integration
+## Canonical documentation (do not duplicate)
 
-When working with FHIR resources:
+- **ALEX docs (canonical)**: `https://alexapidoc.medtechglobal.com/#high-level-design-for-medtech-fhir-api-alex`
+- **Local runbook (this repo)**: `project-management/medtech-integration/PROJECT_SUMMARY.md`
 
-1. **Use MCP FHIR Tools**: You have access to the FHIR MCP server configured with the HAPI test server
-   - Use MCP tools to explore FHIR resources, schemas, and capabilities
-   - Query patient data, observations, and other FHIR resources
-   - Validate FHIR resource structures before implementation
+Keep local docs short; store only “our conventions”, “known gotchas”, and “how to debug quickly”.
 
-2. **FHIR Server Configuration**:
-   - Test/Development: HAPI FHIR Test Server (http://hapi.fhir.org/baseR4)
-   - Production: ALEX API (requires custom authentication headers)
+## When you hit errors or uncertainty (required behaviour)
 
-## ALEX API Standards
+If you encounter a `401/403/404/500`, an unexpected OperationOutcome, or you are unsure which URL/query/header shape ALEX expects:
 
-When developing for the ALEX API integration:
+- **First**: consult the canonical ALEX docs at `https://alexapidoc.medtechglobal.com/` (search within the page for the relevant resource and examples).
+- **Second**: cross-check our local runbook (`PROJECT_SUMMARY.md`) for the known-good BFF endpoints and facility IDs.
+- **If still unclear**: prompt the user to contact **Medtech ALEX support** and include the minimum debugging packet:
+  - The exact request URL (no secrets)
+  - Facility ID used
+  - Timestamp (NZ time)
+  - Correlation ID (`mt-correlationid` if available; otherwise the app-generated correlationId)
+  - Status code + the OperationOutcome body
+  - Confirmation the call was made from the **allow-listed** Lightsail IP via BFF (not Vercel)
 
-1. **Authentication**:
-   - ALEX API uses custom authentication headers
-   - Standard FHIR MCP server cannot connect directly to ALEX due to custom header requirements
-   - Use the HAPI test server for FHIR learning and prototyping
-   - Implement custom gateway for ALEX API production calls
+## Hard constraints (architecture)
 
-2. **FHIR Resource Handling**:
-   - Follow FHIR R4 specification
-   - Validate all resources against FHIR schemas
-   - Handle FHIR Bundle responses appropriately
-   - Implement proper error handling for FHIR operations
+- **Only the Lightsail BFF calls ALEX** (static IP allow-listed). Vercel must not call ALEX directly.
+- **Facility ID matters end-to-end** (widget → Vercel → BFF → ALEX header `mt-facilityid`).
 
-3. **Data Transformation**:
-   - Transform ALEX API responses to match application data models
-   - Preserve FHIR resource references and relationships
-   - Handle FHIR extensions and custom fields properly
+## ALEX request basics (what must be correct)
 
-4. **Widget Development**:
-   - Each medtech widget should be self-contained
-   - Implement proper loading states for FHIR API calls
-   - Handle FHIR pagination for large datasets
-   - Cache FHIR resources appropriately
+- **Base URLs**:
+  - UAT: `https://alexapiuat.medtechglobal.com/FHIR`
+  - Production: `https://alexapi.medtechglobal.com/FHIR`
+- **Required headers**:
+  - `Authorization: Bearer <token>`
+  - `Content-Type: application/fhir+json` (required for POST/PUT/PATCH; safe for GET too)
+  - `mt-facilityid: <FACILITY>`
+- **Recommended header (debugging)**:
+  - `mt-correlationid: <uuid>`; helps Medtech trace in logs.
 
-## Code Structure
+## Known ALEX UAT gotchas (important)
 
-```typescript
-// Example FHIR resource fetching pattern
-interface FHIRResource {
-  resourceType: string;
-  id: string;
-  // ... FHIR-specific fields
-}
+- **URL shape matters**: ensure you are not double-appending `/FHIR` and keep the case consistent.
+- **Search query shape matters**: do not assume a 403 is “missing roles” until you’ve tried the documented query form.
+  - Known working: `GET /FHIR/Patient?identifier=<system>|<value>`
+  - For Media: `GET /FHIR/Media?patient.identifier=<system>|<value>` (per ALEX support).
 
-// Use proper TypeScript types for FHIR resources
-import type { Patient, Observation } from 'fhir/r4';
+## Images widget rules (ALEX-specific)
 
-// Implement error boundaries for FHIR components
-// Handle network failures gracefully
-// Validate FHIR responses before processing
-```
+- **Image size**: enforce `< 1MB` before POST.
+- **FHIR Media**:
+  - `Media.identifier` is mandatory on POST.
+  - Use `content.data` base64 (per our current implementation).
+  - Treat Media as effectively immutable post-commit.
 
-## Testing
+## Quick debugging flow (preferred)
 
-1. Use HAPI test server for integration testing
-2. Mock FHIR responses for unit testing
-3. Validate against FHIR R4 schemas
-4. Test error scenarios (network failures, invalid data)
+- BFF health: `GET https://api.clinicpro.co.nz/health`
+- Patient test: `GET https://api.clinicpro.co.nz/api/medtech/test?nhi=<NHI>&facilityId=<FACILITY>`
+- Media verify: `GET https://api.clinicpro.co.nz/api/medtech/media?nhi=<NHI>&facilityId=<FACILITY>&count=<N>`
 
-## Documentation
+When debugging 403s:
+- Confirm facility ID and base URL first.
+- Then confirm the query parameter format matches the ALEX docs (and any ALEX support examples).
 
-- Document any custom FHIR extensions
-- Explain ALEX API-specific requirements
-- Provide examples of FHIR resource transformations
-- Document authentication flows
+## Implementation hygiene
 
-## Infrastructure Notes
+- Keep a small number of “known-good” curl/Postman requests checked in (or in `PROJECT_SUMMARY.md`) for fast regression tests.
+- Prefer adding small, purpose-built BFF endpoints for validation over ad-hoc scripts.
 
-- FHIR MCP Server setup is an infrastructure investment for multi-widget development
-- Saves time on FHIR exploration and prototyping
-- Cannot connect directly to ALEX API due to custom header requirements
-- Use MCP tools during development, implement custom gateway for production
+*** End of File
