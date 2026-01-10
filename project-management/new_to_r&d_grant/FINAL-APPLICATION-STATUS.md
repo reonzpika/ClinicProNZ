@@ -330,7 +330,7 @@ Three bodies of novel knowledge:
 
 ### **Supporting Documents:**
 6. ✅ `PROJECT_SUMMARY.md` (v4.3)
-7. ✅ `CHANGELOG.md` (complete version history)
+7. ✅ `LOG.md` (complete version history)
 8. ✅ `ALL-OBJECTIVES-FINAL-STATUS.md` (comprehensive assessment)
 9. ✅ `RD-ACTIVITIES-CONSISTENCY-FIXES.md` (v4.3 fixes documented)
 10. ✅ `FINAL-APPLICATION-STATUS.md` (this document)

@@ -9,7 +9,7 @@
 1. **Read PROJECT_RULES.md** (this file) first
 2. Read **PROJECT_SUMMARY.md** (single operational runbook + current status)
 3. Check **DEVELOPMENT_ROADMAP.md** for task details (Phase testing detail lives here)
-4. Use **CHANGELOG.md** to resolve conflicts (latest change wins)
+4. Use **LOG.md** to resolve conflicts (latest change wins)
 
 ---
 
@@ -28,7 +28,7 @@
 
 ### Update When Appropriate
 - **DEVELOPMENT_ROADMAP.md** - Task completion, phase changes, time estimate updates
-- **CHANGELOG.md** - Significant changes with date, what changed, impact
+- **LOG.md** - Significant changes with date, what changed, impact
 
 ### Never Update
 - ❌ **STATUS_DETAILED.md** - Deprecated, not maintained
@@ -66,19 +66,19 @@
 ## Workflow Steps (Always Follow)
 
 ### When Making Architectural Decisions
-1. Record the decision in `CHANGELOG.md` (what changed; why; impact)
+1. Record the decision in `LOG.md` (what changed; why; impact)
 2. Update `PROJECT_SUMMARY.md` if it changes operational runbook behaviour
 3. Update `DEVELOPMENT_ROADMAP.md` if phases/tasks are affected
 
 ### When Completing Tasks
 1. Mark task complete in DEVELOPMENT_ROADMAP.md
 2. Update PROJECT_SUMMARY.md quick reference
-3. Add entry to CHANGELOG.md if significant
+3. Add entry to `LOG.md` if significant
 
 ### When Discovering New Constraints
 1. Add to PROJECT_RULES.md (this file)
 2. Update `PROJECT_SUMMARY.md` if it changes how to operate/test/debug
-3. Add a note in `CHANGELOG.md` if it is a significant change
+3. Add a note in `LOG.md` if it is a significant change
 
 ---
 
