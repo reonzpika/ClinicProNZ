@@ -301,18 +301,17 @@ app.post('/api/medtech/session/commit', async (req, res) => {
  * Purpose: Verify Media created via commit exists in ALEX, independent of Medtech UI.
  *
  * Query:
- * - nhi=<NHI> (preferred; uses patient.identifier search)
- * - patient=<patientId> (fallback)
+ * - nhi=<NHI> (required; uses patient.identifier search)
  * - count=<number> (default 10)
  * - _sort=<FHIR sort> (default -created)
  *
  * Notes:
- * - ALEX appears to support `patient.identifier=<system>|<value>` for Media searches.
- * - Some servers support `patient`, others prefer `subject`.
- * - We try NHI identifier search first (if provided), then fall back to patient/subject.
+ * - ALEX supports `patient.identifier=<system>|<value>` for Media searches.
+ * - We intentionally do not fall back to `patient=<id>` or `subject=Patient/<id>`; those have
+ *   returned 403 in UAT even when the token contains the expected roles.
  */
 app.get('/api/medtech/media', async (req, res) => {
-  const { patient, nhi, count = 10, _sort = '-created' } = req.query
+  const { nhi, count = 10, _sort = '-created' } = req.query
   const facilityId = coerceFacilityId(req.query.facilityId)
   const forceRefresh = shouldForceRefresh(req.query.forceRefresh)
   const startTime = Date.now()
@@ -322,73 +321,34 @@ app.get('/api/medtech/media', async (req, res) => {
     if (forceRefresh) {
       await oauthTokenService.forceRefresh()
     }
-    const sort = encodeURIComponent(_sort)
-
-    let patientId = patient
-    let queryUsed = null
-    let bundle = null
-
-    // Preferred (ALEX UAT): chained search on patient.identifier using NHI.
-    // Example: /Media?patient.identifier=https://standards.digital.health.nz/ns/nhi-id|ZZZ0016
-    if (typeof nhi === 'string' && nhi.trim()) {
-      const trimmedNhi = nhi.trim()
-      const patientIdentifier = `https://standards.digital.health.nz/ns/nhi-id|${trimmedNhi}`
-
-      try {
-        queryUsed = 'patient.identifier'
-        bundle = await alexApiClient.get(
-          `/Media?patient.identifier=${patientIdentifier}&_count=${count}&_sort=${sort}`,
-          { correlationId, facilityId },
-        )
-      } catch (error) {
-        // Fall back below; this path commonly returns 403 for other query shapes.
-        bundle = null
-      }
-
-      // For debugging convenience, still try to resolve patientId if not provided.
-      // Patient search is known to work in UAT; we keep patientId in the response for UI workflows.
-      if (!patientId) {
-        try {
-          const patientBundle = await alexApiClient.get(
-            `/Patient?identifier=${patientIdentifier}`,
-            { correlationId, facilityId },
-          )
-          patientId = patientBundle?.entry?.[0]?.resource?.id || null
-        } catch {
-          // non-fatal
-        }
-      }
+    if (typeof nhi !== 'string' || !nhi.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'nhi parameter required',
+        correlationId,
+      })
     }
 
-    // Fallback: patientId-based search params (may work in other environments/servers).
-    if (!bundle) {
-      if (!patientId || typeof patientId !== 'string') {
-        return res.status(400).json({
-          success: false,
-          error: 'nhi or patient parameter required',
-          correlationId,
-        })
-      }
+    const sort = encodeURIComponent(_sort)
+    const trimmedNhi = nhi.trim()
+    const patientIdentifier = `https://standards.digital.health.nz/ns/nhi-id|${trimmedNhi}`
 
-      // Try `patient` search param first.
-      try {
-        queryUsed = 'patient'
-        bundle = await alexApiClient.get(
-          `/Media?patient=${patientId}&_count=${count}&_sort=${sort}`,
-          { correlationId, facilityId },
-        )
-      } catch (error) {
-        bundle = null
-      }
+    const queryUsed = 'patient.identifier'
+    const bundle = await alexApiClient.get(
+      `/Media?patient.identifier=${patientIdentifier}&_count=${count}&_sort=${sort}`,
+      { correlationId, facilityId },
+    )
 
-      // Fallback: some servers prefer `subject=Patient/{id}`.
-      if (!bundle) {
-        queryUsed = 'subject'
-        bundle = await alexApiClient.get(
-          `/Media?subject=Patient/${patientId}&_count=${count}&_sort=${sort}`,
-          { correlationId, facilityId },
-        )
-      }
+    // Convenience for UI workflows: try to resolve patientId from NHI (non-fatal if it fails).
+    let patientId = null
+    try {
+      const patientBundle = await alexApiClient.get(
+        `/Patient?identifier=${patientIdentifier}`,
+        { correlationId, facilityId },
+      )
+      patientId = patientBundle?.entry?.[0]?.resource?.id || null
+    } catch {
+      // non-fatal
     }
 
     res.json({
