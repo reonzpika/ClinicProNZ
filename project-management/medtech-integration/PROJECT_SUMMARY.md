@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2026-01-10"
-version: "1.7.2"
+last_updated: "2026-01-11"
+version: "1.7.3"
 tags:
   - integration
   - medtech
@@ -123,9 +123,28 @@ Bring `F99669-C` online (desktop always-on, Hybrid Connection Manager running), 
   - **Intellimed (QuickShot)**: request pricing and inclusions (per clinic vs per GP, setup fee, monthly vs one-off, feature scope).
 - Posted in NZ GP Facebook group to learn current real-world workflow for clinical photos (personal vs practice phone), tools used (QuickShot/alternatives), pain points (file size/resizing), and asked for DMs.
 
+**Community intel (NZ GP Facebook group, Jan 2026) - key takeaways**:
+- Many practices still use the clunky workflow: phone photo → email to self/practice email → save to a shared folder/drive → upload to Medtech.
+- Referral portals can be a separate bottleneck:
+  - Some regional systems do not accept photos sourced "from Medtech images"; staff re-upload from a local folder.
+  - Some referral workflows require **JPEG** specifically.
+- QuickShot feedback included a potential format issue:
+  - Reported as "PDF only" upload; derm referrals requested JPEG, leading some users to abandon it for that use case.
+- MedImage is frequently recommended as solving the workflow; some PMS connector capability exists but may be limited by the cloud provider (for example, some providers may not allow it).
+
 **Why this matters**:
 - Pricing and positioning cannot be finalised in a vacuum; need both competitor pricing and Medtech commercial constraints.
 - Community responses will directly shape the differentiation message and onboarding friction points to solve first.
++
+**Implications for positioning and pilot focus (updated)**:
+- Positioning should explicitly speak to "referral-ready images", not only "images in Medtech".
+- Product requirements to validate in pilot:
+  - Output **JPEG-first** (avoid PDF-only constraints).
+  - Reliable resize/compress to meet typical referral file size limits.
+  - Easy re-use outside Medtech (simple export/save/share) because some referral systems require upload from a local folder rather than Medtech.
+- Pilot question stays tight:
+  - "Does this save you time and reduce photo admin?"
+  - Secondary: "Does it remove the referral upload friction (JPEG and file size)?"
 
 ### [2026-01-07] — Phase 1D Unblock: facilityId must be passed end-to-end (local Evo UI uses F99669-C) + tracing helpers
 
