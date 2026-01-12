@@ -8,7 +8,32 @@ import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
-export default function EmergencyAdminPage() {
+const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const hasClerk = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0;
+
+function EmergencyAdminNoClerk() {
+  return (
+    <div className="container mx-auto max-w-2xl p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Emergency Admin Access</CardTitle>
+          <CardDescription>
+            Clerk is not configured in this environment.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-gray-600">
+            To use this page, set <code className="rounded bg-gray-100 px-1">NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY</code>
+            {' '}
+            (and related Clerk env vars) for the deployment.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function EmergencyAdminWithClerk() {
   const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -172,4 +197,8 @@ export default function EmergencyAdminPage() {
       </div>
     </div>
   );
+}
+
+export default function EmergencyAdminPage() {
+  return hasClerk ? <EmergencyAdminWithClerk /> : <EmergencyAdminNoClerk />;
 }

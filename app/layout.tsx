@@ -45,8 +45,19 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const hasClerk = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0;
+
+  // Build environments (and some local setups) may not have Clerk env vars.
+  // We keep the app buildable by rendering without Clerk when keys are missing.
+  const Providers = ({ children: providerChildren }: { children: React.ReactNode }) => (
+    hasClerk
+      ? <ClerkProvider publishableKey={clerkPublishableKey}>{providerChildren}</ClerkProvider>
+      : <>{providerChildren}</>
+  );
+
   return (
-    <ClerkProvider>
+    <Providers>
       <QueryClientProvider>
         <TestUserProvider>
           <html lang="en">
@@ -80,6 +91,6 @@ export default function RootLayout({
           </html>
         </TestUserProvider>
       </QueryClientProvider>
-    </ClerkProvider>
+    </Providers>
   );
 }

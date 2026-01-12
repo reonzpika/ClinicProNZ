@@ -29,6 +29,15 @@ const EXCLUDED_ROUTE_PATTERNS = [
 export const AppLayoutWrapper: React.FC<AppLayoutWrapperProps> = ({ children }) => {
   const pathname = usePathname();
 
+  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+  const hasClerk = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0;
+
+  // If Clerk is not configured (common in CI/build-only environments), avoid rendering
+  // the authenticated app shell which depends on Clerk context.
+  if (!hasClerk) {
+    return children;
+  }
+
   // Check if current route should be excluded from AppLayout
   const shouldExclude = EXCLUDED_ROUTES.includes(pathname)
     || EXCLUDED_ROUTE_PATTERNS.some(pattern => pattern.test(pathname));
