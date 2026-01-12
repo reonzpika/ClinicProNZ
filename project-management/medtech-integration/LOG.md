@@ -21,7 +21,44 @@
 
 ---
 
-## 2026-01-11 Sat
+## 2026-01-11 Sat (Part 2)
+### Learning: Launch Mechanism Guidance from Defne (ALEX Vendor Forms)
+
+**What we learned**:
+- Medtech Evolution uses **ALEX Vendor Forms launch mechanism** for third-party integrations.
+- This is the proper way to launch our widget from within Medtech Evolution (not manual URL construction).
+- Launch flow:
+  1. GP clicks custom icon in Medtech toolbar
+  2. Medtech generates encrypted launch context (patient, facility, provider)
+  3. Launches our widget URL with `context` and `signature` parameters
+  4. Our backend calls ALEX API to decrypt context using JWT token
+  5. Widget initializes with patient/facility data
+
+**Setup steps provided**:
+1. **Icon loading**: Use "MT Icon Loader" utility to import icon into Medtech database
+2. **ALEX Apps Configuration**: Configure app in Options > ALEX > ALEX Apps Configuration
+3. **Launch URL**: Point to our widget with `{context}` and `{signature}` placeholders
+4. **Decrypt endpoint**: Backend must call `/vendorforms/api/getlaunchcontextstring/` to decrypt
+
+**Impact**:
+- Solves the launch mechanism requirement for Phase 1D
+- Provides secure patient context passing (no manual URL construction needed)
+- Gives us provider context (which GP is using the widget)
+- May also solve the UI integration issue (proper launch might fix Inbox/Daily Record display)
+
+**Next steps**:
+1. Create icon for ClinicPro Images
+2. Implement BFF launch decode endpoint
+3. Implement frontend launch route
+4. Test with local facility F99669-C
+5. Re-test UI integration after proper launch
+
+**Documentation**:
+- Created `LAUNCH_MECHANISM_PLAN.md` with detailed implementation plan
+
+---
+
+## 2026-01-11 Sat (Part 1)
 ### Milestone: Phase 1D UI Validation Complete (with critical findings)
 
 **What was tested**:

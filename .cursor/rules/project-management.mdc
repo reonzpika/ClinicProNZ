@@ -5,7 +5,7 @@ globs:
   - project-management/**
 version: "1.0.0"
 priority: HIGH
-last_updated: "2026-01-10"
+last_updated: "2026-01-12"
 ---
 
 # Project Management Documentation System
@@ -17,7 +17,7 @@ Root docs are overview and current work; project folders hold detail and evidenc
 ## Canonical documents
 
 ### Root level (`/project-management/`)
-- `CURRENT-WORK.md`: current priorities, active task queue, recent context, constraints, and metrics.
+- `CURRENT-WORK.md`: current priorities, active task queue, constraints, and metrics (NO HISTORY).
 - `PORTFOLIO.md`: project list, one-line status per project, and navigation pointers.
 - `2026-ANNUAL-PLANNING.md`: company-wide goals and kill signals (read only for strategic/quarterly work).
 
@@ -26,19 +26,20 @@ Legacy files may exist for backward compatibility:
 - `PROJECTS_OVERVIEW.md` (deprecated; points to `PORTFOLIO.md`)
 
 ### Per-project folder (`/project-management/<project>/`)
-- `PROJECT_SUMMARY.md`: current status, next session pick-up point, and short plan (not chronological).
-- `LOG.md`: chronological log with evidence and decisions (not current state).
+- `PROJECT_SUMMARY.md`: current status, next session pick-up point, and short plan (NOT chronological, NO HISTORY).
+- `LOG.md`: chronological log with evidence and decisions (ALL HISTORY GOES HERE).
 
 ## Read order (by intent)
 - Session start, what to work on: `CURRENT-WORK.md`, then `PORTFOLIO.md`.
-- Status of a specific project: that project’s `PROJECT_SUMMARY.md`.
-- What happened and why (evidence): that project’s `LOG.md` (latest entries first).
+- Status of a specific project: that project's `PROJECT_SUMMARY.md`.
+- What happened and why (evidence): that project's `LOG.md` (latest entries first).
 
 ## Anti-duplication policy (strict)
-- Current status lives in `PROJECT_SUMMARY.md` only.
-- Chronological narrative and evidence live in `LOG.md` only.
+- **Current status** lives in `PROJECT_SUMMARY.md` only (where we are NOW, what's blocking, what's next).
+- **Chronological narrative and evidence** live in `LOG.md` only (what happened, when, why, with evidence).
+- **NO HISTORY in PROJECT_SUMMARY.md or CURRENT-WORK.md** - these are current state only.
 - Root docs must not repeat project detail; use pointers to `PROJECT_SUMMARY.md` or `LOG.md`.
-- Do not paste long logs into summaries; summaries should link to log entries by date.
+- Do not paste logs or past achievements into summaries; all history goes to LOG.md.
 
 ## Update workflow (approval-gated)
 
@@ -48,13 +49,20 @@ Update immediately.
 ### When you notice a meaningful milestone, blocker change, or decision
 Propose updates first and ask for approval:
 
-Proposed update format:
-1. `project-management/<project>/LOG.md`: what entry you’ll add
-2. `project-management/<project>/PROJECT_SUMMARY.md`: what you’ll change
-3. `project-management/CURRENT-WORK.md` or `project-management/PORTFOLIO.md`: if needed
+**Standard update (most work):**
+1. `project-management/<project>/LOG.md`: detailed chronological entry (what happened, evidence, decisions)
+2. `project-management/<project>/PROJECT_SUMMARY.md`: update current status/next action/blockers only
+
+**Rarely needed:**
+3. `project-management/PORTFOLIO.md`: only if project status changed significantly (e.g., launched, paused, cancelled)
+
+**Almost never:**
+4. `project-management/CURRENT-WORK.md`: only during weekly planning or when priorities shift
 
 Then ask: "Should I proceed with these updates?"
 Do not edit files until approved.
+
+**Rule: Most updates should touch 2 files max (LOG.md + PROJECT_SUMMARY.md).**
 
 ## Style
 - NZ English spelling.
