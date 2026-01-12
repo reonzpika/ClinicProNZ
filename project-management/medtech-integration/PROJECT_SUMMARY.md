@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2026-01-10"
-version: "1.7.2"
+last_updated: "2026-01-11"
+version: "1.7.3"
 tags:
   - integration
   - medtech
@@ -13,10 +13,10 @@ tags:
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 quick_reference:
   current_phase: "Phase 1D"
-  status: "Phase 1C ✅ complete; Phase 1D in progress (Medtech Evolution UI validation using local facility)"
-  next_action: "Customer-side launch prep while away from home desktop (pricing + pilot list + outreach). When home: run Phase 1D UI validation (see DEVELOPMENT_ROADMAP.md): ensure Hybrid Connection Manager is running (test desktop must be awake); resolve local patientId for NHI ZZZ0016 in F99669-C; commit 1 image to F99669-C; confirm it appears in Medtech Evolution Inbox and Daily Record"
+  status: "Phase 1C ✅ complete; Phase 1D ⚠️ tested (images reach Medtech but UI integration incomplete)"
+  next_action: "Contact Medtech support: ask how to properly commit images for inline display in Inbox and Daily Record (not as broken links). Investigate whether DocumentReference or Communication resource is required alongside Media. Review ALEX docs for Media upload best practices for UI integration."
   key_blockers:
-    - "Need local patientId for NHI ZZZ0016 in facility F99669-C"
+    - "Images appear in Inbox as broken links (not inline preview); do not appear in Daily Record at all; need Medtech guidance on proper FHIR resource structure for UI integration"
     - "ALEX UAT reads/search are sensitive to URL/query shape; Media verify should use `patient.identifier`; other resources may still return 403 depending on query parameters; keep validating with ALEX support examples"
     - "Waiting on Medtech commercial terms (revenue share/fees/billing route/payment terms) and competitor QuickShot pricing (Intellimed) to finalise pricing strategy"
   facility_id: "F2N060-E (hosted UAT API testing) + F99669-C (local Medtech Evolution UI validation)"
@@ -26,7 +26,7 @@ key_docs:
   changelog: "LOG.md"
   alex_api: "alex-api.md"
 ---
-
+;
 ## Read order (for humans and AI)
 - `.cursor/rules/project-medtech-integration.mdc` (hard constraints, ALEX/FHIR rules, debugging)
 - `PROJECT_SUMMARY.md` (this file; operational runbook)

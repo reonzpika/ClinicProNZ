@@ -8,7 +8,7 @@
 ### Medtech ALEX Integration
 - Path: `project-management/medtech-integration/`
 - Phase: Build (Phase 1D validation)
-- Status: Phase 1C commit working; Phase 1D blocked on local facility `F99669-C` uptime and ALEX UAT search returning 403 for non-Patient resources despite token roles.
+- Status: Phase 1D tested; images commit successfully but UI integration incomplete (broken links in Inbox, missing from Daily Record); need Medtech support guidance.
 - Read next: `project-management/medtech-integration/PROJECT_SUMMARY.md`
 
 ### ClinicPro SaaS

@@ -21,6 +21,51 @@
 
 ---
 
+## 2026-01-11 Sat
+### Milestone: Phase 1D UI Validation Complete (with critical findings)
+
+**What was tested**:
+- Committed 1 test image to local facility `F99669-C` via widget
+- Verified appearance in Medtech Evolution UI (Inbox and Daily Record)
+
+**Test evidence**:
+- Correlation ID: `4bad6cdd-abaf-48f5-b393-156725709a79`
+- File ID: `mxt2BHNXcOGqQYp8Vuo4p`
+- Patient ID (F99669-C): `231f0d896dd1a8875c87a0b7ae41b941`
+- NHI: `ZZZ0016`
+- Timestamp: 11 Jan 2026 23:42
+
+**Results**:
+- ✅ Connectivity verified: Hybrid Connection Manager running; F99669-C reachable via BFF
+- ✅ Commit successful: HTTP 200, status "committed"
+- ✅ Image appears in **Inbox** (two MEDIA entries visible, dated 11 Jan 2026)
+- ❌ Image does **NOT** appear in **Daily Record**
+- ❌ Image displays as clickable link "View ...." instead of inline preview
+- ❌ Link does not work when clicked ("The webpage cannot be displayed" error)
+
+**Critical finding**:
+Creating a plain FHIR `Media` resource via `POST /FHIR/Media` is **not sufficient** for proper Medtech Evolution UI integration. The user expects (and Medtech Evolution supports) inline image display without requiring link clicks.
+
+**Possible causes**:
+1. Missing required FHIR resource (DocumentReference or Communication) to trigger Daily Record entry
+2. `Media.content.url` may be pointing to invalid/inaccessible location (causing "webpage cannot be displayed")
+3. Medtech Evolution may require specific Media resource structure or additional fields for inline rendering
+4. May need to use Medtech-specific API endpoint (not plain FHIR) for proper UI integration
+
+**Next steps** (investigation required):
+1. Contact Medtech support: ask how to properly commit images for inline display in Inbox and Daily Record
+2. Review ALEX API documentation for Media upload best practices
+3. Check if DocumentReference or Communication resource is required alongside Media
+4. Investigate the `content.url` vs `content.data` approach (we're using base64 `content.data`; maybe `content.url` is expected for UI?)
+5. Ask Medtech: what's the difference between images that show inline vs as links?
+
+**Impact**:
+- Phase 1D partially validates end-to-end workflow (images reach Medtech)
+- Workflow is **NOT production-ready** yet (UX is broken)
+- Need Medtech guidance before pilot clinic launch
+
+---
+
 ## 2026-01-10 Sat
 ### Learning: ALEX UAT search works; our query shape was wrong (Defne)
 
@@ -34,7 +79,7 @@
 - Updated the Lightsail BFF `/api/medtech/media` endpoint to require `nhi` and query using `patient.identifier` only (no fallback).
 
 **Impact**:
-- Unblocks reliable “read/verify” for Media in UAT, aligning with ALEX support guidance; reduces time wasted chasing auth issues that are actually URL/query-shape issues.
+- Unblocks reliable "read/verify" for Media in UAT, aligning with ALEX support guidance; reduces time wasted chasing auth issues that are actually URL/query-shape issues.
 
 ## Legacy changelog (migrated from the former `CHANGELOG.md` on 2026-01-10)
 
