@@ -4,6 +4,96 @@
 - The canonical Medtech Integration rules are now consolidated in `.cursor/rules/project-medtech-integration.mdc`.
 - Historical log entries may mention older file names (for example `PROJECT_RULES.md`); treat those as historical context.
 
+## 2026-01-12 Sun (Part 2)
+### Milestone: LAUNCH_MECHANISM_PLAN Phase 3 Complete - Frontend Launch Support Implemented
+
+**What was implemented**:
+- Updated `/medtech-images` page to support both launch mechanism and direct parameters
+- Created Vercel proxy endpoint: `GET /api/medtech/launch/proxy`
+- Widget now handles three launch modes: launch mechanism (context + signature), direct parameters (encounterId + patientId), and mock fallback
+
+**Implementation details**:
+
+**1. Frontend page updates** (`app/(medtech)/medtech-images/page.tsx`):
+- Added state: `isDecodingLaunchContext` to track launch context decoding
+- Updated `useEffect` to check for `context` and `signature` parameters first
+- If present: fetches `/api/medtech/launch/proxy`, decodes context, sets encounter context
+- If absent: falls back to existing direct parameter parsing (backward compatible)
+- Shows "Loading patient context..." message while decoding
+- Error handling: displays error banner if decoding fails
+
+**2. Vercel proxy endpoint** (`app/api/medtech/launch/proxy/route.ts`):
+- Accepts `context` and `signature` query parameters
+- Validates required parameters (returns 400 if missing)
+- Proxies request to BFF: `GET /api/medtech/launch/decode`
+- Returns BFF response (status code + JSON data)
+- Error handling: returns 500 if BFF request fails
+
+**Launch flow**:
+1. Medtech Evolution launches widget URL with encrypted context + signature
+2. Widget page detects launch mechanism parameters
+3. Calls `/api/medtech/launch/proxy` (Vercel endpoint)
+4. Vercel proxies to `/api/medtech/launch/decode` (BFF endpoint)
+5. BFF decrypts context via ALEX API
+6. Widget initializes with decrypted patient/facility/provider context
+
+**Backward compatibility maintained**:
+- Direct parameters still work: `/medtech-images?encounterId=X&patientId=Y`
+- Mock fallback still works: `/medtech-images` (no parameters)
+- All existing flows unaffected
+
+**Testing status**:
+- ⏸️ End-to-end testing pending (requires Phase 4: icon setup in F99669-C and actual launch from Medtech Evolution)
+- ⚠️ Linter warnings exist in original code (pre-existing, not introduced by changes)
+
+**Next steps**:
+- LAUNCH_MECHANISM_PLAN Phase 4: Load icon into F99669-C via MT Icon Loader
+- LAUNCH_MECHANISM_PLAN Phase 4: Configure ALEX Apps Configuration in Medtech Evolution
+- LAUNCH_MECHANISM_PLAN Phase 4: Test end-to-end launch mechanism
+- LAUNCH_MECHANISM_PLAN Phase 4: Re-test UI integration (may fix Inbox/Daily Record issues)
+
+**Evidence**:
+- Code: `app/(medtech)/medtech-images/page.tsx` lines 37-131
+- Code: `app/api/medtech/launch/proxy/route.ts` (new file)
+- Plan reference: `LAUNCH_MECHANISM_PLAN.md` Phase 3
+
+---
+
+## 2026-01-12 Sun (Part 1)
+### Milestone: LAUNCH_MECHANISM_PLAN Phase 2 Complete - BFF Launch Decode Endpoint Implemented
+
+**What was implemented**:
+- BFF endpoint: `GET /api/medtech/launch/decode`
+- Accepts `context` and `signature` query parameters (from Medtech Evolution launch URL)
+- Validates required parameters
+- Calls ALEX API: `/vendorforms/api/getlaunchcontextstring/{context}/{signature}`
+- Returns decrypted launch context: `{ patientId, facilityCode, providerId, createdTime }`
+- Follows existing BFF patterns: correlationId tracking, error handling, timing metrics
+
+**Implementation details**:
+- File: `lightsail-bff/index.js`
+- Endpoint added after media verification endpoint (line 397)
+- Uses existing `alexApiClient.get()` method (handles OAuth token automatically)
+- URL-encodes context and signature for ALEX API path parameters
+- Returns standardised response format: `{ success, duration, correlationId, context }`
+- Error handling matches existing endpoints (400 for missing params, 500 for ALEX errors)
+
+**Testing status**:
+- ✅ Syntax validation passed (`node -c index.js`)
+- ⏸️ End-to-end testing pending (requires LAUNCH_MECHANISM_PLAN Phase 1 icon setup + Phase 3 frontend route)
+
+**Next steps**:
+- LAUNCH_MECHANISM_PLAN Phase 3: Implement frontend launch route (`/medtech-images/launch`) and Vercel proxy endpoint
+- LAUNCH_MECHANISM_PLAN Phase 4: Test launch mechanism with F99669-C facility
+
+**Note**: This is Phase 2 of `LAUNCH_MECHANISM_PLAN.md` (separate from `DEVELOPMENT_ROADMAP.md` Phase 1D, which includes launch mechanism as one of its tasks).
+
+**Evidence**:
+- Code: `lightsail-bff/index.js` lines 373-445
+- Plan reference: `LAUNCH_MECHANISM_PLAN.md` Phase 2
+
+---
+
 ## 2026-01-10 Fri
 ### Milestone: Consolidate logging into `LOG.md`
 - Legacy changelog history has been migrated into this file.

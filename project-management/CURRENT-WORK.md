@@ -12,7 +12,7 @@
 - [x] Bring `F99669-C` online (Windows desktop always-on; Hybrid Connection Manager running) and capture Phase 1D UI evidence.
 - [x] Phase 1D UI validation complete: images reach Medtech but UI integration incomplete (broken links in Inbox, missing from Daily Record).
 - [x] Received launch mechanism guidance from Defne (ALEX Vendor Forms integration method).
-- [ ] Create icon for ClinicPro Images widget (32x32 or 64x64 PNG).
+- [x] Create icon for ClinicPro Images widget (32x32 or 64x64 PNG).
 - [ ] Implement BFF launch decode endpoint: `/api/medtech/launch/decode` (calls ALEX vendorforms API).
 - [ ] Implement frontend launch route: `/medtech-images/launch` (decodes context and redirects to widget).
 - [ ] Load icon into F99669-C via MT Icon Loader and configure ALEX Apps Configuration.

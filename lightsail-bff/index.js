@@ -371,6 +371,81 @@ app.get('/api/medtech/media', async (req, res) => {
 })
 
 // ============================================================================
+// Medtech: Launch Decode Endpoint (Phase 2)
+// ============================================================================
+
+/**
+ * GET /api/medtech/launch/decode
+ *
+ * Purpose: Decode launch context from Medtech Evolution ALEX Vendor Forms.
+ *
+ * Query:
+ * - context=<base64> (required; encrypted launch context)
+ * - signature=<hmac> (required; HMAC signature)
+ *
+ * Returns:
+ * - success: boolean
+ * - context: { patientId, facilityCode, providerId, createdTime }
+ * - correlationId: request tracking ID
+ * - duration: response time in ms
+ *
+ * Notes:
+ * - Calls ALEX API /vendorforms/api/getlaunchcontextstring/{context}/{signature}
+ * - Requires valid OAuth token (handled by alexApiClient)
+ * - patientId may be null if no patient selected in Medtech pallet
+ */
+app.get('/api/medtech/launch/decode', async (req, res) => {
+  const { context, signature } = req.query
+  const startTime = Date.now()
+  const correlationId = randomUUID()
+
+  try {
+    // Validate parameters
+    if (!context || typeof context !== 'string' || !context.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'context parameter required',
+        correlationId,
+      })
+    }
+
+    if (!signature || typeof signature !== 'string' || !signature.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'signature parameter required',
+        correlationId,
+      })
+    }
+
+    // URL encode context and signature for path parameters
+    const encodedContext = encodeURIComponent(context.trim())
+    const encodedSignature = encodeURIComponent(signature.trim())
+
+    // Call ALEX to decrypt launch context
+    const launchContext = await alexApiClient.get(
+      `/vendorforms/api/getlaunchcontextstring/${encodedContext}/${encodedSignature}`,
+      { correlationId }
+    )
+
+    // launchContext = { patientId, facilityCode, providerId, createdTime }
+
+    res.json({
+      success: true,
+      duration: Date.now() - startTime,
+      correlationId,
+      context: launchContext,
+    })
+  } catch (error) {
+    res.status(error?.statusCode || 500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      correlationId,
+      duration: Date.now() - startTime,
+    })
+  }
+})
+
+// ============================================================================
 // FHIR Resource Exploration Endpoints (for feature validation)
 // ============================================================================
 

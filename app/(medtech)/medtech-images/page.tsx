@@ -45,6 +45,7 @@ function MedtechImagesPageContent() {
     successIds: string[];
     errorIds: string[];
   } | null>(null);
+  const [isDecodingLaunchContext, setIsDecodingLaunchContext] = useState(false);
 
   const commitMutation = useCommit();
 
@@ -62,6 +63,40 @@ function MedtechImagesPageContent() {
 
   // Parse encounter context from URL params
   useEffect(() => {
+    const context = searchParams.get('context');
+    const signature = searchParams.get('signature');
+
+    // Launch mechanism: decode encrypted context from Medtech Evolution
+    if (context && signature) {
+      setIsDecodingLaunchContext(true);
+
+      fetch(`/api/medtech/launch/proxy?context=${encodeURIComponent(context)}&signature=${encodeURIComponent(signature)}`)
+        .then(res => res.json())
+        .then((data) => {
+          setIsDecodingLaunchContext(false);
+
+          if (data.success) {
+            const { patientId, facilityCode, providerId } = data.context;
+
+            setEncounterContext({
+              encounterId: `launch-${Date.now()}`,
+              patientId: patientId || '',
+              facilityId: facilityCode || 'F2N060-E',
+              providerId: providerId || undefined,
+            });
+          } else {
+            setError(data.error || 'Failed to decode launch context');
+          }
+        })
+        .catch(() => {
+          setIsDecodingLaunchContext(false);
+          setError('Network error while decoding launch context');
+        });
+
+      return; // Exit early, don't parse direct params
+    }
+
+    // Direct parameters (for testing/demos)
     const encounterId = searchParams.get('encounterId');
     const patientId = searchParams.get('patientId');
     const patientName = searchParams.get('patientName');
@@ -92,7 +127,7 @@ function MedtechImagesPageContent() {
         providerName: 'Dr Mock',
       });
     }
-  }, [searchParams, setEncounterContext]);
+  }, [searchParams, setEncounterContext, setError]);
 
   // Initialize Ably session sync (real-time image notifications)
   useAblySessionSync(encounterContext?.encounterId);
@@ -197,12 +232,14 @@ function MedtechImagesPageContent() {
 
   // Conditional returns AFTER all hooks
   // Loading state
-  if (isLoadingCapabilities || !capabilities) {
+  if (isLoadingCapabilities || !capabilities || isDecodingLaunchContext) {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50">
         <div className="text-center">
           <Loader2 className="mx-auto mb-4 size-12 animate-spin text-purple-500" />
-          <p className="text-slate-600">Loading Medtech Images Widget...</p>
+          <p className="text-slate-600">
+            {isDecodingLaunchContext ? 'Loading patient context...' : 'Loading Medtech Images Widget...'}
+          </p>
         </div>
       </div>
     );

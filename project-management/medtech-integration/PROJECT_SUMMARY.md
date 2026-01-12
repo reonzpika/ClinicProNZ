@@ -12,9 +12,9 @@ tags:
   - api
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 quick_reference:
-  current_phase: "Phase 1D"
-  status: "Phase 1C ✅ complete; Phase 1D ⚠️ tested (images reach Medtech but UI integration incomplete); Launch mechanism guidance received from Medtech"
-  next_action: "Implement ALEX Vendor Forms launch mechanism (proper integration method): create icon, implement BFF launch decode endpoint, implement frontend launch route, test with F99669-C. Then re-test UI integration to see if proper launch fixes Inbox/Daily Record display issues."
+  current_phase: "Phase 1D (DEVELOPMENT_ROADMAP.md) + Launch Mechanism Phase 4 (LAUNCH_MECHANISM_PLAN.md)"
+  status: "DEVELOPMENT_ROADMAP Phase 1C ✅ complete; Phase 1D ⚠️ tested (images reach Medtech but UI integration incomplete); LAUNCH_MECHANISM_PLAN Phase 1 ✅ complete (icon setup); Phase 2 ✅ complete (BFF launch decode endpoint); Phase 3 ✅ complete (frontend launch support + Vercel proxy)"
+  next_action: "LAUNCH_MECHANISM_PLAN Phase 4: Load icon into F99669-C via MT Icon Loader, configure ALEX Apps Configuration, test end-to-end launch mechanism, and re-test UI integration to see if proper launch fixes Inbox/Daily Record display issues."
   key_blockers:
     - "Images appear in Inbox as broken links (not inline preview); do not appear in Daily Record at all; may be resolved by implementing proper launch mechanism"
     - "ALEX UAT reads/search are sensitive to URL/query shape; Media verify should use `patient.identifier`; other resources may still return 403 depending on query parameters; keep validating with ALEX support examples"
@@ -71,6 +71,7 @@ Medtech grants permissions at app registration/user profile level. Current known
 ### Canonical endpoints
 - **BFF health**: `GET https://api.clinicpro.co.nz/health`
 - **ALEX connectivity test (via BFF)**: `GET https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016&facilityId=<FACILITY>`
+- **Launch decode (via BFF)**: `GET https://api.clinicpro.co.nz/api/medtech/launch/decode?context=<base64>&signature=<hmac>`
 - **Commit to ALEX (via widget)**: widget calls Vercel route `POST /api/medtech/attachments/commit`, which proxies to BFF.
 - **Commit to ALEX (direct BFF, for smoke tests)**: `POST https://api.clinicpro.co.nz/api/medtech/session/commit`
 - **Media verification (via BFF)**: `GET https://api.clinicpro.co.nz/api/medtech/media?nhi=<NHI>&facilityId=<FACILITY>&count=<N>`
@@ -104,20 +105,23 @@ Medtech grants permissions at app registration/user profile level. Current known
 ---
 
 ## Current status (kept short)
-- **Phase 1C complete**: commit creates FHIR `Media` in ALEX via Lightsail BFF (static IP).
-- **Phase 1D in progress**: commit into local facility `F99669-C`, then confirm it appears in Medtech Evolution UI (Inbox and Daily Record).
+- **DEVELOPMENT_ROADMAP Phase 1C complete**: commit creates FHIR `Media` in ALEX via Lightsail BFF (static IP).
+- **DEVELOPMENT_ROADMAP Phase 1D tested**: commit into local facility `F99669-C` works, but UI integration incomplete (broken links in Inbox, missing from Daily Record).
+- **LAUNCH_MECHANISM_PLAN Phase 1 complete**: Icon created and ready for Medtech Evolution setup.
+- **LAUNCH_MECHANISM_PLAN Phase 2 complete**: BFF launch decode endpoint implemented (`GET /api/medtech/launch/decode`).
+- **LAUNCH_MECHANISM_PLAN Phase 3 complete**: Frontend launch support implemented (page updated + Vercel proxy endpoint created).
 
 ## Next Session: Pick Up Here
 
-Implement ALEX Vendor Forms launch mechanism (proper integration method):
-1. Create icon for ClinicPro Images widget
-2. Implement BFF launch decode endpoint (`/api/medtech/launch/decode`)
-3. Implement frontend launch route (`/medtech-images/launch`)
-4. Load icon into F99669-C via MT Icon Loader and configure ALEX Apps Configuration
-5. Test launch mechanism with F99669-C
-6. Re-test UI integration to see if proper launch fixes Inbox/Daily Record display issues
+Continue ALEX Vendor Forms launch mechanism implementation (from `LAUNCH_MECHANISM_PLAN.md`):
+1. ✅ Create icon for ClinicPro Images widget (LAUNCH_MECHANISM_PLAN Phase 1 complete)
+2. ✅ Implement BFF launch decode endpoint (`/api/medtech/launch/decode`) (LAUNCH_MECHANISM_PLAN Phase 2 complete)
+3. ✅ Implement frontend launch support and Vercel proxy endpoint (LAUNCH_MECHANISM_PLAN Phase 3 complete)
+4. **LAUNCH_MECHANISM_PLAN Phase 4**: Load icon into F99669-C via MT Icon Loader and configure ALEX Apps Configuration
+5. **LAUNCH_MECHANISM_PLAN Phase 4**: Test launch mechanism with F99669-C
+6. **LAUNCH_MECHANISM_PLAN Phase 4**: Re-test UI integration to see if proper launch fixes Inbox/Daily Record display issues
 
-Detailed implementation plan: `LAUNCH_MECHANISM_PLAN.md`
+Note: `DEVELOPMENT_ROADMAP.md` Phase 1D includes "launch mechanism" as a task, but detailed implementation is tracked in separate `LAUNCH_MECHANISM_PLAN.md` with its own phase numbering.
 
 ---
 
