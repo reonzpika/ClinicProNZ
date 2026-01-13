@@ -69,6 +69,59 @@ app.get('/api/medtech/token-info', (req, res) => {
   })
 })
 
+// ============================================================================
+// Medtech: Vendor Forms Launch Decode (ALEX Apps)
+// ============================================================================
+/**
+ * GET /api/medtech/launch/decode?context=...&signature=...&correlationId=...
+ *
+ * Purpose: Decode Medtech Evolution vendor form launch parameters via ALEX.
+ * Boundary: Only the BFF calls ALEX (static IP allow-listed).
+ *
+ * Returns:
+ * {
+ *   success: true,
+ *   correlationId,
+ *   durationMs,
+ *   context: { patientId, facilityCode, providerId?, createdTime? }
+ * }
+ */
+app.get('/api/medtech/launch/decode', async (req, res) => {
+  const { context, signature } = req.query
+  const startTime = Date.now()
+  const correlationId = (typeof req.query.correlationId === 'string' && req.query.correlationId.trim())
+    ? req.query.correlationId.trim()
+    : randomUUID()
+
+  try {
+    if (typeof context !== 'string' || !context.trim() || typeof signature !== 'string' || !signature.trim()) {
+      return res.status(400).json({
+        success: false,
+        error: 'context and signature parameters required',
+        correlationId,
+      })
+    }
+
+    // ALEX endpoint is path-parameter based; ensure URL-safe encoding.
+    const encodedContext = encodeURIComponent(context.trim())
+    const encodedSignature = encodeURIComponent(signature.trim())
+
+    const launchContext = await alexApiClient.get(
+      `/vendorforms/api/getlaunchcontextstring/${encodedContext}/${encodedSignature}`,
+      { correlationId },
+    )
+
+    return res.json({
+      success: true,
+      correlationId,
+      durationMs: Date.now() - startTime,
+      context: launchContext,
+    })
+  } catch (error) {
+    return respondWithAlexError(res, error, 500)
+  }
+})
+
 // Medtech: Test FHIR connectivity
 app.get('/api/medtech/test', async (req, res) => {
   const nhi = req.query.nhi || 'ZZZ0016'
@@ -147,7 +200,7 @@ async function downloadUrlToBase64(downloadUrl) {
   const contentType = response.headers.get('content-type') || null
   const base64 = bytes.toString('base64')
 
-  return { base64, contentType, sizeBytes: bytes.length }
+  return { base64, contentType, sizeBytes: bytes.length, bytes }
 }
 
 function base64ToBytes(base64) {
@@ -155,6 +208,78 @@ function base64ToBytes(base64) {
     return Buffer.from(base64, 'base64')
   } catch {
     return null
+  }
+}
+
+function sniffImageContentType(bytes) {
+  if (!Buffer.isBuffer(bytes) || bytes.length < 4) return null
+
+  // JPEG magic bytes: FF D8 FF
+  if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
+    return 'image/jpeg'
+  }
+
+  // PNG magic bytes: 89 50 4E 47 0D 0A 1A 0A
+  if (
+    bytes.length >= 8
+    && bytes[0] === 0x89
+    && bytes[1] === 0x50
+    && bytes[2] === 0x4E
+    && bytes[3] === 0x47
+    && bytes[4] === 0x0D
+    && bytes[5] === 0x0A
+    && bytes[6] === 0x1A
+    && bytes[7] === 0x0A
+  ) {
+    return 'image/png'
+  }
+
+  return null
+}
+
+function getNzCreatedDateTimeNow() {
+  // We want the datetime to land on the correct NZ clinical day in Medtech UI.
+  // Prefer an ISO datetime with an explicit Pacific/Auckland offset if supported by the runtime.
+  try {
+    const now = new Date()
+    const parts = new Intl.DateTimeFormat('en-NZ', {
+      timeZone: 'Pacific/Auckland',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZoneName: 'shortOffset',
+    }).formatToParts(now)
+
+    const get = (type) => parts.find(p => p.type === type)?.value
+    const year = get('year')
+    const month = get('month')
+    const day = get('day')
+    const hour = get('hour')
+    const minute = get('minute')
+    const second = get('second')
+    const tz = get('timeZoneName') // eg "GMT+13" or "GMT+12"
+
+    if (!year || !month || !day || !hour || !minute || !second || !tz) {
+      return { value: new Date().toISOString(), warning: 'NZ timezone parts unavailable; used UTC' }
+    }
+
+    const match = tz.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/)
+    if (!match) {
+      return { value: new Date().toISOString(), warning: `Unexpected NZ offset format (${tz}); used UTC` }
+    }
+
+    const sign = match[1]
+    const hours = match[2].padStart(2, '0')
+    const minutes = (match[3] || '00').padStart(2, '0')
+
+    const offset = `${sign}${hours}:${minutes}`
+    return { value: `${year}-${month}-${day}T${hour}:${minute}:${second}${offset}`, warning: null }
+  } catch (error) {
+    return { value: new Date().toISOString(), warning: 'NZ timezone formatting unsupported; used UTC' }
   }
 }
 
@@ -188,6 +313,8 @@ app.post('/api/medtech/session/commit', async (req, res) => {
     const clientRef = file?.clientRef
 
     try {
+      const warnings = []
+
       if (!clientRef || typeof clientRef !== 'string') {
         throw new Error('clientRef is required')
       }
@@ -199,6 +326,7 @@ app.post('/api/medtech/session/commit', async (req, res) => {
       let base64 = null
       let contentType = null
       let sizeBytes = null
+      let sniffedContentType = null
 
       if (typeof sourceBase64Data === 'string' && sourceBase64Data.length > 0) {
         base64 = stripDataUrlPrefix(sourceBase64Data)
@@ -210,17 +338,27 @@ app.post('/api/medtech/session/commit', async (req, res) => {
         if (sizeBytes > MAX_IMAGE_BYTES) {
           throw new Error(`image too large: ${sizeBytes} bytes (max ${MAX_IMAGE_BYTES})`)
         }
+        sniffedContentType = sniffImageContentType(bytes)
         contentType = typeof file?.contentType === 'string' ? file.contentType : null
       } else if (typeof sourceDownloadUrl === 'string' && sourceDownloadUrl.length > 0) {
         const downloaded = await downloadUrlToBase64(sourceDownloadUrl)
         base64 = downloaded.base64
         contentType = downloaded.contentType || (typeof file?.contentType === 'string' ? file.contentType : null)
         sizeBytes = downloaded.sizeBytes
+        sniffedContentType = sniffImageContentType(downloaded.bytes)
       } else {
         throw new Error('no image data provided (expected source.base64Data or source.downloadUrl)')
       }
 
-      const now = new Date().toISOString()
+      if (sniffedContentType) {
+        if (contentType && contentType !== sniffedContentType) {
+          warnings.push(`contentType mismatch; overridden ${contentType} -> ${sniffedContentType}`)
+        }
+        contentType = sniffedContentType
+      }
+
+      const created = getNzCreatedDateTimeNow()
+      if (created.warning) warnings.push(created.warning)
 
       const title =
         (typeof file?.title === 'string' && file.title.trim() ? file.title.trim() : null)
@@ -243,7 +381,7 @@ app.post('/api/medtech/session/commit', async (req, res) => {
         },
         subject: { reference: `Patient/${patientId}` },
         encounter: { reference: `Encounter/${encounterId}` },
-        createdDateTime: now,
+        createdDateTime: created.value,
         content: {
           contentType: contentType || 'image/jpeg',
           data: base64,
@@ -273,7 +411,7 @@ app.post('/api/medtech/session/commit', async (req, res) => {
         status: 'committed',
         mediaId,
         documentReferenceId: mediaId,
-        warnings: [],
+        warnings,
       })
     } catch (error) {
       results.push({
