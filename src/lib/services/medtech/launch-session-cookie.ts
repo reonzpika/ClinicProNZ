@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import crypto from 'node:crypto';
 
 export type MedtechLaunchSessionContext = {
@@ -88,7 +89,9 @@ export function readMedtechLaunchCookieValue(params: {
     const nowMs = typeof params.nowMs === 'number' ? params.nowMs : Date.now();
     const buf = base64UrlDecode(params.value);
 
-    if (buf.length < 12 + 16 + 1) return null;
+    if (buf.length < 12 + 16 + 1) {
+      return null;
+    }
     const iv = buf.subarray(0, 12);
     const tag = buf.subarray(12, 28);
     const ciphertext = buf.subarray(28);
@@ -101,15 +104,24 @@ export function readMedtechLaunchCookieValue(params: {
     const plaintext = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
     const parsed = JSON.parse(plaintext.toString('utf8')) as MedtechLaunchSessionPayload;
 
-    if (!parsed || parsed.v !== 1) return null;
-    if (typeof parsed.expMs !== 'number' || nowMs > parsed.expMs) return null;
-    if (!parsed.context || typeof parsed.context.facilityId !== 'string') return null;
-    if (!('patientId' in parsed.context)) return null;
-    if (typeof parsed.context.encounterId !== 'string' || !parsed.context.encounterId.trim()) return null;
+    if (!parsed || parsed.v !== 1) {
+      return null;
+    }
+    if (typeof parsed.expMs !== 'number' || nowMs > parsed.expMs) {
+      return null;
+    }
+    if (!parsed.context || typeof parsed.context.facilityId !== 'string') {
+      return null;
+    }
+    if (!('patientId' in parsed.context)) {
+      return null;
+    }
+    if (typeof parsed.context.encounterId !== 'string' || !parsed.context.encounterId.trim()) {
+      return null;
+    }
 
     return parsed;
   } catch {
     return null;
   }
 }
-

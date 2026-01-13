@@ -31,30 +31,31 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
 // Force dynamic rendering (launch cookie is per-request)
+// eslint-disable-next-line react-refresh/only-export-components
 export const dynamic = 'force-dynamic';
 
 type LaunchSessionState =
-  | { status: 'loading' }
+  { status: 'loading' }
   | { status: 'ready' }
   | { status: 'no-session' }
   | { status: 'no-patient' }
   | { status: 'error'; message: string };
 
 type LaunchSessionResponse =
-  | {
-      success: true;
-      context: {
-        patientId: string | null;
-        facilityId: string;
-        providerId?: string | null;
-        createdTime?: string | null;
-        encounterId: string;
-      };
-    }
-  | {
-      success: false;
-      error: string;
+  {
+    success: true;
+    context: {
+      patientId: string | null;
+      facilityId: string;
+      providerId?: string | null;
+      createdTime?: string | null;
+      encounterId: string;
     };
+  }
+  | {
+    success: false;
+    error: string;
+  };
 
 export default function MedtechImagesPage() {
   // All hooks MUST be declared before any conditional returns
@@ -95,11 +96,13 @@ export default function MedtechImagesPage() {
         const resp = await fetch('/api/medtech/launch-session', {
           method: 'GET',
           cache: 'no-store',
-          headers: { 'Accept': 'application/json' },
+          headers: { Accept: 'application/json' },
         });
 
         if (resp.status === 404) {
-          if (!cancelled) setLaunchSession({ status: 'no-session' });
+          if (!cancelled) {
+            setLaunchSession({ status: 'no-session' });
+          }
           return;
         }
 
@@ -108,20 +111,26 @@ export default function MedtechImagesPage() {
           const message = payload && payload.success === false
             ? payload.error
             : `Launch session failed (${resp.status})`;
-          if (!cancelled) setLaunchSession({ status: 'error', message });
+          if (!cancelled) {
+            setLaunchSession({ status: 'error', message });
+          }
           return;
         }
 
         const { patientId, facilityId, providerId, encounterId } = payload.context;
 
         if (typeof facilityId !== 'string' || !facilityId.trim()) {
-          if (!cancelled) setLaunchSession({ status: 'error', message: 'Invalid launch session: missing facilityId' });
+          if (!cancelled) {
+            setLaunchSession({ status: 'error', message: 'Invalid launch session: missing facilityId' });
+          }
           return;
         }
 
         // patientId must exist as a field; it may be null (no patient selected).
         if (patientId === null) {
-          if (!cancelled) setLaunchSession({ status: 'no-patient' });
+          if (!cancelled) {
+            setLaunchSession({ status: 'no-patient' });
+          }
           return;
         }
 
@@ -132,7 +141,9 @@ export default function MedtechImagesPage() {
           providerId: providerId || undefined,
         });
 
-        if (!cancelled) setLaunchSession({ status: 'ready' });
+        if (!cancelled) {
+          setLaunchSession({ status: 'ready' });
+        }
       } catch (err) {
         if (!cancelled) {
           setLaunchSession({
@@ -160,14 +171,14 @@ export default function MedtechImagesPage() {
         setCurrentImageId(firstImage.id);
       }
     }
-  }, [sessionImages.length, currentImageId]);
+  }, [sessionImages, currentImageId]);
 
   // Auto-hide QR when first image arrives
   useEffect(() => {
     if (sessionImages.length > 0 && showQR) {
       setShowQR(false);
     }
-  }, [sessionImages.length]); // Only run when image count changes
+  }, [sessionImages, showQR]);
 
   // Computed values
   const currentImage = currentImageId
@@ -227,7 +238,7 @@ export default function MedtechImagesPage() {
     }
   };
 
-  const startCommit = async () => {
+  async function startCommit() {
     const imageIds = uncommittedImages.map(img => img.id);
 
     try {
@@ -241,14 +252,14 @@ export default function MedtechImagesPage() {
         });
       }
       // If all succeeded, no dialog needed - images are marked as committed
-    } catch (err) {
+    } catch {
       // All images failed (network error, etc.)
       setPartialFailureData({
         successIds: [],
         errorIds: imageIds,
       });
     }
-  };
+  }
 
   // Conditional returns AFTER all hooks
   // Loading state
@@ -437,6 +448,7 @@ Image
             <AlertCircle className="size-4" />
             <span>{error}</span>
             <button
+              type="button"
               onClick={() => setError(null)}
               className="ml-auto text-red-600 hover:text-red-800"
             >

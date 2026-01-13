@@ -13,10 +13,11 @@ tags:
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 quick_reference:
   current_phase: "Phase 1D"
-  status: "Phase 1C ✅ complete; Phase 1D ⚠️ tested (images reach Medtech but UI integration incomplete); Launch mechanism guidance received from Medtech"
-  next_action: "Implement ALEX Vendor Forms launch mechanism (proper integration method): create icon, implement BFF launch decode endpoint, implement frontend launch route, test with F99669-C. Then re-test UI integration to see if proper launch fixes Inbox/Daily Record display issues."
+  status: "Phase 1C ✅ complete; Phase 1D ⚠️ in progress (launch handoff implemented; UI integration still incomplete); Vendor Forms launch mechanism implemented in code"
+  next_action: "Configure and test Vendor Forms launch end-to-end in Medtech Evolution (icon + ALEX Apps Configuration) using F99669-C. Then re-test UI integration (Inbox preview + Attachment tab + Daily Record)."
   key_blockers:
-    - "Images appear in Inbox as broken links (not inline preview); do not appear in Daily Record at all; may be resolved by implementing proper launch mechanism"
+    - "Images appear in Inbox as broken links (not inline preview) and do not appear in Daily Record; waiting on Medtech support to confirm if this is expected for Media or requires different resource types/fields"
+    - "Attachment tab behaviour is unconfirmed; waiting on Medtech support to confirm correct FHIR approach (DocumentReference/Binary or other) and required permissions"
     - "ALEX UAT reads/search are sensitive to URL/query shape; Media verify should use `patient.identifier`; other resources may still return 403 depending on query parameters; keep validating with ALEX support examples"
     - "Waiting on Medtech commercial terms (revenue share/fees/billing route/payment terms) and competitor QuickShot pricing (Intellimed) to finalise pricing strategy"
   facility_id: "F2N060-E (hosted UAT API testing) + F99669-C (local Medtech Evolution UI validation)"
@@ -109,13 +110,23 @@ Medtech grants permissions at app registration/user profile level. Current known
 
 ## Next Session: Pick Up Here
 
-Implement ALEX Vendor Forms launch mechanism (proper integration method):
-1. Create icon for ClinicPro Images widget
-2. Implement BFF launch decode endpoint (`/api/medtech/launch/decode`)
-3. Implement frontend launch route (`/medtech-images/launch`)
-4. Load icon into F99669-C via MT Icon Loader and configure ALEX Apps Configuration
-5. Test launch mechanism with F99669-C
-6. Re-test UI integration to see if proper launch fixes Inbox/Daily Record display issues
+### Launch setup (Medtech Evolution)
+1. Create or choose a toolbar icon for ClinicPro Images; load it via MT Icon Loader.
+2. Configure ALEX Apps Configuration launch URL:
+   - `https://www.clinicpro.co.nz/medtech-images/launch?context={context}&signature={signature}`
+3. Ensure Vercel has `MEDTECH_LAUNCH_COOKIE_SECRET` set (required for the encrypted launch cookie).
+4. Test end-to-end launch from Medtech into `/medtech-images`:
+   - Confirm no identifiers are present in the browser URL after redirect.
+   - Confirm expected UX copy:
+     - No launch: **"Launch from Medtech Evolution"**
+     - No patient selected: **"No patient selected"**
+
+### UI integration validation (blocked by Medtech support guidance)
+5. Re-test JPEG behaviour in Inbox, Daily Record, and the patient record Attachment tab.
+6. Await Medtech support reply on whether `Media` is the correct approach for:
+   - Inline preview behaviour (vs "View link")
+   - Attachment tab placement and referral compatibility
+   - Any extra permissions required for the recommended resource type
 
 Detailed implementation plan: `LAUNCH_MECHANISM_PLAN.md`
 

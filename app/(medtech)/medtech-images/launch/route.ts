@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+
 import { NextResponse } from 'next/server';
 
 import { createMedtechLaunchCookieValue } from '@/src/lib/services/medtech/launch-session-cookie';
@@ -8,21 +9,21 @@ const COOKIE_NAME = 'medtech_launch_session';
 const COOKIE_TTL_SECONDS = 300; // 5 minutes (short TTL, launch-only)
 
 type BffDecodeResponse =
-  | {
-      success: true;
-      context: {
-        patientId: string | null;
-        facilityCode: string;
-        providerId?: string | null;
-        createdTime?: string | null;
-      };
-      correlationId?: string;
-    }
-  | {
-      success: false;
-      error: string;
-      correlationId?: string;
+  {
+    success: true;
+    context: {
+      patientId: string | null;
+      facilityCode: string;
+      providerId?: string | null;
+      createdTime?: string | null;
     };
+    correlationId?: string;
+  }
+  | {
+    success: false;
+    error: string;
+    correlationId?: string;
+  };
 
 function htmlError(message: string, details?: Record<string, unknown>) {
   const safeDetails = details ? JSON.stringify(details, null, 2) : '';
@@ -86,7 +87,7 @@ export async function GET(request: Request) {
   try {
     const resp = await fetch(decodeUrl.toString(), {
       method: 'GET',
-      headers: { 'Accept': 'application/json' },
+      headers: { Accept: 'application/json' },
       cache: 'no-store',
     });
 
@@ -154,4 +155,3 @@ export async function GET(request: Request) {
 
   return response;
 }
-
