@@ -4,7 +4,27 @@ import { useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
-export default function Home() {
+const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const hasClerk = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0;
+
+function HomeNoClerk() {
+  return (
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4">
+      <div className="text-center">
+        <h1 className="mb-3 text-3xl font-bold text-gray-900">ClinicPro</h1>
+        <p className="mb-6 text-gray-600">Authentication is not configured in this environment.</p>
+        <a
+          href="/landing-page"
+          className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
+        >
+          Go to landing page
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function HomeWithClerk() {
   const { isSignedIn, isLoaded } = useAuth();
   const router = useRouter();
 
@@ -61,4 +81,8 @@ export default function Home() {
 
   // This shouldn't render (unauthenticated users are redirected)
   return null;
+}
+
+export default function Home() {
+  return hasClerk ? <HomeWithClerk /> : <HomeNoClerk />;
 }

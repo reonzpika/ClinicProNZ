@@ -6,7 +6,23 @@ import { DashboardHeader } from '@/src/shared/components/DashboardHeader';
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
-export default function SettingsPage() {
+const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const hasClerk = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0;
+
+function SettingsPageNoClerk() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
+      <div className="w-full max-w-lg rounded-lg border border-slate-200 bg-white p-6">
+        <h1 className="text-lg font-semibold text-slate-900">Settings</h1>
+        <p className="mt-2 text-sm text-slate-600">
+          Clerk is not configured in this environment.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function SettingsPageWithClerk() {
   const { isSignedIn, user, isLoaded } = useUser();
 
   if (!isLoaded) {
@@ -117,4 +133,8 @@ export default function SettingsPage() {
       </main>
     </div>
   );
+}
+
+export default function SettingsPage() {
+  return hasClerk ? <SettingsPageWithClerk /> : <SettingsPageNoClerk />;
 }

@@ -21,7 +21,21 @@ type Message = {
   timestamp: Date;
 };
 
-export default function ClinicalChatPage() {
+const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const hasClerk = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0;
+
+function ClinicalChatPageNoClerk() {
+  return (
+    <Container size="fluid" className="h-full">
+      <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-xl font-semibold text-slate-900">Clinical Chat</h1>
+        <p className="mt-2 text-sm text-slate-600">Clerk is not configured in this environment.</p>
+      </div>
+    </Container>
+  );
+}
+
+function ClinicalChatPageWithClerk() {
   const { userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
@@ -332,4 +346,8 @@ export default function ClinicalChatPage() {
       </div>
     </Container>
   );
+}
+
+export default function ClinicalChatPage() {
+  return hasClerk ? <ClinicalChatPageWithClerk /> : <ClinicalChatPageNoClerk />;
 }

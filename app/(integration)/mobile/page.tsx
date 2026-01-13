@@ -14,6 +14,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/component
 import { createAuthHeadersForFormData, fetchWithRetry } from '@/src/shared/utils';
 import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 
+const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const hasClerk = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0;
+
 // Types for native mobile capture queue
   type QueuedItem = { id: string; file: File; previewUrl: string; identifier?: string };
 
@@ -657,8 +660,27 @@ function MobilePageLoading() {
   );
 }
 
+function MobilePageNoClerk() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6 text-center">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle>Mobile Recording</CardTitle>
+        </CardHeader>
+        <CardContent className="text-center">
+          <p className="text-sm text-slate-600">Clerk is not configured in this environment.</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // Main export with Suspense wrapper
 export default function MobilePage() {
+  if (!hasClerk) {
+    return <MobilePageNoClerk />;
+  }
+
   return (
     <Suspense fallback={<MobilePageLoading />}>
       <MobilePageContent />

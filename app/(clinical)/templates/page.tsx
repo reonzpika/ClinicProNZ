@@ -20,7 +20,25 @@ import { createAuthHeaders } from '@/src/shared/utils';
 
 export const dynamic = 'force-dynamic';
 
+const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const hasClerk = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0;
+
+function TemplatesPageNoClerk() {
+  return (
+    <Container size="fluid" className="h-full">
+      <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-xl font-semibold text-slate-900">Templates</h1>
+        <p className="mt-2 text-sm text-slate-600">Clerk is not configured in this environment.</p>
+      </div>
+    </Container>
+  );
+}
+
 export default function TemplatesPage() {
+  return hasClerk ? <TemplatesPageWithClerk /> : <TemplatesPageNoClerk />;
+}
+
+function TemplatesPageWithClerk() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isEditing, setIsEditing] = useState(false);

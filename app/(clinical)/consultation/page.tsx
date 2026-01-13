@@ -37,7 +37,21 @@ import { useResponsive } from '@/src/shared/hooks/useResponsive';
 import { createAuthHeaders } from '@/src/shared/utils';
 import { useUserSettingsStore } from '@/src/stores/userSettingsStore';
 
-export default function ConsultationPage() {
+const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const hasClerk = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0;
+
+function ConsultationPageNoClerk() {
+  return (
+    <Container size="fluid" className="h-full">
+      <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-xl font-semibold text-slate-900">Consultation</h1>
+        <p className="mt-2 text-sm text-slate-600">Clerk is not configured in this environment.</p>
+      </div>
+    </Container>
+  );
+}
+
+function ConsultationPageWithClerk() {
   const queryClient = useQueryClient();
   const {
     setError,
@@ -1391,4 +1405,8 @@ export default function ConsultationPage() {
       </div>
     </RecordingAwareSessionContext.Provider>
   );
+}
+
+export default function ConsultationPage() {
+  return hasClerk ? <ConsultationPageWithClerk /> : <ConsultationPageNoClerk />;
 }

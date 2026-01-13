@@ -37,7 +37,21 @@ import { isFeatureEnabled } from '@/src/shared/utils/launch-config';
 import type { AnalysisModalState, ServerImage } from '@/src/stores/imageStore';
 import { useImageStore } from '@/src/stores/imageStore';
 
-export default function ClinicalImagePage() {
+const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const hasClerk = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0;
+
+function ClinicalImagePageNoClerk() {
+  return (
+    <Container size="fluid" className="h-full">
+      <div className="mx-auto flex h-full max-w-2xl flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-xl font-semibold text-slate-900">Clinical Image Analysis</h1>
+        <p className="mt-2 text-sm text-slate-600">Clerk is not configured in this environment.</p>
+      </div>
+    </Container>
+  );
+}
+
+function ClinicalImagePageWithClerk() {
   const { userId, isSignedIn } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
@@ -1605,4 +1619,8 @@ function ImageSectionsGrid({
       <Section title="Legacy consultations" items={legacyConsultations} />
     </div>
   );
+}
+
+export default function ClinicalImagePage() {
+  return hasClerk ? <ClinicalImagePageWithClerk /> : <ClinicalImagePageNoClerk />;
 }

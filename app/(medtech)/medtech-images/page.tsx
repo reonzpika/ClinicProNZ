@@ -9,7 +9,7 @@
  */
 
 import { AlertCircle, Check, Inbox, ListTodo, Loader2 } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useState } from 'react';
 
 import { CapturePanel } from '@/src/medtech/images-widget/components/desktop/CapturePanel';
@@ -33,6 +33,7 @@ export const dynamic = 'force-dynamic';
 
 function MedtechImagesPageContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   // All hooks MUST be declared before any conditional returns
   const [showQR, setShowQR] = useState(false);
@@ -66,46 +67,26 @@ function MedtechImagesPageContent() {
     const context = searchParams.get('context');
     const signature = searchParams.get('signature');
 
-    // Launch mechanism: decode encrypted context from Medtech Evolution
+    // If Medtech launches the old URL format directly to /medtech-images, redirect to the
+    // dedicated launch handler which sets an encrypted, single-use cookie session.
     if (context && signature) {
       setIsDecodingLaunchContext(true);
-
-      fetch(`/api/medtech/launch/proxy?context=${encodeURIComponent(context)}&signature=${encodeURIComponent(signature)}`)
-        .then(res => res.json())
-        .then((data) => {
-          setIsDecodingLaunchContext(false);
-
-          if (data.success) {
-            const { patientId, facilityCode, providerId } = data.context;
-
-            setEncounterContext({
-              encounterId: `launch-${Date.now()}`,
-              patientId: patientId || '',
-              facilityId: facilityCode || 'F2N060-E',
-              providerId: providerId || undefined,
-            });
-          } else {
-            setError(data.error || 'Failed to decode launch context');
-          }
-        })
-        .catch(() => {
-          setIsDecodingLaunchContext(false);
-          setError('Network error while decoding launch context');
-        });
-
-      return; // Exit early, don't parse direct params
+      router.replace(`/medtech-images/launch?context=${encodeURIComponent(context)}&signature=${encodeURIComponent(signature)}`);
+      return;
     }
 
-    // Direct parameters (for testing/demos)
+    const allowDemo = process.env.NEXT_PUBLIC_MEDTECH_ALLOW_DEMO === 'true';
+
+    // Direct parameters (for testing/demos; explicitly gated)
     const encounterId = searchParams.get('encounterId');
     const patientId = searchParams.get('patientId');
     const patientName = searchParams.get('patientName');
     const patientNHI = searchParams.get('patientNHI');
-    const facilityId = searchParams.get('facilityId') || 'F2N060-E'; // Default to UAT facility
+    const facilityId = searchParams.get('facilityId') || 'F2N060-E'; // Demo default only
     const providerId = searchParams.get('providerId');
     const providerName = searchParams.get('providerName');
 
-    if (encounterId && patientId) {
+    if (allowDemo && encounterId && patientId) {
       setEncounterContext({
         encounterId,
         patientId,
@@ -115,19 +96,44 @@ function MedtechImagesPageContent() {
         providerId: providerId || undefined,
         providerName: providerName || undefined,
       });
-    } else {
-      // For demo/testing, use mock context
-      setEncounterContext({
-        encounterId: 'mock-encounter-123',
-        patientId: 'mock-patient-456',
-        patientName: 'John Smith',
-        patientNHI: 'ABC1234',
-        facilityId: 'F2N060-E',
-        providerId: 'mock-provider-789',
-        providerName: 'Dr Mock',
-      });
+      return;
     }
-  }, [searchParams, setEncounterContext, setError]);
+
+    // Primary path: pull the decrypted launch context from the encrypted, single-use cookie.
+    setIsDecodingLaunchContext(true);
+    fetch('/api/medtech/launch/session')
+      .then(async (res) => {
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok || !data?.success) {
+          throw new Error(data?.error || 'Launch session missing or expired');
+        }
+        const ctx = data.context || {};
+        setEncounterContext({
+          encounterId: `launch-${Date.now()}`,
+          patientId: String(ctx.patientId || ''),
+          facilityId: String(ctx.facilityId || ''),
+          providerId: typeof ctx.providerId === 'string' ? ctx.providerId : undefined,
+        });
+        setIsDecodingLaunchContext(false);
+      })
+      .catch((err) => {
+        setIsDecodingLaunchContext(false);
+        if (allowDemo) {
+          // For demo/testing, use mock context only when explicitly enabled.
+          setEncounterContext({
+            encounterId: 'mock-encounter-123',
+            patientId: 'mock-patient-456',
+            patientName: 'John Smith',
+            patientNHI: 'ABC1234',
+            facilityId: 'F2N060-E',
+            providerId: 'mock-provider-789',
+            providerName: 'Dr Mock',
+          });
+        } else {
+          setError(err instanceof Error ? err.message : 'This widget must be launched from Medtech Evolution.');
+        }
+      });
+  }, [searchParams, router, setEncounterContext, setError]);
 
   // Initialize Ably session sync (real-time image notifications)
   useAblySessionSync(encounterContext?.encounterId);

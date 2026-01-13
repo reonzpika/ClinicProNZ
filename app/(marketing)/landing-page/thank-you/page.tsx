@@ -7,6 +7,9 @@ import { Suspense } from 'react';
 
 import { Button } from '@/src/shared/components/ui/button';
 
+const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const hasClerk = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0;
+
 function SignUpBox() {
   return (
     <div className="rounded border p-4">
@@ -46,6 +49,18 @@ function ConsultationCTABox() {
 }
 
 export default function SurveyThankYouPage() {
+  if (!hasClerk) {
+    return (
+      <main className="mx-auto max-w-2xl p-6">
+        <h1 className="mb-2 text-2xl font-semibold">Thanks — that's a huge help.</h1>
+        <p className="mb-6 text-gray-700">
+          ClinicPro's smart scribe and image tools are <strong>free to use now</strong>, and we're rolling out more features shortly.
+        </p>
+        <ConsultationCTABox />
+      </main>
+    );
+  }
+
   const { isSignedIn, isLoaded } = useAuth();
 
   // Loading state

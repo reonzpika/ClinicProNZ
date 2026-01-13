@@ -5,7 +5,21 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
-export default function UpgradeCheckoutPage() {
+const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const hasClerk = typeof clerkPublishableKey === 'string' && clerkPublishableKey.trim().length > 0;
+
+function UpgradeCheckoutNoClerk() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6 text-center">
+      <div>
+        <h1 className="text-lg font-semibold text-gray-900">Upgrade</h1>
+        <p className="mt-2 text-sm text-slate-600">Clerk is not configured in this environment.</p>
+      </div>
+    </div>
+  );
+}
+
+function UpgradeCheckoutWithClerk() {
   const { userId, isLoaded } = useAuth();
   const { user } = useClerkMetadata();
   const [hasTriggered, setHasTriggered] = useState(false);
@@ -105,4 +119,8 @@ export default function UpgradeCheckoutPage() {
       </div>
     </div>
   );
+}
+
+export default function UpgradeCheckoutPage() {
+  return hasClerk ? <UpgradeCheckoutWithClerk /> : <UpgradeCheckoutNoClerk />;
 }
