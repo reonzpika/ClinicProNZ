@@ -3,14 +3,16 @@
 /**
  * Medtech Images Widget - Desktop Page
  *
- * Main entry point for the widget (embedded in Medtech or standalone)
+ * Main entry point for the widget (launched from Medtech Evolution).
  *
- * URL: /medtech-images?encounterId=enc-123&patientId=pat-456&...
+ * IMPORTANT:
+ * - This page must NOT accept patient identifiers in the URL.
+ * - It must be launched via GET /medtech-images/launch?context=...&signature=...
+ * - Launch context is handed off via a short-lived, single-use, HttpOnly cookie.
  */
 
 import { AlertCircle, Check, Inbox, ListTodo, Loader2 } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { CapturePanel } from '@/src/medtech/images-widget/components/desktop/CapturePanel';
 import { CommitDialog } from '@/src/medtech/images-widget/components/desktop/CommitDialog';
@@ -28,12 +30,34 @@ import { useImageWidgetStore } from '@/src/medtech/images-widget/stores/imageWid
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
-// Force dynamic rendering (required for useSearchParams)
+// Force dynamic rendering (launch cookie is per-request)
+// eslint-disable-next-line react-refresh/only-export-components
 export const dynamic = 'force-dynamic';
 
-function MedtechImagesPageContent() {
-  const searchParams = useSearchParams();
+type LaunchSessionState =
+  { status: 'loading' }
+  | { status: 'ready' }
+  | { status: 'no-session' }
+  | { status: 'no-patient' }
+  | { status: 'error'; message: string };
 
+type LaunchSessionResponse =
+  {
+    success: true;
+    context: {
+      patientId: string | null;
+      facilityId: string;
+      providerId?: string | null;
+      createdTime?: string | null;
+      encounterId: string;
+    };
+  }
+  | {
+    success: false;
+    error: string;
+  };
+
+export default function MedtechImagesPage() {
   // All hooks MUST be declared before any conditional returns
   const [showQR, setShowQR] = useState(false);
   const [currentImageId, setCurrentImageId] = useState<string | null>(null);
@@ -41,6 +65,7 @@ function MedtechImagesPageContent() {
   const [taskEnabled, setTaskEnabled] = useState(false);
   const [errorImageId, setErrorImageId] = useState<string | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [launchSession, setLaunchSession] = useState<LaunchSessionState>({ status: 'loading' });
   const [partialFailureData, setPartialFailureData] = useState<{
     successIds: string[];
     errorIds: string[];
@@ -60,39 +85,80 @@ function MedtechImagesPageContent() {
 
   const { data: capabilities, isLoading: isLoadingCapabilities } = useCapabilities();
 
-  // Parse encounter context from URL params
+  // Load encounter context from single-use launch cookie (no identifiers in URL).
   useEffect(() => {
-    const encounterId = searchParams.get('encounterId');
-    const patientId = searchParams.get('patientId');
-    const patientName = searchParams.get('patientName');
-    const patientNHI = searchParams.get('patientNHI');
-    const facilityId = searchParams.get('facilityId') || 'F2N060-E'; // Default to UAT facility
-    const providerId = searchParams.get('providerId');
-    const providerName = searchParams.get('providerName');
+    let cancelled = false;
 
-    if (encounterId && patientId) {
-      setEncounterContext({
-        encounterId,
-        patientId,
-        patientName: patientName || undefined,
-        patientNHI: patientNHI || undefined,
-        facilityId,
-        providerId: providerId || undefined,
-        providerName: providerName || undefined,
-      });
-    } else {
-      // For demo/testing, use mock context
-      setEncounterContext({
-        encounterId: 'mock-encounter-123',
-        patientId: 'mock-patient-456',
-        patientName: 'John Smith',
-        patientNHI: 'ABC1234',
-        facilityId: 'F2N060-E',
-        providerId: 'mock-provider-789',
-        providerName: 'Dr Mock',
-      });
+    async function loadLaunchSession() {
+      setLaunchSession({ status: 'loading' });
+
+      try {
+        const resp = await fetch('/api/medtech/launch-session', {
+          method: 'GET',
+          cache: 'no-store',
+          headers: { Accept: 'application/json' },
+        });
+
+        if (resp.status === 404) {
+          if (!cancelled) {
+            setLaunchSession({ status: 'no-session' });
+          }
+          return;
+        }
+
+        const payload = (await resp.json()) as LaunchSessionResponse;
+        if (!resp.ok || !payload.success) {
+          const message = payload && payload.success === false
+            ? payload.error
+            : `Launch session failed (${resp.status})`;
+          if (!cancelled) {
+            setLaunchSession({ status: 'error', message });
+          }
+          return;
+        }
+
+        const { patientId, facilityId, providerId, encounterId } = payload.context;
+
+        if (typeof facilityId !== 'string' || !facilityId.trim()) {
+          if (!cancelled) {
+            setLaunchSession({ status: 'error', message: 'Invalid launch session: missing facilityId' });
+          }
+          return;
+        }
+
+        // patientId must exist as a field; it may be null (no patient selected).
+        if (patientId === null) {
+          if (!cancelled) {
+            setLaunchSession({ status: 'no-patient' });
+          }
+          return;
+        }
+
+        setEncounterContext({
+          encounterId,
+          patientId,
+          facilityId: facilityId.trim(),
+          providerId: providerId || undefined,
+        });
+
+        if (!cancelled) {
+          setLaunchSession({ status: 'ready' });
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setLaunchSession({
+            status: 'error',
+            message: err instanceof Error ? err.message : 'Failed to load launch session',
+          });
+        }
+      }
     }
-  }, [searchParams, setEncounterContext]);
+
+    loadLaunchSession();
+    return () => {
+      cancelled = true;
+    };
+  }, [setEncounterContext]);
 
   // Initialize Ably session sync (real-time image notifications)
   useAblySessionSync(encounterContext?.encounterId);
@@ -105,14 +171,14 @@ function MedtechImagesPageContent() {
         setCurrentImageId(firstImage.id);
       }
     }
-  }, [sessionImages.length, currentImageId]);
+  }, [sessionImages, currentImageId]);
 
   // Auto-hide QR when first image arrives
   useEffect(() => {
     if (sessionImages.length > 0 && showQR) {
       setShowQR(false);
     }
-  }, [sessionImages.length]); // Only run when image count changes
+  }, [sessionImages, showQR]);
 
   // Computed values
   const currentImage = currentImageId
@@ -172,7 +238,7 @@ function MedtechImagesPageContent() {
     }
   };
 
-  const startCommit = async () => {
+  async function startCommit() {
     const imageIds = uncommittedImages.map(img => img.id);
 
     try {
@@ -186,18 +252,18 @@ function MedtechImagesPageContent() {
         });
       }
       // If all succeeded, no dialog needed - images are marked as committed
-    } catch (err) {
+    } catch {
       // All images failed (network error, etc.)
       setPartialFailureData({
         successIds: [],
         errorIds: imageIds,
       });
     }
-  };
+  }
 
   // Conditional returns AFTER all hooks
   // Loading state
-  if (isLoadingCapabilities || !capabilities) {
+  if (isLoadingCapabilities || !capabilities || launchSession.status === 'loading') {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50">
         <div className="text-center">
@@ -208,25 +274,78 @@ function MedtechImagesPageContent() {
     );
   }
 
-  // No encounter context
-  if (!encounterContext) {
+  if (launchSession.status === 'no-session') {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-slate-900">
+              <AlertCircle className="size-5" />
+              Launch from Medtech Evolution
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-slate-600">
+              This widget must be launched from within Medtech Evolution.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (launchSession.status === 'no-patient') {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-slate-900">
+              <AlertCircle className="size-5" />
+              No patient selected
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-slate-600">
+              No patient selected
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (launchSession.status === 'error') {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-50 p-4">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-red-600">
               <AlertCircle className="size-5" />
-              No Encounter Context
+              Launch failed
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-slate-600">{launchSession.message}</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // Safety: if we are "ready" we must have encounter context set.
+  if (!encounterContext) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-slate-900">
+              <AlertCircle className="size-5" />
+              Launch from Medtech Evolution
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-slate-600">
-              This widget must be launched from within Medtech Evolution with an active encounter context.
-            </p>
-            <p className="mt-2 text-sm text-slate-500">
-              For testing, navigate to:
-{' '}
-              <code className="rounded bg-slate-100 px-1">/medtech-images?encounterId=test&patientId=test</code>
+              This widget must be launched from within Medtech Evolution.
             </p>
           </CardContent>
         </Card>
@@ -250,11 +369,6 @@ function MedtechImagesPageContent() {
             >
               {showQR ? 'Hide QR' : 'Show QR'}
             </Button>
-            {process.env.NEXT_PUBLIC_MEDTECH_USE_MOCK === 'true' && (
-              <div className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-                MOCK
-              </div>
-            )}
           </div>
 
           {/* Center: Thumbnail Strip */}
@@ -334,6 +448,7 @@ Image
             <AlertCircle className="size-4" />
             <span>{error}</span>
             <button
+              type="button"
               onClick={() => setError(null)}
               className="ml-auto text-red-600 hover:text-red-800"
             >
@@ -411,22 +526,5 @@ Image
         }}
       />
     </div>
-  );
-}
-
-export default function MedtechImagesPage() {
-  return (
-    <Suspense
-      fallback={(
-        <div className="flex h-screen items-center justify-center bg-slate-50">
-          <div className="text-center">
-            <Loader2 className="mx-auto mb-4 size-12 animate-spin text-purple-500" />
-            <p className="text-slate-600">Loading Medtech Images Widget...</p>
-          </div>
-        </div>
-      )}
-    >
-      <MedtechImagesPageContent />
-    </Suspense>
   );
 }

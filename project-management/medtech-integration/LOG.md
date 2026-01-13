@@ -4,6 +4,51 @@
 - The canonical Medtech Integration rules are now consolidated in `.cursor/rules/project-medtech-integration.mdc`.
 - Historical log entries may mention older file names (for example `PROJECT_RULES.md`); treat those as historical context.
 
+## 2026-01-13 Tue
+### Milestone: Implement secure Medtech Evolution launch handoff (Vendor Forms)
+
+**What shipped (code)**:
+- Implemented a dedicated launch entrypoint: `GET /medtech-images/launch?context=...&signature=...`.
+- Launch route calls the allow-listed Lightsail BFF to decode the vendor form payload; it then stores launch context in a **short-lived encrypted HttpOnly cookie** and redirects to `/medtech-images` with **no identifiers in the URL**.
+- Implemented a single-use read mechanism for the cookie (read then clear is acceptable for enforcement).
+- Updated `/medtech-images` to refuse direct access and show the required UX copy.
+
+**Frontend implementation details (Next.js)**:
+- New launch route: `app/(medtech)/medtech-images/launch/route.ts`
+  - Calls `GET <BFF>/api/medtech/launch/decode?context=...&signature=...`
+  - Sets encrypted cookie `medtech_launch_session` (TTL 5 minutes), then redirects to `/medtech-images`.
+- New internal API: `GET /api/medtech/launch-session` (`app/api/(integration)/medtech/launch-session/route.ts`)
+  - Reads and decrypts cookie; **clears cookie on read attempt** (single-use).
+- Updated widget page: `app/(medtech)/medtech-images/page.tsx`
+  - No URL-param context and no demo mode.
+  - If no valid launch session: shows **"Launch from Medtech Evolution"**.
+  - If `patientId` exists but is null: shows **"No patient selected"** and stops.
+- New cookie crypto helper: `src/lib/services/medtech/launch-session-cookie.ts`
+  - AES-256-GCM; expiry enforced; payload includes `{ patientId, facilityId, providerId?, createdTime?, encounterId }`.
+
+**Backend implementation details (Lightsail BFF)**:
+- Added vendor forms decode endpoint:
+  - `GET /api/medtech/launch/decode?context=...&signature=...&correlationId=...`
+  - Calls ALEX: `/vendorforms/api/getlaunchcontextstring/{context}/{signature}`.
+- Hardened Media commit robustness (without changing resource strategy):
+  - Sniffs magic bytes for JPEG/PNG and overrides `content.contentType` when mismatched.
+  - Sets `Media.createdDateTime` using `Pacific/Auckland` offset where possible; records warnings when falling back to UTC.
+
+**Git evidence**:
+- Branch: `cursor/medtech-launch-flow-acd7`
+- Commit: `4154b80e`
+
+**Decisions captured**:
+- Dedicated launch route only; `/medtech-images` must not be opened directly.
+- No identifiers in URL; cookie handoff only; short TTL (2–5 minutes).
+- No demo/testing modes.
+- Do not implement Attachment-tab resource changes until Medtech confirms required FHIR approach and permissions.
+
+**Blockers / awaiting external reply**:
+- Waiting on Medtech support to confirm:
+  - Whether vendor-created `Media` should render inline for JPEGs or always show "View link".
+  - What resource type is required for the patient record **Attachment tab** (for referral workflows) and what additional permissions/scopes are needed (likely DocumentReference/Binary or Medtech-specific mechanism).
+
 ## 2026-01-10 Fri
 ### Milestone: Consolidate logging into `LOG.md`
 - Legacy changelog history has been migrated into this file.
