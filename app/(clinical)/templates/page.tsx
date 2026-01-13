@@ -27,7 +27,7 @@ export default function TemplatesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { setUserDefaultTemplateId, userDefaultTemplateId } = useConsultationStores();
-  const { isSignedIn, userId } = useAuth();
+  const { isSignedIn, isLoaded, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
   const { hasFeatureAccess } = useRBAC();
@@ -47,6 +47,11 @@ export default function TemplatesPage() {
   }), []);
 
   useEffect(() => {
+    // Avoid treating "not loaded yet" as "signed out" (prevents false logout flashes).
+    if (!isLoaded) {
+      setLoading(true);
+      return;
+    }
     if (!isSignedIn) {
       setTemplates([]);
       setLoading(false);
@@ -63,10 +68,10 @@ export default function TemplatesPage() {
         setError(err.message);
         setLoading(false);
       });
-  }, [isSignedIn, userId, userTier]);
+  }, [isLoaded, isSignedIn, userId, userTier]);
 
   useEffect(() => {
-    if (!isSignedIn || loading || templates.length === 0 || hasReorderedRef.current || !userId) {
+    if (!isLoaded || !isSignedIn || loading || templates.length === 0 || hasReorderedRef.current || !userId) {
       return;
     }
     fetch('/api/user/settings', {
@@ -97,7 +102,7 @@ export default function TemplatesPage() {
         hasReorderedRef.current = true;
       });
     // Only run when templates are loaded and not yet reordered
-  }, [isSignedIn, loading, templates, userId, userTier]);
+  }, [isLoaded, isSignedIn, loading, templates, userId, userTier]);
 
   const handleReorder = (from: number, to: number) => {
     setTemplates((prev) => {
@@ -202,7 +207,7 @@ export default function TemplatesPage() {
 
       <Container size="fluid" className="h-full">
         <div className="flex h-full flex-col">
-          {!isSignedIn && (
+          {isLoaded && !isSignedIn && (
             <div className="p-4">
               <p className="rounded border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-600">
                 Sign in to create and manage templates

@@ -58,7 +58,7 @@ function useWakeLock() {
 
 // Main mobile page component
 function MobilePageContent() {
-  const { userId, isSignedIn } = useAuth();
+  const { userId, isSignedIn, isLoaded } = useAuth();
 
   // Auth-required state
   const [authError, setAuthError] = useState<string | null>(null);
@@ -388,7 +388,12 @@ function MobilePageContent() {
     queuedItems.forEach(item => item.previewUrl && URL.revokeObjectURL(item.previewUrl));
   }, [queuedItems]);
 
-  // Sign-in required
+  // Avoid false "signed out" flashes while Clerk is still hydrating.
+  if (!isLoaded) {
+    return <MobilePageLoading />;
+  }
+
+  // Sign-in required (after auth is loaded)
   if (!isSignedIn) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
