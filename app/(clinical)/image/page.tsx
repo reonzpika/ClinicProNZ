@@ -38,7 +38,7 @@ import type { AnalysisModalState, ServerImage } from '@/src/stores/imageStore';
 import { useImageStore } from '@/src/stores/imageStore';
 
 export default function ClinicalImagePage() {
-  const { userId, isSignedIn } = useAuth();
+  const { userId, isSignedIn, isLoaded } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
 
@@ -445,6 +445,22 @@ export default function ClinicalImagePage() {
   // Native camera capture is handled via file inputs on mobile
 
   // Authentication check for all users
+  if (!isLoaded) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle>Loading…</CardTitle>
+            <CardDescription>Preparing your session</CardDescription>
+          </CardHeader>
+          <CardContent className="flex justify-center">
+            <Loader2 className="size-6 animate-spin text-slate-500" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!isSignedIn) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
