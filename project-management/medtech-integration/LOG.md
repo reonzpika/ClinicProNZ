@@ -4,6 +4,39 @@
 - The canonical Medtech Integration rules are now consolidated in `.cursor/rules/project-medtech-integration.mdc`.
 - Historical log entries may mention older file names (for example `PROJECT_RULES.md`); treat those as historical context.
 
+## 2026-01-14 Wed
+### Decision and implementation: legacy-compatible clinical image write-back (Inbox Scan)
+
+**Context (Medtech email reply)**:
+- JPEGs posted as `Media` will always show as a **View link** and open externally (no inline preview).
+- Inbox Attachment tab is **PDF-only**; images do not appear there.
+- Legacy DOM referral forms cannot access Inbox Media folder; they can access Inbox **Scan** folder.
+- Medtech enabled a new `POST DocumentReference` endpoint to write into Inbox Scan, but it supports **TIFF for images** and **PDF for documents**; no JPEG; no `POST Binary`.
+
+**Decision**:
+- Adopt **Option B** for dual compatibility (ALEX + legacy DOM): commit clinical images via **Inbox Scan** using **`POST /FHIR/DocumentReference`** with TIFF (or PDF).
+
+**What shipped (code)**:
+- Vercel commit route now normalises attachments before calling the BFF:
+  - Images are converted to **TIFF under 1 MB**.
+  - PDFs are passed through (must be under 1 MB).
+- Lightsail BFF commit endpoint now writes **FHIR `DocumentReference`** (TIFF/PDF only) via `POST /FHIR/DocumentReference`.
+- Added a debug verification endpoint to fetch a `DocumentReference` by id (and a Vercel proxy route) to confirm write-back behaviour quickly, independent of Evolution UI.
+
+**Verification tooling**:
+- BFF: `GET /api/medtech/document-reference/<id>?facilityId=<FACILITY>`
+- Vercel proxy: `GET /api/medtech/document-reference/<id>?facilityId=<FACILITY>`
+
+**Git evidence**:
+- Branch: `cursor/medtech-image-handling-details-4488`
+- Commits:
+  - `39e313ed` feat(medtech): commit images as scan-compatible DocumentReference
+  - `12527fbb` chore(medtech): add DocumentReference verification endpoint
+
+**Open questions / awaiting Medtech**:
+- Request a known-good example payload/response for `POST /FHIR/DocumentReference` (Inbox Scan) and confirm required fields and any routing constraints.
+- Confirm whether `GET /FHIR/DocumentReference/{id}` is permitted for vendor credentials (read-by-id), even if searches are restricted.
+
 ## 2026-01-13 Tue
 ### Milestone: Implement secure Medtech Evolution launch handoff (Vendor Forms)
 
