@@ -2,7 +2,7 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2026-01-12"
+last_updated: "2026-01-14"
 version: "2.0.0"
 tags:
   - integration
@@ -13,11 +13,11 @@ tags:
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 quick_reference:
   current_phase: "Phase 1D"
-  status: "Phase 1C ✅ complete; Phase 1D ⚠️ in progress (launch handoff implemented; UI integration still incomplete); Vendor Forms launch mechanism implemented in code"
-  next_action: "Configure and test Vendor Forms launch end-to-end in Medtech Evolution (icon + ALEX Apps Configuration) using F99669-C. Then re-test UI integration (Inbox preview + Attachment tab + Daily Record)."
+  status: "Phase 1C ✅ complete; Phase 1D ⚠️ in progress (launch handoff implemented; legacy-compatible image write-back implemented via DocumentReference); waiting on Medtech for exact Inbox Scan DocumentReference requirements"
+  next_action: "Email Medtech for a known-good POST /FHIR/DocumentReference (Inbox Scan) payload and required fields; then validate end-to-end in F99669-C (Evolution UI + legacy DOM referral access) using the new DocumentReference verification endpoint."
   key_blockers:
-    - "Images appear in Inbox as broken links (not inline preview) and do not appear in Daily Record; waiting on Medtech support to confirm if this is expected for Media or requires different resource types/fields"
-    - "Attachment tab behaviour is unconfirmed; waiting on Medtech support to confirm correct FHIR approach (DocumentReference/Binary or other) and required permissions"
+    - "Medtech confirmed JPEGs posted as Media will always be a View link (external viewer) and images will not appear in Inbox Attachment tab; for legacy referral compatibility we must use Inbox Scan via POST DocumentReference (TIFF/PDF only)"
+    - "Exact required DocumentReference fields and any Medtech-specific routing requirements for Inbox Scan are still unconfirmed; waiting on Medtech to provide a known-good example payload/response"
     - "ALEX UAT reads/search are sensitive to URL/query shape; Media verify should use `patient.identifier`; other resources may still return 403 depending on query parameters; keep validating with ALEX support examples"
     - "Waiting on Medtech commercial terms (revenue share/fees/billing route/payment terms) and competitor QuickShot pricing (Intellimed) to finalise pricing strategy"
   facility_id: "F2N060-E (hosted UAT API testing) + F99669-C (local Medtech Evolution UI validation)"
@@ -75,6 +75,8 @@ Medtech grants permissions at app registration/user profile level. Current known
 - **Commit to ALEX (via widget)**: widget calls Vercel route `POST /api/medtech/attachments/commit`, which proxies to BFF.
 - **Commit to ALEX (direct BFF, for smoke tests)**: `POST https://api.clinicpro.co.nz/api/medtech/session/commit`
 - **Media verification (via BFF)**: `GET https://api.clinicpro.co.nz/api/medtech/media?nhi=<NHI>&facilityId=<FACILITY>&count=<N>`
+- **DocumentReference verification (via BFF)**: `GET https://api.clinicpro.co.nz/api/medtech/document-reference/<id>?facilityId=<FACILITY>`
+- **DocumentReference verification (via Vercel proxy)**: `GET https://www.clinicpro.co.nz/api/medtech/document-reference/<id>?facilityId=<FACILITY>`
 
 ### Logs and tracing
 - **Vercel logs**: commit route logs correlationId and returned mediaIds.
@@ -105,8 +107,11 @@ Medtech grants permissions at app registration/user profile level. Current known
 ---
 
 ## Current status (kept short)
-- **Phase 1C complete**: commit creates FHIR `Media` in ALEX via Lightsail BFF (static IP).
-- **Phase 1D in progress**: commit into local facility `F99669-C`, then confirm it appears in Medtech Evolution UI (Inbox and Daily Record).
+- **Phase 1C complete**: end-to-end commit pipeline works (widget → Vercel → BFF → ALEX) with facilityId propagation and correlation IDs.
+- **Phase 1D in progress**: legacy-compatible clinical image write-back implemented:
+  - Vercel converts images to **TIFF under 1 MB** (PDF pass-through) before sending to BFF
+  - BFF writes **FHIR `DocumentReference`** (TIFF/PDF only) via `POST /FHIR/DocumentReference` so legacy DOM referrals can access Inbox Scan
+  - Awaiting Medtech confirmation of required DocumentReference fields for Inbox Scan routing
 
 ## Next Session: Pick Up Here
 
@@ -122,11 +127,10 @@ Medtech grants permissions at app registration/user profile level. Current known
      - No patient selected: **"No patient selected"**
 
 ### UI integration validation (blocked by Medtech support guidance)
-5. Re-test JPEG behaviour in Inbox, Daily Record, and the patient record Attachment tab.
-6. Await Medtech support reply on whether `Media` is the correct approach for:
-   - Inline preview behaviour (vs "View link")
-   - Attachment tab placement and referral compatibility
-   - Any extra permissions required for the recommended resource type
+5. Validate Inbox Scan behaviour (TIFF/PDF) in `F99669-C`:
+  - Confirm it appears where expected in Evolution UI
+  - Confirm legacy DOM referral forms can access the Scan folder artefact
+6. Await Medtech support reply on the exact `POST /FHIR/DocumentReference` (Inbox Scan) required fields and a known-good sample payload/response.
 
 Detailed implementation plan: `LAUNCH_MECHANISM_PLAN.md`
 
