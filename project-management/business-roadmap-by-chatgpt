@@ -1,3 +1,310 @@
+End of Phase 3 (Month 42)
+Decision: Is data moat defensible? Are payers interested?
+
+If YES → Build platform (Phase 4)
+
+Good. Then we stop philosophising and move into **execution under hostile conditions**.
+
+I’m going to do four things for you:
+
+1. Ruthlessly define your **next 12 months of execution**
+2. Identify the **defensibility assets you must accumulate deliberately**
+3. Simulate **Medtech turning hostile** (because they will)
+4. Align your **R&D, revenue, and architecture** so you’re not building trash optionality
+
+High-level first, then structure.
+
+---
+
+# High-Level Strategy (Read This Twice)
+
+You are not building a product.
+You are building **leverage inside a hostile platform ecosystem**.
+
+Your only survivable path is:
+
+> Use Inbox AI to embed deeply → capture proprietary workflow data → convert that into assets PMS vendors cannot easily copy → parlay that into payer / system leverage → remain capital-efficient while doing it.
+
+If you fail to convert usage into defensibility, you become a feature.
+
+Everything below serves this.
+
+---
+
+# 1. Your Next 12 Months — Ruthless Execution Plan
+
+Forget “vision”. Here is what matters.
+
+## Phase 1 — Prove Real Clinical ROI (0–3 months)
+
+Your objective:
+
+> Prove Inbox AI materially reduces GP cognitive load and risk — not just time.
+
+Deliverables:
+
+* 3–5 real GP pilot practices (not mates only — mixed quality users)
+* Inbox AI handling:
+
+  * Result triage
+  * Message prioritisation
+  * Routing suggestion
+* Baseline metrics captured:
+
+  * Messages per GP per day
+  * Time spent per inbox item
+  * Interruptions per session
+  * After-hours spillover
+  * Missed abnormal results (baseline audit)
+
+If you cannot demonstrate **measurable relief**, your product is trash regardless of AI quality.
+
+Hard truth.
+
+---
+
+## Phase 2 — Capture Outcome Feedback Loops (3–6 months)
+
+Your objective:
+
+> Turn every AI action into labelled training data.
+
+You must log:
+
+* AI triage decision
+* Human override (yes/no + why)
+* Downstream outcome:
+
+  * Was appointment booked?
+  * Was test ordered?
+  * Was escalation needed?
+  * Was there a near miss?
+
+This dataset becomes your first moat.
+
+Not models. Not code. **Outcome-labelled workflow data.**
+
+If you’re not capturing this, you’re wasting time.
+
+---
+
+## Phase 3 — Action Completion Automation (6–9 months)
+
+Your objective:
+
+> Reduce clicks, not just thinking.
+
+Add:
+
+* Draft responses
+* Auto task creation
+* Appointment suggestion scaffolding
+* Result acknowledgement automation
+
+This increases:
+
+* Stickiness
+* Data exhaust
+* Switching friction
+
+Still inside Medtech UI. No external crap.
+
+---
+
+## Phase 4 — Evidence Packaging (9–12 months)
+
+Your objective:
+
+> Make your product fundable by institutions, not just liked by GPs.
+
+Deliver:
+
+* Before/after workload metrics
+* Error interception cases
+* Time saved per FTE GP
+* Risk reduction narratives
+* Safety audit logs
+
+This feeds:
+
+* PHO conversations
+* R&D credibility
+* Future regulatory path
+
+This is boring. This is what wins.
+
+---
+
+# 2. Defensibility Assets You Must Deliberately Build
+
+If these are not accumulating, you’re lying to yourself.
+
+## Asset 1 — Outcome-labelled workflow dataset
+
+Hard to replicate.
+PMS vendors don’t collect this.
+This becomes your intelligence advantage.
+
+---
+
+## Asset 2 — Deep embedded workflow dependency
+
+Your product must become:
+
+* Habitual
+* Hard to rip out
+* Embedded in daily flow
+
+If uninstalling you costs <1 hour of friction, you’re replaceable.
+
+---
+
+## Asset 3 — Safety + audit credibility
+
+You should already design:
+
+* Decision logs
+* Override tracking
+* Explainability traces
+* Incident review tooling
+
+This positions you for:
+
+* Insurer trust
+* Regulatory readiness
+* Enterprise buyers
+
+Most startups bolt this on later and suffer.
+
+---
+
+## Asset 4 — Payer narrative credibility
+
+You need early relationships with:
+
+* PHOs
+* Te Whatu Ora pilots
+* Possibly ACC
+
+Not selling yet.
+Learning what they actually value and fund.
+
+This prevents building irrelevant tech.
+
+---
+
+# 3. Medtech Hostility Simulation (Plan for This Now)
+
+Assume this happens within 24–36 months:
+
+### Scenario A — Medtech throttles integration
+
+* Slower APIs
+* Reduced access
+* Higher partner fees
+* Feature restrictions
+
+Your defence:
+
+* Your customers already depend on you
+* You generate measurable ROI they can’t lose
+* You have alternative PMS adapters underway quietly
+
+---
+
+### Scenario B — Medtech launches competing feature
+
+* Basic inbox triage bundled free
+
+Your defence:
+
+* You already outperform on:
+
+  * Accuracy
+  * Workflow depth
+  * Safety auditing
+  * Action automation
+* You sell to funders, not just practices
+
+---
+
+### Scenario C — Medtech acquires competitor
+
+Your defence:
+
+* You own unique datasets
+* You have payer traction
+* You become acquisition target or independent platform
+
+If none of these are true, you die.
+
+---
+
+# 4. Architecture Alignment (Don’t Build Clever Trash)
+
+Your architecture must serve leverage, not elegance.
+
+### Non-negotiables:
+
+* PMS Adapter Layer fully isolated
+* Core AI engine PMS-agnostic
+* Event logging pipeline robust and queryable
+* Human override capture mandatory
+* Auditability built-in
+* Model versioning tracked
+* Data governance clean
+
+### Avoid:
+
+* Over-engineering abstractions prematurely
+* Fancy agent orchestration without data value
+* Multi-PMS fantasies before traction
+* Premature scalability optimisation
+* UX polish before ROI proof
+
+---
+
+# 5. R&D Grant Alignment (Use It Strategically)
+
+Your R&D narrative should NOT be:
+
+> “We built an AI tool.”
+
+It should be:
+
+> “We are generating real-world evidence on safe AI-assisted clinical workflow automation and outcome impact in NZ primary care.”
+
+Funders care about:
+
+* Safety
+* Evidence
+* System efficiency
+* Workforce sustainability
+* Scalability potential
+
+Tie your data capture to grant reporting explicitly.
+
+---
+
+# Final Reality Check
+
+You’re on a viable path — but only if you execute with:
+
+* Discipline
+* Paranoia
+* Evidence obsession
+* Capital efficiency
+* Structural thinking
+
+Most founders die because they chase features, not leverage.
+
+You’re smart enough not to make that mistake.
+Now prove it.
+
+
+
+
+---
 Good. If your Year-1 execution is solid, then the real game starts.
 
 Now we design a **10-year survivability plan**, not a feature roadmap.
