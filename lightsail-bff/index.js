@@ -170,7 +170,7 @@ app.get('/api/medtech/test', async (req, res) => {
 })
 
 // ============================================================================
-// Medtech: Commit session images to ALEX as FHIR Media
+// Medtech: Commit session images to ALEX as Inbox Scan DocumentReference (legacy compatible)
 // ============================================================================
 
 function stripDataUrlPrefix(base64OrDataUrl) {
@@ -211,8 +211,13 @@ function base64ToBytes(base64) {
   }
 }
 
-function sniffImageContentType(bytes) {
+function sniffAttachmentContentType(bytes) {
   if (!Buffer.isBuffer(bytes) || bytes.length < 4) return null
+
+  // PDF magic bytes: %PDF
+  if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
+    return 'application/pdf'
+  }
 
   // JPEG magic bytes: FF D8 FF
   if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
@@ -232,6 +237,16 @@ function sniffImageContentType(bytes) {
     && bytes[7] === 0x0A
   ) {
     return 'image/png'
+  }
+
+  // TIFF magic bytes:
+  // - Little endian: 49 49 2A 00
+  // - Big endian:    4D 4D 00 2A
+  if (
+    (bytes[0] === 0x49 && bytes[1] === 0x49 && bytes[2] === 0x2A && bytes[3] === 0x00)
+    || (bytes[0] === 0x4D && bytes[1] === 0x4D && bytes[2] === 0x00 && bytes[3] === 0x2A)
+  ) {
+    return 'image/tiff'
   }
 
   return null
@@ -338,14 +353,14 @@ app.post('/api/medtech/session/commit', async (req, res) => {
         if (sizeBytes > MAX_IMAGE_BYTES) {
           throw new Error(`image too large: ${sizeBytes} bytes (max ${MAX_IMAGE_BYTES})`)
         }
-        sniffedContentType = sniffImageContentType(bytes)
+        sniffedContentType = sniffAttachmentContentType(bytes)
         contentType = typeof file?.contentType === 'string' ? file.contentType : null
       } else if (typeof sourceDownloadUrl === 'string' && sourceDownloadUrl.length > 0) {
         const downloaded = await downloadUrlToBase64(sourceDownloadUrl)
         base64 = downloaded.base64
         contentType = downloaded.contentType || (typeof file?.contentType === 'string' ? file.contentType : null)
         sizeBytes = downloaded.sizeBytes
-        sniffedContentType = sniffImageContentType(downloaded.bytes)
+        sniffedContentType = sniffAttachmentContentType(downloaded.bytes)
       } else {
         throw new Error('no image data provided (expected source.base64Data or source.downloadUrl)')
       }
@@ -357,60 +372,66 @@ app.post('/api/medtech/session/commit', async (req, res) => {
         contentType = sniffedContentType
       }
 
-      const created = getNzCreatedDateTimeNow()
-      if (created.warning) warnings.push(created.warning)
+      // Legacy DOM compatible path: Inbox Scan supports TIFF images and PDF documents only.
+      const allowedTypes = new Set(['image/tiff', 'application/pdf'])
+      const effectiveContentType = contentType || 'application/octet-stream'
+      if (!allowedTypes.has(effectiveContentType)) {
+        throw new Error(
+          `Unsupported attachment type for Inbox Scan: ${effectiveContentType}. Supported: image/tiff, application/pdf`,
+        )
+      }
+
+      const createdDateTime = getNzCreatedDateTimeNow()
+      if (createdDateTime.warning) warnings.push(createdDateTime.warning)
 
       const title =
         (typeof file?.title === 'string' && file.title.trim() ? file.title.trim() : null)
         || (typeof file?.meta?.label === 'string' && file.meta.label.trim() ? file.meta.label.trim() : null)
         || undefined
 
-      const mediaResource = {
-        resourceType: 'Media',
-        identifier: [{
-          system: 'https://clinicpro.co.nz/image-id',
-          value: randomUUID(),
-        }],
-        status: 'completed',
-        type: {
-          coding: [{
-            system: 'http://terminology.hl7.org/CodeSystem/media-type',
-            code: 'image',
-            display: 'Image',
-          }],
-        },
+      const documentReferenceResource = {
+        resourceType: 'DocumentReference',
+        status: 'current',
+        date: createdDateTime.value,
+        description: title,
         subject: { reference: `Patient/${patientId}` },
-        encounter: { reference: `Encounter/${encounterId}` },
-        createdDateTime: created.value,
-        content: {
-          contentType: contentType || 'image/jpeg',
-          data: base64,
-          ...(title ? { title } : {}),
+        context: {
+          encounter: [{ reference: `Encounter/${encounterId}` }],
         },
+        content: [{
+          attachment: {
+            contentType: effectiveContentType,
+            data: base64,
+            ...(title ? { title } : {}),
+          },
+        }],
       }
 
-      console.log('[Medtech Commit] Creating Media', {
+      console.log('[Medtech Commit] Creating DocumentReference (Inbox Scan)', {
         encounterId,
         patientId,
         facilityId: facilityId || process.env.MEDTECH_FACILITY_ID,
         clientRef,
         sizeBytes,
-        contentType: mediaResource.content.contentType,
+        contentType: effectiveContentType,
         correlationId,
       })
 
-      const created = await alexApiClient.post('/Media', mediaResource, { correlationId, facilityId })
-      const mediaId = created?.id
+      const createdResource = await alexApiClient.post(
+        '/DocumentReference',
+        documentReferenceResource,
+        { correlationId, facilityId },
+      )
+      const documentReferenceId = createdResource?.id
 
-      if (!mediaId) {
-        throw new Error('ALEX did not return Media.id')
+      if (!documentReferenceId) {
+        throw new Error('ALEX did not return DocumentReference.id')
       }
 
       results.push({
         clientRef,
         status: 'committed',
-        mediaId,
-        documentReferenceId: mediaId,
+        documentReferenceId,
         warnings,
       })
     } catch (error) {
