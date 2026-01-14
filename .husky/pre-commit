@@ -1,3 +1,11 @@
 #!/bin/sh
-# Disable concurent to run `check-types` after ESLint in lint-staged
-cd "$(dirname "$0")/.." && npm run lint
+cd "$(dirname "$0")/.." || exit 1
+
+# This repo has a large surface area; running `eslint .` on every commit blocks unrelated
+# changes when there are existing lint issues. Instead, lint only what is staged.
+#
+# Important: file paths in this repo can include parentheses; use -z and xargs -0 so we
+# do not break on shell metacharacters.
+
+git diff --cached --name-only -z --diff-filter=ACMR \
+  | xargs -0 -r pnpm exec eslint --max-warnings 0 --no-warn-ignored --
