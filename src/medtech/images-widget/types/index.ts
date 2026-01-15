@@ -48,20 +48,20 @@ export type WidgetImage = {
       };
       arrows?: Array<
         | {
-            // New format: start and end points
-            id: string;
-            x1: number; // Start point X as percentage (0-100)
-            y1: number; // Start point Y as percentage (0-100)
-            x2: number; // End point X as percentage (0-100)
-            y2: number; // End point Y as percentage (0-100)
-          }
+          // New format: start and end points
+          id: string;
+          x1: number; // Start point X as percentage (0-100)
+          y1: number; // Start point Y as percentage (0-100)
+          x2: number; // End point X as percentage (0-100)
+          y2: number; // End point Y as percentage (0-100)
+        }
         | {
-            // Legacy format: position and angle (for backward compatibility when reading)
-            id: string;
-            x: number; // Position X as percentage (0-100)
-            y: number; // Position Y as percentage (0-100)
-            angle?: number; // Arrow rotation in degrees (default: 0 = pointing right)
-          }
+          // Legacy format: position and angle (for backward compatibility when reading)
+          id: string;
+          x: number; // Position X as percentage (0-100)
+          y: number; // Position Y as percentage (0-100)
+          angle?: number; // Arrow rotation in degrees (default: 0 = pointing right)
+        }
       >;
     };
   };
@@ -211,6 +211,11 @@ export type CommitRequest = {
    * Critical for Phase 1D: your local Medtech Evolution UI may be a different facility (eg F99669-C).
    */
   facilityId: string;
+  /**
+   * Provider (Practitioner) ID from Medtech launch context.
+   * Optional but recommended for Inbox Scan routing; if omitted, Medtech may route to a default inbox.
+   */
+  providerId?: string;
   files: Array<{
     fileId: string;
     /**

@@ -14,9 +14,11 @@
  * 4. POST to BFF: /api/medtech/session/commit (DocumentReference write-back)
  */
 
+import { Buffer } from 'node:buffer';
+import { randomUUID } from 'node:crypto';
+
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { randomUUID } from 'crypto';
 import sharp from 'sharp';
 
 import { s3ImageService } from '@/src/lib/services/session-storage';
@@ -25,7 +27,10 @@ import type { CommitRequest, CommitResponse } from '@/src/medtech/images-widget/
 export const runtime = 'nodejs';
 
 const BFF_BASE_URL = process.env.MEDTECH_BFF_URL || 'https://api.clinicpro.co.nz';
-const MAX_ATTACHMENT_BYTES = 1024 * 1024; // 1MB (ALEX constraint)
+// ALEX v1.33/v2.9 Scan-folder write-back: payload must be <= 8MB.
+// We still normalise images to TIFF <= 1MB for reliability and speed.
+const MAX_SCAN_ATTACHMENT_BYTES = 8 * 1024 * 1024; // 8MB
+const MAX_TIFF_BYTES = 1024 * 1024; // 1MB
 
 type DetectedType = 'image/jpeg' | 'image/png' | 'image/tiff' | 'application/pdf' | null;
 
@@ -33,6 +38,7 @@ type BffCommitRequest = {
   encounterId: string;
   patientId: string;
   facilityId: string;
+  providerId?: string;
   correlationId?: string;
   files: Array<{
     clientRef: string;
@@ -76,7 +82,9 @@ function stripDataUrlPrefix(base64OrDataUrl: string): { base64: string; hintedCo
 }
 
 function sniffContentType(bytes: Uint8Array): DetectedType {
-  if (bytes.length < 4) return null;
+  if (bytes.length < 4) {
+    return null;
+  }
 
   // PDF: "%PDF"
   if (bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46) {
@@ -140,13 +148,13 @@ async function convertImageToTiffUnderLimit(inputBytes: Buffer): Promise<{ bytes
           })
           .toBuffer();
 
-        if (out.length <= MAX_ATTACHMENT_BYTES) {
+        if (out.length <= MAX_TIFF_BYTES) {
           if (longestEdge !== longestEdges[0] || quality !== qualities[0]) {
             warnings.push(`Converted to TIFF under 1MB (resize=${longestEdge}px, quality=${quality})`);
           }
           return { bytes: out, warnings };
         }
-      } catch (err) {
+      } catch {
         // Continue trying smaller settings; surface final error if all attempts fail.
         warnings.push(`TIFF conversion attempt failed (resize=${longestEdge}px, quality=${quality})`);
       }
@@ -193,6 +201,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // eslint-disable-next-line no-console
     console.log('[Medtech Commit] Starting commit', {
       encounterId: body.encounterId,
       fileCount: body.files.length,
@@ -229,8 +238,8 @@ export async function POST(request: NextRequest) {
 
           // PDFs pass through; images convert to TIFF.
           if (effectiveInputType === 'application/pdf') {
-            if (bytes.length > MAX_ATTACHMENT_BYTES) {
-              throw new Error(`PDF too large: ${bytes.length} bytes (max ${MAX_ATTACHMENT_BYTES})`);
+            if (bytes.length > MAX_SCAN_ATTACHMENT_BYTES) {
+              throw new Error(`PDF too large: ${bytes.length} bytes (max ${MAX_SCAN_ATTACHMENT_BYTES})`);
             }
             bffFiles.push({
               clientRef: file.fileId,
@@ -289,8 +298,8 @@ export async function POST(request: NextRequest) {
           const effectiveInputType = (sniffed || (headerContentType as DetectedType) || (contentType as DetectedType) || null);
 
           if (effectiveInputType === 'application/pdf') {
-            if (bytes.length > MAX_ATTACHMENT_BYTES) {
-              throw new Error(`PDF too large: ${bytes.length} bytes (max ${MAX_ATTACHMENT_BYTES})`);
+            if (bytes.length > MAX_SCAN_ATTACHMENT_BYTES) {
+              throw new Error(`PDF too large: ${bytes.length} bytes (max ${MAX_SCAN_ATTACHMENT_BYTES})`);
             }
             bffFiles.push({
               clientRef: file.fileId,
@@ -342,6 +351,7 @@ export async function POST(request: NextRequest) {
         encounterId: body.encounterId,
         patientId,
         facilityId,
+        providerId: (body as any).providerId,
         correlationId,
         files: bffFiles,
       } satisfies BffCommitRequest),
@@ -388,6 +398,7 @@ export async function POST(request: NextRequest) {
     const successCount = mergedResults.filter(r => r.status === 'committed').length;
     const errorCount = mergedResults.filter(r => r.status === 'error').length;
 
+    // eslint-disable-next-line no-console
     console.log('[Medtech Commit] Commit complete', {
       duration,
       successCount,

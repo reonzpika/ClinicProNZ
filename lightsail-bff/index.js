@@ -8,10 +8,24 @@ const { Buffer } = require('node:buffer');
 const app = express();
 app.use(express.json());
 
-const MAX_IMAGE_BYTES = 1024 * 1024; // 1MB
+// ALEX v1.33/v2.9: "Attachment POST payload must not exceed 8MB".
+// We enforce this both on decoded bytes and on the base64 string length (payload-ish).
+const MAX_SCAN_PAYLOAD_BYTES = 8 * 1024 * 1024; // 8MB
 
 function coerceFacilityId(raw) {
   return typeof raw === 'string' && raw.trim() ? raw.trim() : null;
+}
+
+function getFhirReferenceBaseUrl() {
+  const raw = process.env.MEDTECH_API_BASE_URL;
+  if (typeof raw !== 'string' || !raw.trim()) {
+    return null;
+  }
+
+  // Example env: https://alexapiuat.medtechglobal.com/FHIR
+  // Example references in Medtech docs: https://alexapiuat.medtechglobal.com/fhir/Patient/<id>
+  const trimmed = raw.trim().replace(/\/+$/, '');
+  return trimmed.replace(/\/FHIR$/i, '/fhir');
 }
 
 function shouldForceRefresh(raw) {
@@ -246,12 +260,15 @@ async function downloadUrlToBase64(downloadUrl) {
 
   const arrayBuffer = await response.arrayBuffer();
   const bytes = Buffer.from(arrayBuffer);
-  if (bytes.length > MAX_IMAGE_BYTES) {
-    throw new Error(`image too large: ${bytes.length} bytes (max ${MAX_IMAGE_BYTES})`);
+  if (bytes.length > MAX_SCAN_PAYLOAD_BYTES) {
+    throw new Error(`attachment too large: ${bytes.length} bytes (max ${MAX_SCAN_PAYLOAD_BYTES})`);
   }
 
   const contentType = response.headers.get('content-type') || null;
   const base64 = bytes.toString('base64');
+  if (Buffer.byteLength(base64, 'utf8') > MAX_SCAN_PAYLOAD_BYTES) {
+    throw new Error(`attachment payload too large after base64 encoding (max ${MAX_SCAN_PAYLOAD_BYTES})`);
+  }
 
   return { base64, contentType, sizeBytes: bytes.length, bytes };
 }
@@ -359,6 +376,7 @@ app.post('/api/medtech/session/commit', async (req, res) => {
   const body = req.body || {};
   const encounterId = body.encounterId;
   const patientId = body.patientId;
+  const providerId = (typeof body.providerId === 'string' && body.providerId.trim()) ? body.providerId.trim() : null;
   const facilityId = typeof body.facilityId === 'string' && body.facilityId.trim()
     ? body.facilityId.trim()
     : null;
@@ -405,8 +423,11 @@ app.post('/api/medtech/session/commit', async (req, res) => {
           throw new Error('invalid base64Data');
         }
         sizeBytes = bytes.length;
-        if (sizeBytes > MAX_IMAGE_BYTES) {
-          throw new Error(`image too large: ${sizeBytes} bytes (max ${MAX_IMAGE_BYTES})`);
+        if (sizeBytes > MAX_SCAN_PAYLOAD_BYTES) {
+          throw new Error(`attachment too large: ${sizeBytes} bytes (max ${MAX_SCAN_PAYLOAD_BYTES})`);
+        }
+        if (Buffer.byteLength(base64, 'utf8') > MAX_SCAN_PAYLOAD_BYTES) {
+          throw new Error(`attachment payload too large after base64 encoding (max ${MAX_SCAN_PAYLOAD_BYTES})`);
         }
         sniffedContentType = sniffAttachmentContentType(bytes);
         contentType = typeof file?.contentType === 'string' ? file.contentType : null;
@@ -446,20 +467,39 @@ app.post('/api/medtech/session/commit', async (req, res) => {
           || (typeof file?.meta?.label === 'string' && file.meta.label.trim() ? file.meta.label.trim() : null)
           || undefined;
 
+      const ext = effectiveContentType === 'application/pdf'
+        ? 'pdf'
+        : (effectiveContentType === 'image/tiff' ? 'tiff' : 'bin');
+      const attachmentTitle = title || `scan-${clientRef}.${ext}`;
+
+      const fhirRefBaseUrl = getFhirReferenceBaseUrl();
+      const subjectReference = fhirRefBaseUrl
+        ? `${fhirRefBaseUrl}/Patient/${patientId}`
+        : `Patient/${patientId}`;
+      const authorReference = (fhirRefBaseUrl && providerId)
+        ? `${fhirRefBaseUrl}/Practitioner/${providerId}`
+        : (providerId ? `Practitioner/${providerId}` : null);
+
       const documentReferenceResource = {
         resourceType: 'DocumentReference',
+        identifier: [{ value: clientRef }],
         status: 'current',
-        date: createdDateTime.value,
-        description: title,
-        subject: { reference: `Patient/${patientId}` },
-        context: {
-          encounter: [{ reference: `Encounter/${encounterId}` }],
+        type: {
+          coding: [{
+            system: 'http://loinc.org',
+            code: '72170-4',
+            display: 'Photographic image',
+          }],
         },
+        date: createdDateTime.value,
+        description: 'Scanned Document',
+        subject: { reference: subjectReference },
+        ...(authorReference ? { author: [{ reference: authorReference }] } : {}),
         content: [{
           attachment: {
             contentType: effectiveContentType,
             data: base64,
-            ...(title ? { title } : {}),
+            title: attachmentTitle,
           },
         }],
       };
@@ -468,6 +508,7 @@ app.post('/api/medtech/session/commit', async (req, res) => {
       console.log('[Medtech Commit] Creating DocumentReference (Inbox Scan)', {
         encounterId,
         patientId,
+        providerId,
         facilityId: facilityId || process.env.MEDTECH_FACILITY_ID,
         clientRef,
         sizeBytes,
