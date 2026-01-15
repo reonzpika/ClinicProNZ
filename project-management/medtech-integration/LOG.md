@@ -37,6 +37,27 @@
 - Request a known-good example payload/response for `POST /FHIR/DocumentReference` (Inbox Scan) and confirm required fields and any routing constraints.
 - Confirm whether `GET /FHIR/DocumentReference/{id}` is permitted for vendor credentials (read-by-id), even if searches are restricted.
 
+## 2026-01-15 Thu
+### Prep: Inbox Scan validation run (ALEX v1.33/v2.9)
+
+**Context (Medtech support email)**:
+- Scan-folder write-back is released in ALEX v1.33/v2.9.
+- Attachment write-back payload limit is **8MB**.
+- Medtech requested UAT roles for POST and GET DocumentReference (Scan) to be added.
+
+**What changed (code)**:
+- Aligned Scan `DocumentReference` payload with the v1.33/v2.9 requirements:
+  - `identifier.value` present
+  - `type` LOINC coding set (`http://loinc.org|72170-4`, display `Photographic image`)
+  - `content.attachment.title` always set
+  - Prefer absolute `subject.reference` (and `author.reference` when providerId is available)
+  - Enforce 8MB payload guard
+- Added a one-command validation script:
+  - `pnpm tsx scripts/validate-scan-writeback-via-bff.ts --facilityId=... --patientId=... --file=... [--providerId=...]`
+
+**Next**:
+- Once UAT roles are enabled, run the script and then confirm the artefact appears in Evolution UI Inbox Scan for `F99669-C` and is accessible from legacy DOM referral workflows.
+
 ## 2026-01-13 Tue
 ### Milestone: Implement secure Medtech Evolution launch handoff (Vendor Forms)
 

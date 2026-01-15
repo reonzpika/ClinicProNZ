@@ -106,6 +106,7 @@ export function useCommit() {
               contentType: renamedFile.type || 'image/jpeg',
               source: { base64Data },
               meta: {
+                title: newFilename,
                 label: img.metadata.label,
                 bodySite: img.metadata.bodySite,
                 laterality: img.metadata.laterality,
@@ -120,11 +121,15 @@ export function useCommit() {
 
           // Mobile: no File; use stored S3 key so server can presign.
           if (img.s3Key) {
+            const mobileTitle = img.metadata.label?.trim()
+              ? `${img.metadata.label.trim()}.jpg`
+              : `image-${index + 1}.jpg`;
             return {
               fileId: img.id,
               contentType: 'image/jpeg',
               source: { s3Key: img.s3Key },
               meta: {
+                title: mobileTitle,
                 label: img.metadata.label,
                 bodySite: img.metadata.bodySite,
                 laterality: img.metadata.laterality,
@@ -145,6 +150,7 @@ export function useCommit() {
         encounterId: encounterContext.encounterId,
         patientId: encounterContext.patientId,
         facilityId: encounterContext.facilityId,
+        providerId: encounterContext.providerId,
         files,
       };
 

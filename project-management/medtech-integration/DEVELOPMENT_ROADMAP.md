@@ -1,8 +1,8 @@
 # Medtech Integration - Development Roadmap
 
 **Created**: 2025-11-12  
-**Last Updated**: 2026-01-08  
-**Status**: Phase 1C Complete | Commit to ALEX working end-to-end  
+**Last Updated**: 2026-01-15  
+**Status**: Phase 1C Complete | Commit to ALEX working end-to-end (Inbox Scan `DocumentReference` write-back implemented; awaiting UAT roles for POST and GET DocumentReference (Scan))  
 **Estimated Total Time**: 13-19 hours  
 **Current Phase**: Phase 1C ✅ Complete | Next: Phase 1D (Medtech UI validation + hardening + launch mechanism)
 
@@ -12,7 +12,16 @@ Note: detailed feature/spec docs have been archived to minimise active docs.
 
 ## Quick Start - Next Development Session
 
-**Current Status**: ✅ Phase 1C Complete. Commit path creates FHIR `Media` in ALEX UAT via Lightsail BFF (static IP), working end-to-end (desktop + mobile).
+**Current Status**: ✅ Phase 1C Complete. Commit path writes Inbox Scan `DocumentReference` (TIFF/PDF only) via Lightsail BFF (static IP), working end-to-end (desktop + mobile). Phase 1D is focused on Evolution UI validation plus confirming the Scan-folder routing behaviour under the new ALEX v1.33/v2.9 rules.
+
+**Fast validation run (once UAT roles are enabled)**:
+```bash
+pnpm tsx scripts/validate-scan-writeback-via-bff.ts \
+  --facilityId=F99669-C \
+  --patientId=<PATIENT_ID> \
+  --file=/path/to/test.pdf \
+  --providerId=<PRACTITIONER_ID>
+```
 
 **Phase 1 Architecture Finalized** (2025-12-09):
 - Redis + S3 for session storage (supports 100+ concurrent GPs)
@@ -22,7 +31,7 @@ Note: detailed feature/spec docs have been archived to minimise active docs.
 
 **What's Ready**:
 - ✅ Infrastructure complete (OAuth, BFF, ALEX API connectivity)
-- ✅ POST Media validated (widget can upload images)
+- ✅ Inbox Scan write-back implemented via `POST /FHIR/DocumentReference` (TIFF/PDF only)
 - ✅ Desktop widget complete (capture, edit, metadata, commit flow)
 - ✅ Architecture decisions finalized for 100+ concurrent scale
 - ✅ Redis + S3 session storage implemented (Upstash + AWS)
@@ -54,7 +63,7 @@ sudo journalctl -u clinicpro-bff -f
 sudo systemctl restart clinicpro-bff
 ```
 
-**Next Immediate Task**: Phase 1D UI validation (commit to `F99669-C` and confirm in Medtech Evolution UI)
+**Next Immediate Task**: Phase 1D UI validation (commit to `F99669-C` and confirm in Medtech Evolution UI, using Inbox Scan `DocumentReference` write-back)
 
 ---
 
@@ -290,18 +299,18 @@ sessions/${token}/${timestamp}_${uuid}.jpg
 **Time Estimate**: 4-6 hours  
 **Priority**: Critical (enables end-to-end functionality)
 
-### Phase 1C: Commit creates FHIR Media in ALEX via Lightsail BFF ✅ COMPLETE
+### Phase 1C: Commit writes Inbox Scan `DocumentReference` via Lightsail BFF ✅ COMPLETE
 
-**Outcome**: End-to-end commit working (desktop + mobile). Vercel proxies to BFF only; BFF creates FHIR `Media` in ALEX UAT using base64 `content.data`.
+**Outcome**: End-to-end commit working (desktop + mobile). Vercel proxies to BFF only; BFF creates Inbox Scan `DocumentReference` in ALEX using base64 `content[0].attachment.data`.
 
 **Implementation details (constraints)**:
-- ✅ **Mandatory identifier**: `Media.identifier[0].system = https://clinicpro.co.nz/image-id`; `value = UUID`
-- ✅ **No S3 URLs in FHIR**: Use `content.data` base64 (ALEX cannot fetch S3 URLs)
-- ✅ **Size enforcement**: Per-file `< 1MB` enforced in BFF
+- ✅ **Mandatory identifier**: `DocumentReference.identifier[0].value` must be unique per scan record
+- ✅ **No S3 URLs in FHIR**: Use base64 attachment data (ALEX cannot fetch S3 URLs)
+- ✅ **Payload ceiling**: ALEX v1.33/v2.9 caps scanned attachment payloads at **8MB**
 - ✅ **Input sources supported**: `{ base64Data }` or `{ downloadUrl }` (BFF fetches and base64-encodes downloadUrl)
 
 **Completed tasks**:
-- ✅ **Lightsail BFF**: Added `POST /api/medtech/session/commit` that creates FHIR `Media` in ALEX UAT (static IP allow-listed)
+- ✅ **Lightsail BFF**: Added `POST /api/medtech/session/commit` that creates Inbox Scan `DocumentReference` in ALEX (static IP allow-listed)
 - ✅ **Vercel**: `POST /api/medtech/attachments/commit` proxies to BFF only; requires `patientId`; presigns mobile `s3Key` to `downloadUrl`
 - ✅ **Widget**: Commit sends commit-ready sources (desktop `base64Data`, mobile `s3Key`) and always includes `patientId`
 
@@ -399,6 +408,11 @@ const response = await alexApiClient.post('/Media', mediaResource);
 - [ ] **Launch mechanism**: Decide and implement widget launch path from within Medtech Evolution (context passing + auth)
 - [ ] **Optional workflow routing**: Decide any inbox/task routing behaviour (only if needed)
 
+#### UAT readiness and sequencing (ALEX v1.33/v2.9 Scan-folder write-back)
+Before relying on `DocumentReference` read/verify or building any additional Scan-based workflows, confirm UAT permissions are present:
+- **POST scope**: `Patient.documentreference.scaninbox.write`
+- **GET role/scope**: Medtech said they are adding roles for GET DocumentReference (Scan) to the UAT profile; confirm the exact scope name by decoding the client-credentials token after enablement.
+
 #### Phase 1D testing steps (UI validation)
 
 **Why Phase 1D is different**:
@@ -467,7 +481,7 @@ const response = await alexApiClient.post('/Media', mediaResource);
 
 **Decision branch**
 - If commit succeeded and UI shows nothing:
-  - Treat as Medtech workflow expectation mismatch; investigate whether Inbox/Daily Record requires an “Inbox write back” (Communication/DocumentReference) rather than plain `POST /Media`.
+  - Treat as Medtech UI routing expectation mismatch; validate the `DocumentReference` payload matches the ALEX v1.33/v2.9 scanned-document profile (type coding, status, date, identifier, subject reference, author, and base64 attachment fields), then re-test in `F99669-C`.
   - Capture: screenshots, correlationId, mediaIds, and relevant BFF logs.
 - If Step 1 fails:
   - Facility connectivity is broken; check local Hybrid Connection Manager is running and reachable.
