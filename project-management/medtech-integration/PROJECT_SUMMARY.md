@@ -2,7 +2,7 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2026-01-14"
+last_updated: "2026-01-15"
 version: "2.0.0"
 tags:
   - integration
@@ -14,7 +14,7 @@ summary: "Clinical images widget integration with Medtech Evolution/Medtech32 vi
 quick_reference:
   current_phase: "Phase 1D"
   status: "Phase 1C ✅ complete; Phase 1D ⚠️ in progress (launch handoff implemented; legacy-compatible image write-back implemented via Inbox Scan `DocumentReference`); waiting on Medtech to enable UAT roles for POST and GET DocumentReference (Scan)"
-  next_action: "Once Medtech enables the UAT roles/scopes for POST and GET DocumentReference (Scan), validate our `POST /FHIR/DocumentReference` payload matches the v1.33/v2.9 scanned-document profile (including `mt-facilityid` header and <8MB payload), then confirm the artefact appears in the Evolution UI Scan folder for `F99669-C` and is accessible to legacy DOM referral forms."
+  next_action: "Once Medtech enables the UAT roles/scopes for POST and GET DocumentReference (Scan), run `pnpm tsx scripts/validate-scan-writeback-via-bff.ts ...` to validate write-back (201 + id + optional GET-by-id), then confirm the artefact appears in the Evolution UI Inbox Scan folder for `F99669-C` and is accessible to legacy DOM referral forms. In parallel: configure the Medtech launch (icon + ALEX Apps Configuration) so real GPs can use the widget in-workflow."
   key_blockers:
     - "Medtech confirmed JPEGs posted as Media will always be a View link (external viewer) and images will not appear in Inbox Attachment tab; for legacy referral compatibility we must use Inbox Scan via POST DocumentReference (TIFF/PDF only)"
     - "Medtech is adding UAT roles for POST and GET DocumentReference (Scan); until these are active, we cannot reliably validate write-back plus read/verify behaviour end-to-end"
@@ -131,6 +131,17 @@ Medtech released Scan-folder write-back in ALEX v1.33/v2.9. We should treat the 
 - **Scopes**:
   - POST: `Patient.documentreference.scaninbox.write` (Medtech-provided scope name; confirm it is present on the client-credentials token after roles are enabled).
 
+### Fast validation run (as soon as UAT roles are enabled)
+This gives a single command to validate: POST works, `DocumentReference.id` is returned, and read-by-id works (if permitted).
+
+```bash
+pnpm tsx scripts/validate-scan-writeback-via-bff.ts \
+  --facilityId=F99669-C \
+  --patientId=<PATIENT_ID> \
+  --file=/path/to/test.pdf \
+  --providerId=<PRACTITIONER_ID>
+```
+
 ## Next Session: Pick Up Here
 
 ### Launch setup (Medtech Evolution)
@@ -151,7 +162,7 @@ Medtech released Scan-folder write-back in ALEX v1.33/v2.9. We should treat the 
 6. Once Medtech has enabled UAT roles for POST and GET DocumentReference (Scan), validate the write-back behaviour end-to-end:
   - `POST /FHIR/DocumentReference` returns `201 Created` and includes an `id`
   - Verify by `GET /FHIR/DocumentReference/{id}` if permitted (or via our BFF verification endpoint)
-  - Confirm the created scan record is visible in Evolution UI and accessible from legacy DOM referral workflows
+  - Confirm the created scan record is visible in Evolution UI Inbox Scan folder and accessible from legacy DOM referral workflows
 
 Detailed implementation plan: `LAUNCH_MECHANISM_PLAN.md`
 

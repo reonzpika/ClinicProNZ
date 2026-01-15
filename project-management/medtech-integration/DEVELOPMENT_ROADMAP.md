@@ -14,6 +14,15 @@ Note: detailed feature/spec docs have been archived to minimise active docs.
 
 **Current Status**: ✅ Phase 1C Complete. Commit path writes Inbox Scan `DocumentReference` (TIFF/PDF only) via Lightsail BFF (static IP), working end-to-end (desktop + mobile). Phase 1D is focused on Evolution UI validation plus confirming the Scan-folder routing behaviour under the new ALEX v1.33/v2.9 rules.
 
+**Fast validation run (once UAT roles are enabled)**:
+```bash
+pnpm tsx scripts/validate-scan-writeback-via-bff.ts \
+  --facilityId=F99669-C \
+  --patientId=<PATIENT_ID> \
+  --file=/path/to/test.pdf \
+  --providerId=<PRACTITIONER_ID>
+```
+
 **Phase 1 Architecture Finalized** (2025-12-09):
 - Redis + S3 for session storage (supports 100+ concurrent GPs)
 - Ably for real-time sync (existing infrastructure)
