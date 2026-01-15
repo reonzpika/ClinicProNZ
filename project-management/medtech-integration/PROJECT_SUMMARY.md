@@ -13,11 +13,11 @@ tags:
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 quick_reference:
   current_phase: "Phase 1D"
-  status: "Phase 1C ✅ complete; Phase 1D ⚠️ in progress (launch handoff implemented; legacy-compatible image write-back implemented via DocumentReference); waiting on Medtech for exact Inbox Scan DocumentReference requirements"
-  next_action: "Email Medtech for a known-good POST /FHIR/DocumentReference (Inbox Scan) payload and required fields; then validate end-to-end in F99669-C (Evolution UI + legacy DOM referral access) using the new DocumentReference verification endpoint."
+  status: "Phase 1C ✅ complete; Phase 1D ⚠️ in progress (launch handoff implemented; legacy-compatible image write-back implemented via Inbox Scan `DocumentReference`); waiting on Medtech to enable UAT roles for POST and GET DocumentReference (Scan)"
+  next_action: "Once Medtech enables the UAT roles/scopes for POST and GET DocumentReference (Scan), validate our `POST /FHIR/DocumentReference` payload matches the v1.33/v2.9 scanned-document profile (including `mt-facilityid` header and <8MB payload), then confirm the artefact appears in the Evolution UI Scan folder for `F99669-C` and is accessible to legacy DOM referral forms."
   key_blockers:
     - "Medtech confirmed JPEGs posted as Media will always be a View link (external viewer) and images will not appear in Inbox Attachment tab; for legacy referral compatibility we must use Inbox Scan via POST DocumentReference (TIFF/PDF only)"
-    - "Exact required DocumentReference fields and any Medtech-specific routing requirements for Inbox Scan are still unconfirmed; waiting on Medtech to provide a known-good example payload/response"
+    - "Medtech is adding UAT roles for POST and GET DocumentReference (Scan); until these are active, we cannot reliably validate write-back plus read/verify behaviour end-to-end"
     - "ALEX UAT reads/search are sensitive to URL/query shape; Media verify should use `patient.identifier`; other resources may still return 403 depending on query parameters; keep validating with ALEX support examples"
     - "Waiting on Medtech commercial terms (revenue share/fees/billing route/payment terms) and competitor QuickShot pricing (Intellimed) to finalise pricing strategy"
   facility_id: "F2N060-E (hosted UAT API testing) + F99669-C (local Medtech Evolution UI validation)"
@@ -111,7 +111,25 @@ Medtech grants permissions at app registration/user profile level. Current known
 - **Phase 1D in progress**: legacy-compatible clinical image write-back implemented:
   - Vercel converts images to **TIFF under 1 MB** (PDF pass-through) before sending to BFF
   - BFF writes **FHIR `DocumentReference`** (TIFF/PDF only) via `POST /FHIR/DocumentReference` so legacy DOM referrals can access Inbox Scan
-  - Awaiting Medtech confirmation of required DocumentReference fields for Inbox Scan routing
+  - Awaiting Medtech to enable UAT roles for POST and GET DocumentReference (Scan) so we can validate the behaviour end-to-end
+
+### Inbox Scan write-back (ALEX v1.33/v2.9) requirements (plan update)
+Medtech released Scan-folder write-back in ALEX v1.33/v2.9. We should treat the following as the required payload shape for our Inbox Scan `DocumentReference` writes:
+
+- **Endpoint**: `POST /FHIR/DocumentReference` (base is UAT or production ALEX FHIR URL)
+- **Required request header**: `mt-facilityid: <HPI Facility ID>`
+- **Payload limit**: total attachment payload must be **< 8MB**
+- **Required fields**:
+  - `subject.reference`: patient reference (use the format Medtech examples use, including the ALEX base URL)
+  - `identifier[0].value`: vendor unique reference for the scan record
+  - `status`: must be `current`
+  - `date`: creation date-time for the scanned document
+  - `type.coding[0]`: `system = http://loinc.org`, `code = 72170-4`, `display = Photographic image`
+  - `content[0].attachment`: `contentType` (`application/pdf` or TIFF), `data` (base64), and `title` (filename)
+- **Author handling**:
+  - Release notes say author is optional; validation examples show missing author can be rejected. For safety, include `author[0].reference` whenever we have it from launch context (providerId).
+- **Scopes**:
+  - POST: `Patient.documentreference.scaninbox.write` (Medtech-provided scope name; confirm it is present on the client-credentials token after roles are enabled).
 
 ## Next Session: Pick Up Here
 
@@ -130,7 +148,10 @@ Medtech grants permissions at app registration/user profile level. Current known
 5. Validate Inbox Scan behaviour (TIFF/PDF) in `F99669-C`:
   - Confirm it appears where expected in Evolution UI
   - Confirm legacy DOM referral forms can access the Scan folder artefact
-6. Await Medtech support reply on the exact `POST /FHIR/DocumentReference` (Inbox Scan) required fields and a known-good sample payload/response.
+6. Once Medtech has enabled UAT roles for POST and GET DocumentReference (Scan), validate the write-back behaviour end-to-end:
+  - `POST /FHIR/DocumentReference` returns `201 Created` and includes an `id`
+  - Verify by `GET /FHIR/DocumentReference/{id}` if permitted (or via our BFF verification endpoint)
+  - Confirm the created scan record is visible in Evolution UI and accessible from legacy DOM referral workflows
 
 Detailed implementation plan: `LAUNCH_MECHANISM_PLAN.md`
 
