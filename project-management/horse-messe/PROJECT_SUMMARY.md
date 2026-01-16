@@ -1,7 +1,7 @@
 # Horse Messe
 
 Owner: Yoko (Cloud Nine / Cloud Nine x Kurume Kasuri)
-Support: You (web, ops, comms)
+Support: You (ops, comms, coordination)
 Event website: `https://horsemesse.jp/`
 Primary objective (time-boxed): be **event-ready by 31 Jan 2026**.
 
@@ -14,6 +14,7 @@ Primary objective (time-boxed): be **event-ready by 31 Jan 2026**.
 ## Current status
 - Linktree created: `https://linktr.ee/cloudninejp` (links not populated yet)
 - Pamphlet design created with QR code pointing to Linktree
+- Website build: Yoko’s friend is helping (scope and goals still need to be defined)
 - Products: in progress (Yoko primary focus)
 
 ## Key decisions (must decide to unblock)
@@ -42,12 +43,17 @@ Default recommendation: **Instagram as the main channel**, with Linktree as the 
 
 ### 2) Website and Linktree
 - Decide website scope (A vs B)
-- Build landing page (JP language first; EN optional)
+- Provide a one-page website brief to the website builder (JP language first; EN optional)
 - Linktree links: Instagram, website, event location, “custom order” contact
 
 ### 3) Instagram (content pipeline)
 - Profile: bio, highlights, pinned posts, link in bio (Linktree)
-- Content: 10-post runway plan; 3–5 stories/week; short reels if possible
+- Content (high level): 12 feed posts by event day; 3–5 stories/week; 0–2 reels optional
+  - 2x brand trust (who, why, materials, craft)
+  - 5x product highlights (one product per post; clear price or price range)
+  - 2x behind-the-scenes (making, materials, quality cues)
+  - 2x event logistics (where/when, payment methods, “come say hi”)
+  - 1x credibility (traditional craft, collaboration, close-up texture)
 - DM script for enquiries and custom orders
 
 ### 4) Event-day operations
@@ -64,7 +70,7 @@ Default recommendation: **Instagram as the main channel**, with Linktree as the 
 - Set up Instagram profile (if not already).
 
 ### Week of 20–26 Jan
-- Build and publish website MVP (Option A) and connect domain/subpage.
+- Website builder publishes MVP (Option A) and connect from Linktree.
 - Populate Linktree with final links.
 - Prepare booth materials (price cards, QR signage, packaging).
 - Dry-run packing and payment flow.

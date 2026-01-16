@@ -10,3 +10,11 @@
   - Website: portfolio-style landing page (fast MVP) rather than full e-commerce before event day
   - Event-day payments: Square + cash (or PayPay if already preferred)
 
+## 2026-01-16 (later)
+- Update: Yoko confirmed a friend will help build the website.
+- Sent Yoko a simplified Google Form to clarify decisions (website goals, products, pricing, payments).
+- Planning focus: Instagram runway to event day:
+  - Target: 12 feed posts by event day
+  - Mix: brand trust, product highlights, behind-the-scenes, event logistics, credibility
+  - Stories: 3–5 per week; daily stories in final week
+

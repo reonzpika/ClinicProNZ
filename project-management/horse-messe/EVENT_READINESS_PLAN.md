@@ -19,6 +19,9 @@ Be fully ready to sell at Horse Messe by **31 Jan 2026** with minimal stress on 
 
 ### B) Brand and customer capture
 - [ ] Instagram profile set up (bio, highlights, pinned posts)
+- [ ] Content runway planned (high level):
+  - [ ] 12 feed posts ready by event day
+  - [ ] 3–5 stories/week in the lead-up; daily stories in the final week
 - [ ] Linktree links populated (Instagram, website, event info, contact)
 - [ ] QR codes printed:
   - [ ] “Follow Instagram”
