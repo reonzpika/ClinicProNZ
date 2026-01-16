@@ -12,7 +12,7 @@ export const EarlyFooterCTA = () => {
   const handleJoinClick = async () => {
     setIsLoading(true);
     // Always send public users to sign-up, then redirect straight to clinical consultation
-    window.location.href = '/auth/register?redirect=/app/(clinical)/consultation';
+    window.location.href = '/auth/register?redirect_url=%2Fai-scribe%2Fconsultation';
   };
 
   return (

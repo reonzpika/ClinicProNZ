@@ -34,7 +34,7 @@ type NavItem = {
 };
 
 const mainNavItems: NavItem[] = [
-  { href: '/ai-scribe/consultation', label: 'Clinical Notes', icon: Stethoscope },
+  { href: '/ai-scribe/consultation', label: 'Clinical Notes', icon: Stethoscope, requiresAuth: true },
   { href: '/ai-scribe/templates', label: 'Note Templates', icon: FileText, requiresAuth: true },
   { href: '/image/app', label: 'Clinical Images', icon: Camera, requiresAuth: true },
   { href: '/acc/occupation-codes', label: 'ACC Occupation Codes', icon: Search },

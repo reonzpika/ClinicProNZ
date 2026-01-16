@@ -127,7 +127,7 @@ Medtech ALEX / External Services
 
 - Pages (`app/`):
   - Marketing: `(marketing)/landing-page`, `about`, `ai-scribing`, `clinicpro`, `contact`, `roadmap`
-  - Clinical: `(clinical)/consultation`, `chat`, `image`, `templates`, `search`, `differential-diagnosis`, `acc-occupation-codes`, `employer-lookup`
+  - Clinical: `(clinical)/ai-scribe/consultation`, `(clinical)/ai-scribe/templates`, `(clinical)/image` (landing), `(clinical)/image/app`, `chat`, `search`, `differential-diagnosis`, `(clinical)/acc/*`
   - User: `(user)/dashboard`, `settings`, auth
   - Business: `(business)/billing`, `pricing`
   - Admin: `(admin)/admin`, `emergency-admin`

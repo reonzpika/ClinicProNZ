@@ -112,10 +112,11 @@ Note: Some client SDKs (e.g. Clerk) may require publishable frontend keys; add a
 ## Usage Examples
 
 ### Web UI
-- Sign‑in redirects unauthenticated users to `/landing-page` (`app/page.tsx`)
 - Main tools:
-  - Consultation Assistant: `/consultation`
-  - Clinical Image Analysis: `/image`
+  - AI Scribe (consultation): `/ai-scribe/consultation`
+  - Templates: `/ai-scribe/templates`
+  - Clinical Images: `/image` (landing) → `/image/app` (tool)
+  - ACC tools: `/acc`
   - Dashboard: `/dashboard`
 
 ### API (requires Clerk authentication unless noted)

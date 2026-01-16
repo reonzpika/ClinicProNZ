@@ -29,9 +29,9 @@ const tools: ToolLink[] = [
     color: 'text-blue-600',
   },
   {
-    title: 'Clinical Reference',
-    description: 'Access medical guidelines and diagnostic tools',
-    href: '/clinical-reference',
+    title: 'AI Search',
+    description: 'Search trusted resources and get quick answers',
+    href: '/search',
     icon: FileText,
     color: 'text-green-600',
   },

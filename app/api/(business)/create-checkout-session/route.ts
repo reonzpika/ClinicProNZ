@@ -81,7 +81,7 @@ export async function POST(req: Request) {
       client_reference_id: authUserId,
       customer_email: email,
       success_url: `${req.headers.get('origin')}/thank-you?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${req.headers.get('origin')}/consultation`,
+      cancel_url: `${req.headers.get('origin')}/ai-scribe/consultation`,
       metadata: {
         plan: 'standard',
         couponApplied: 'hS2CN99E',

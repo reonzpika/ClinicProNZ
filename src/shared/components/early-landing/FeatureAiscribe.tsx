@@ -103,7 +103,7 @@ Review structured draft, make quick edits, finish
         {/* CTA row (compact) */}
         <div className="text-center">
           <a
-            href="/auth/register?redirect=/app/(clinical)/consultation"
+            href="/auth/register?redirect_url=%2Fai-scribe%2Fconsultation"
             className="inline-block rounded-xl bg-orange-600 px-6 py-3 text-base font-bold text-white shadow-xl transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.01] hover:bg-orange-700 hover:shadow-orange-500/25"
           >
             Get more done in 15 min

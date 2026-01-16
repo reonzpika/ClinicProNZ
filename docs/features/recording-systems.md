@@ -156,7 +156,7 @@ src/features/clinical/main-ui/
 │   ├── TranscriptionControls.tsx        # Recording controls UI (start/stop/pause)
 │   └── TypedInput.tsx                   # Manual text input component
 
-app/(clinical)/consultation/
+app/(clinical)/ai-scribe/consultation/
 └── page.tsx                             # Main consultation interface with recording integration
 ```
 
