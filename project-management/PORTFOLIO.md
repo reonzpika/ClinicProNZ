@@ -11,6 +11,12 @@
 - Status: Phase 1D tested; images commit successfully but UI integration incomplete (broken links in Inbox, missing from Daily Record); need Medtech support guidance.
 - Read next: `project-management/medtech-integration/PROJECT_SUMMARY.md`
 
+### Horse Messe (Yoko)
+- Path: `project-management/horse-messe/`
+- Phase: Time-boxed event delivery (Jan 2026)
+- Status: Linktree and pamphlet QR exist; need decisions on website scope (landing page vs shop), Instagram pipeline, and event-day payments; target: event-ready by 31 Jan.
+- Read next: `project-management/horse-messe/PROJECT_SUMMARY.md`
+
 ### ClinicPro SaaS
 - Path: `project-management/clinicpro/`
 - Phase: Maintain
