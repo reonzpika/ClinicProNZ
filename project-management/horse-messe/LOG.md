@@ -9,4 +9,8 @@
 - Set default recommendations (pending confirmation):
   - Website: portfolio-style landing page (fast MVP) rather than full e-commerce before event day
   - Event-day payments: Square + cash (or PayPay if already preferred)
+- Update:
+  - Yoko confirmed a friend will help build the website.
+  - Sent a simplified Google Form to clarify decisions (website goals, products, pricing, payments).
+  - Instagram runway plan: 12 feed posts by event day; 3–5 stories/week in the lead-up; daily stories in the final week.
 
