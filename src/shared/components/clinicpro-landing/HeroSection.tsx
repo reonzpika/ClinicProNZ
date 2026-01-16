@@ -122,7 +122,7 @@ export const ClinicProHeroSection = () => {
               {/* Try for Free CTA */}
               <div>
                 <a
-                  href="/consultation"
+                  href="/ai-scribe/consultation"
                   className="inline-flex items-center rounded-lg border border-nz-blue-600 bg-white px-6 py-3 text-base font-medium text-nz-blue-600 shadow-sm transition-colors hover:bg-nz-blue-50 hover:text-nz-blue-700"
                 >
                   Try for Free

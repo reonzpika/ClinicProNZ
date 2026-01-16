@@ -114,7 +114,7 @@ export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
         <section className="mb-12">
           <h2 className="mb-3 text-lg font-semibold">ACC utilities</h2>
           <Grid cols={3} gap="lg" className="grid-cols-1 md:grid-cols-3">
-            <Link href="/employer-lookup" className="block rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
+            <Link href="/acc/employer-lookup" className="block rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
               <Card className="hover:bg-accent/40">
                 <CardHeader>
                   <CardTitle>Employer lookup</CardTitle>
@@ -123,7 +123,7 @@ export function ToolsIndexClient({ tools }: { tools: ToolDetail[] }) {
               </Card>
             </Link>
 
-            <Link href="/acc-occupation-codes" className="block rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
+            <Link href="/acc/occupation-codes" className="block rounded-md focus:outline-none focus:ring-2 focus:ring-ring">
               <Card className="hover:bg-accent/40">
                 <CardHeader>
                   <CardTitle>ACC occupation codes</CardTitle>

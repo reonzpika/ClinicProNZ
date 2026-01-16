@@ -1,64 +1,61 @@
-'use client';
+import Link from 'next/link';
 
-import { useAuth } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { Container } from '@/src/shared/components/layout/Container';
+import { Button } from '@/src/shared/components/ui/button';
 
-export default function Home() {
-  const { isSignedIn, isLoaded } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      // Only redirect unauthenticated users to early access page
-      router.push('/landing-page');
-    }
-  }, [isLoaded, isSignedIn, router]);
-
-  // Loading state while auth is being determined
-  if (!isLoaded) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4">
-        <div className="text-center">
-          <div className="mb-4 inline-block size-8 animate-spin rounded-full border-4 border-nz-green-300 border-t-nz-green-600"></div>
-          <p className="text-gray-600">Loading ClinicPro...</p>
+export default function HomePage() {
+  return (
+    <Container size="md" className="py-10">
+      <div className="space-y-8">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold text-slate-900">ClinicPro</h1>
+          <p className="text-slate-600">A set of practical tools for NZ general practice.</p>
         </div>
-      </div>
-    );
-  }
 
-  // Authenticated users see the main dashboard/landing
-  if (isSignedIn) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4">
-        <div className="text-center">
-          <h1 className="mb-4 text-4xl font-bold text-gray-900">Welcome to ClinicPro</h1>
-          <p className="mb-8 text-lg text-gray-600">Choose a tool to get started</p>
-          <div className="space-y-4">
-            <a
-              href="/consultation"
-              className="block rounded-lg bg-blue-600 px-6 py-3 text-white hover:bg-blue-700"
-            >
-              Consultation Assistant
-            </a>
-            <a
-              href="/image"
-              className="block rounded-lg bg-purple-600 px-6 py-3 text-white hover:bg-purple-700"
-            >
-              Clinical Image Analysis
-            </a>
-            <a
-              href="/dashboard"
-              className="block rounded-lg bg-gray-600 px-6 py-3 text-white hover:bg-gray-700"
-            >
-              Dashboard
-            </a>
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-lg border border-slate-200 p-5">
+            <h2 className="text-lg font-semibold text-slate-900">AI Scribe</h2>
+            <p className="mt-1 text-sm text-slate-600">Clinical documentation and note templates.</p>
+            <div className="mt-4 space-y-2">
+              <Button asChild className="w-full">
+                <Link href="/ai-scribe/consultation">Open</Link>
+              </Button>
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/ai-scribe/templates">Templates</Link>
+              </Button>
+              <div className="text-xs text-slate-500">Sign in required.</div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 p-5">
+            <h2 className="text-lg font-semibold text-slate-900">Clinical Images</h2>
+            <p className="mt-1 text-sm text-slate-600">Capture, upload, and analyse clinical images.</p>
+            <div className="mt-4 space-y-2">
+              <Button asChild className="w-full">
+                <Link href="/image">Start free</Link>
+              </Button>
+              <div className="text-xs text-slate-500">Sign up required to use the tool.</div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 p-5">
+            <h2 className="text-lg font-semibold text-slate-900">ACC Tools</h2>
+            <p className="mt-1 text-sm text-slate-600">Quick utilities for ACC45 workflows.</p>
+            <div className="mt-4 space-y-2">
+              <Button asChild className="w-full" variant="outline">
+                <Link href="/acc">Open</Link>
+              </Button>
+              <div className="text-xs text-slate-500">No login required.</div>
+            </div>
           </div>
         </div>
-      </div>
-    );
-  }
 
-  // This shouldn't render (unauthenticated users are redirected)
-  return null;
+        <div className="flex flex-col gap-2 text-sm text-slate-600 sm:flex-row sm:items-center sm:gap-4">
+          <Link href="/landing-page" className="underline hover:text-slate-800">Digital scribing</Link>
+          <Link href="/roadmap" className="underline hover:text-slate-800">Updates</Link>
+          <Link href="/privacy" className="underline hover:text-slate-800">Privacy</Link>
+        </div>
+      </div>
+    </Container>
+  );
 }

@@ -24,7 +24,7 @@ const tools: ToolLink[] = [
   {
     title: 'Consultation Suite',
     description: 'AI-powered clinical documentation and note-taking',
-    href: '/consultation',
+    href: '/ai-scribe/consultation',
     icon: Stethoscope,
     color: 'text-blue-600',
   },
@@ -38,7 +38,7 @@ const tools: ToolLink[] = [
   {
     title: 'Clinical Images',
     description: 'AI-powered medical image analysis',
-    href: '/clinical-image',
+    href: '/image/app',
     icon: Camera,
     color: 'text-purple-600',
   },
@@ -59,7 +59,7 @@ const tools: ToolLink[] = [
   {
     title: 'Templates',
     description: 'Manage and customise clinical templates',
-    href: '/templates',
+    href: '/ai-scribe/templates',
     icon: FileText,
     color: 'text-teal-600',
   },

@@ -34,11 +34,11 @@ type NavItem = {
 };
 
 const mainNavItems: NavItem[] = [
-  { href: '/consultation', label: 'Clinical Notes', icon: Stethoscope },
-  { href: '/templates', label: 'Note Templates', icon: FileText, requiresAuth: true },
-  { href: '/image', label: 'Clinical Images', icon: Camera, requiresAuth: true },
-  { href: '/acc-occupation-codes', label: 'ACC Occupation Codes', icon: Search },
-  { href: '/employer-lookup', label: 'Employer Lookup', icon: Search },
+  { href: '/ai-scribe/consultation', label: 'Clinical Notes', icon: Stethoscope },
+  { href: '/ai-scribe/templates', label: 'Note Templates', icon: FileText, requiresAuth: true },
+  { href: '/image/app', label: 'Clinical Images', icon: Camera, requiresAuth: true },
+  { href: '/acc/occupation-codes', label: 'ACC Occupation Codes', icon: Search },
+  { href: '/acc/employer-lookup', label: 'Employer Lookup', icon: Search },
 ];
 
 const adminNavItems: NavItem[] = [
@@ -145,7 +145,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   }
 
                   // Filter out templates for users without template management access (public + basic tier)
-                  if (item.href === '/templates') {
+                  if (item.href === '/ai-scribe/templates') {
                     // Hide for public users
                     if (!isSignedIn) {
                       return false;
@@ -259,7 +259,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="rounded-lg bg-white p-6 shadow-lg">
             <h2 className="mb-4 text-center text-sm font-semibold text-slate-900">
-              You need to sign in or sign up to access note templates.
+              You need to sign in or sign up to access this feature.
             </h2>
             <div className="flex justify-center gap-3">
               <SignInButton mode="modal">
