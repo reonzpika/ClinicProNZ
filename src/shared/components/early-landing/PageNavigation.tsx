@@ -29,6 +29,7 @@ export const PageNavigation = () => {
               {navItems.map(section => (
                 <button
                   key={section.id}
+                  type="button"
                   onClick={() => scrollToSection(section.id)}
                   className="whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:bg-nz-green-50 hover:text-nz-green-700 sm:px-4 sm:py-2 sm:text-sm"
                 >
@@ -41,7 +42,7 @@ export const PageNavigation = () => {
           {/* Right: Start Today */}
           <div className="hidden shrink-0 md:block">
             <a
-              href="/auth/register?redirect=/app/(clinical)/consultation"
+              href="/auth/register?redirect_url=%2Fai-scribe%2Fconsultation"
               className="rounded-full bg-nz-green-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-nz-green-700"
             >
               Start Today

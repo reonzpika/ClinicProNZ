@@ -33,14 +33,14 @@ export default function UpgradeCheckoutPage() {
         setStatus('Redirecting to consultation...');
         // Fallback to consultation with upgrade banner
         setTimeout(() => {
-          window.location.href = '/consultation?showUpgrade=true';
+          window.location.href = '/ai-scribe/consultation?showUpgrade=true';
         }, 1000);
       }
     } catch {
       setStatus('Redirecting to consultation...');
       // Fallback to consultation with upgrade banner
       setTimeout(() => {
-        window.location.href = '/consultation?showUpgrade=true';
+        window.location.href = '/ai-scribe/consultation?showUpgrade=true';
       }, 1000);
     }
   }, [user?.primaryEmailAddress?.emailAddress]);
@@ -57,7 +57,7 @@ export default function UpgradeCheckoutPage() {
       setStatus('Finalizing account setup...');
       // Fallback after 3 seconds if no user data
       setTimeout(() => {
-        window.location.href = '/consultation?showUpgrade=true';
+        window.location.href = '/ai-scribe/consultation?showUpgrade=true';
       }, 3000);
       return;
     }
@@ -79,7 +79,7 @@ export default function UpgradeCheckoutPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!hasTriggered) {
-        window.location.href = '/consultation?showUpgrade=true';
+        window.location.href = '/ai-scribe/consultation?showUpgrade=true';
       }
     }, 8000);
 

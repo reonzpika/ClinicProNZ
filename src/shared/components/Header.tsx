@@ -45,7 +45,7 @@ export const Header = () => {
             <Link href="/landing-page" className="text-sm text-slate-600 hover:text-slate-800">
               Digital Scribing
             </Link>
-            <Link href="/consultation" className="text-sm text-slate-600 hover:text-slate-800">
+            <Link href="/ai-scribe/consultation" className="text-sm text-slate-600 hover:text-slate-800">
               Clinical Notes
             </Link>
             <button
@@ -55,7 +55,7 @@ export const Header = () => {
                   e.preventDefault();
                   setShowAuthModal(true);
                 } else {
-                  router.push('/templates');
+                  router.push('/ai-scribe/templates');
                 }
               }}
             >
