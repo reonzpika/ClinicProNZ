@@ -279,6 +279,11 @@ N. Update project LOG.md (if significant milestone) - pending
 - Mark completed immediately after finishing each step
 - Use `merge: true` to update existing todos
 
+**Documentation update strategy (2 files max):**
+- **Always update**: LOG.md (detailed entry) + PROJECT_SUMMARY.md (current state)
+- **Rarely update**: PORTFOLIO.md (only if project status changed significantly)
+- **Almost never update**: CURRENT-WORK.md (only during weekly planning or priority shifts)
+
 **Build, test, and fix all errors:**
 - Run build command (`pnpm build` or relevant)
 - Fix any compilation/type errors
@@ -288,17 +293,17 @@ N. Update project LOG.md (if significant milestone) - pending
 - Clean up debug code (console.logs, commented code)
 
 **Update documentation:**
-- Update `/project-management/[project]/PROJECT_SUMMARY.md` (status, milestones, decisions)
-- Update `/project-management/PORTFOLIO.md` (one-line project status only)
-- Update `/project-management/CURRENT-WORK.md` (priorities and active queue) if needed
+- Update `/project-management/[project]/LOG.md` (detailed chronological entry with evidence, decisions, blockers)
+- Update `/project-management/[project]/PROJECT_SUMMARY.md` (current status, next action, blockers only - no history)
+- Update `/project-management/PORTFOLIO.md` (one-line project status only) if project status changed
 - Update technical docs if relevant (API docs, architecture, etc.)
 - Add/update code comments for complex logic
+- **Do NOT update `/project-management/CURRENT-WORK.md`** unless priorities/weekly plan actually changed
 
-**Update project log:**
-- Only if significant milestone reached
-- Location: `/project-management/[project]/LOG.md`
-- Include: progress, evidence, decisions, blockers
-- Ask user: "Should I add an entry to the project log?"
+**Note on documentation updates:**
+- Most updates = 2 files (LOG.md + PROJECT_SUMMARY.md)
+- Rarely = 3 files (add PORTFOLIO.md if project status changed significantly)
+- Only update CURRENT-WORK.md during weekly planning or when priorities shift
 
 **Critical Rule:**
 > **Never report work as "done" with pending todos. Check todo list before completion. If ANY todos are pending, complete them first.**
@@ -318,9 +323,9 @@ TodoWrite({
     { id: "2", content: "[Second implementation step]", status: "pending" },
     { id: "3", content: "[Third implementation step]", status: "pending" },
     // ... more implementation steps as needed
-    { id: "N-2", content: "Build, test, and fix all errors", status: "pending" },
-    { id: "N-1", content: "Propose documentation updates (PROJECT_SUMMARY.md + PORTFOLIO.md + CURRENT-WORK.md if needed)", status: "pending" },
-    { id: "N", content: "Update project LOG.md (if significant)", status: "pending" }
+ { id: "N-2", content: "Build, test, and fix all errors", status: "pending" },
+ { id: "N-1", content: "Update project LOG.md (detailed entry) and PROJECT_SUMMARY.md (current state only)", status: "pending" },
+ { id: "N", content: "Update PORTFOLIO.md if project status changed significantly", status: "pending" }
   ]
 })
 ```
@@ -333,9 +338,9 @@ TodoWrite({
     { id: "1", content: "Create login form component", status: "in_progress" },
     { id: "2", content: "Implement authentication logic", status: "pending" },
     { id: "3", content: "Add error handling", status: "pending" },
-    { id: "4", content: "Build, test, and fix all errors", status: "pending" },
-    { id: "5", content: "Propose documentation updates (PROJECT_SUMMARY.md + PORTFOLIO.md + CURRENT-WORK.md if needed)", status: "pending" },
-    { id: "6", content: "Update project LOG.md (if significant)", status: "pending" }
+ { id: "4", content: "Build, test, and fix all errors", status: "pending" },
+ { id: "5", content: "Update project LOG.md (detailed entry) and PROJECT_SUMMARY.md (current state only)", status: "pending" },
+ { id: "6", content: "Update PORTFOLIO.md if project status changed significantly", status: "pending" }
   ]
 })
 ```
@@ -346,9 +351,9 @@ TodoWrite({
   merge: false,
   todos: [
     { id: "1", content: "Fix TypeScript error in user service", status: "in_progress" },
-    { id: "2", content: "Build, test, and fix all errors", status: "pending" },
-    { id: "3", content: "Propose documentation updates (PROJECT_SUMMARY.md + PORTFOLIO.md + CURRENT-WORK.md if needed)", status: "pending" },
-    { id: "4", content: "Update project LOG.md (if significant)", status: "pending" }
+ { id: "2", content: "Build, test, and fix all errors", status: "pending" },
+ { id: "3", content: "Update project LOG.md (detailed entry) and PROJECT_SUMMARY.md (current state only)", status: "pending" },
+ { id: "4", content: "Update PORTFOLIO.md if project status changed significantly", status: "pending" }
   ]
 })
 ```
@@ -399,13 +404,13 @@ AI: [Runs build] → success
 AI: [Tests feature in browser] → works
 AI: [Marks todo 4 completed, moves to todo 5]
 ↓
-AI: [Updates PROJECT_SUMMARY.md with new feature]
-AI: [Proposes updates to PORTFOLIO.md (and CURRENT-WORK.md if needed); applies after approval]
+AI: [Updates LOG.md with detailed entry: feature implemented, decisions made, testing evidence]
+AI: [Updates PROJECT_SUMMARY.md: current status, next action, blockers only]
 AI: [Marks todo 5 completed, moves to todo 6]
 ↓
-AI: "This was a significant feature. Should I add an entry to the project LOG.md?"
+AI: "Profile page feature changed project status. Should I update PORTFOLIO.md?"
 User: "yes"
-AI: [Updates project LOG.md]
+AI: [Updates PORTFOLIO.md one-line status]
 AI: [Marks todo 6 completed]
 ↓
 AI: "Done. All todos completed. User profile page implemented and documented."

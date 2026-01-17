@@ -12,7 +12,7 @@ function SignUpBox() {
     <div className="rounded border p-4">
       <SignUp
         routing="hash"
-        redirectUrl="/consultation"
+        redirectUrl="/ai-scribe/consultation"
         appearance={{
           elements: {
             formButtonPrimary: 'bg-blue-600 hover:bg-blue-700 text-sm normal-case',
@@ -35,7 +35,7 @@ function ConsultationCTABox() {
     <div className="rounded border p-4">
       <Button
         size="lg"
-        onClick={() => router.push('/consultation')}
+        onClick={() => router.push('/ai-scribe/consultation')}
         className="w-full bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-4 text-lg font-semibold text-white shadow-xl transition-all duration-300 hover:from-blue-700 hover:to-blue-800 hover:shadow-2xl"
       >
         Start Clinical Documentation

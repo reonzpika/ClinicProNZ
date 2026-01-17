@@ -183,16 +183,20 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /templates page - require sign-in only
-  if (req.nextUrl.pathname.startsWith('/templates')) {
+  // Protect /ai-scribe pages - require sign-in only
+  if (req.nextUrl.pathname.startsWith('/ai-scribe')) {
+    // Allow the public landing page at /ai-scribe
+    if (req.nextUrl.pathname === '/ai-scribe') {
+      return NextResponse.next();
+    }
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return redirectToLogin(req.url);
     }
   }
 
-  // Protect /consultation page - require sign-in only
-  if (req.nextUrl.pathname.startsWith('/consultation')) {
+  // Protect /image/app - require sign-in only
+  if (req.nextUrl.pathname.startsWith('/image/app')) {
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return redirectToLogin(req.url);
@@ -225,18 +229,6 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Protect /mobile page on smartphones - require sign-in only
   if (req.nextUrl.pathname.startsWith('/mobile')) {
-    const userAgent = req.headers.get('user-agent') || '';
-    const isSmartphone = /iPhone|iPod|Android.*Mobile|Windows Phone|IEMobile|BlackBerry|Opera Mini/i.test(userAgent);
-    if (isSmartphone) {
-      const resolvedAuth = await auth();
-      if (!resolvedAuth.userId) {
-        return redirectToLogin(req.url);
-      }
-    }
-  }
-
-  // Protect /image page on smartphones - require sign-in only
-  if (req.nextUrl.pathname.startsWith('/image')) {
     const userAgent = req.headers.get('user-agent') || '';
     const isSmartphone = /iPhone|iPod|Android.*Mobile|Windows Phone|IEMobile|BlackBerry|Opera Mini/i.test(userAgent);
     if (isSmartphone) {
@@ -281,14 +273,13 @@ export const config = {
     '/api/consultation/:path*',
     '/api/tools/:path*',
     '/api/search/:path*',
-    '/templates/:path*',
-    '/consultation/:path*',
+    '/ai-scribe/:path*',
     '/billing/:path*',
     '/admin/:path*',
     '/dashboard/:path*',
     '/settings/:path*',
     '/mobile/:path*',
-    '/image/:path*',
+    '/image/app/:path*',
     '/search/:path*',
   ],
 };

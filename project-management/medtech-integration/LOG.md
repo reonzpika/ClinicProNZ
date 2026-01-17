@@ -4,6 +4,105 @@
 - The canonical Medtech Integration rules are now consolidated in `.cursor/rules/project-medtech-integration.mdc`.
 - Historical log entries may mention older file names (for example `PROJECT_RULES.md`); treat those as historical context.
 
+## 2026-01-14 Wed
+### Decision and implementation: legacy-compatible clinical image write-back (Inbox Scan)
+
+**Context (Medtech email reply)**:
+- JPEGs posted as `Media` will always show as a **View link** and open externally (no inline preview).
+- Inbox Attachment tab is **PDF-only**; images do not appear there.
+- Legacy DOM referral forms cannot access Inbox Media folder; they can access Inbox **Scan** folder.
+- Medtech enabled a new `POST DocumentReference` endpoint to write into Inbox Scan, but it supports **TIFF for images** and **PDF for documents**; no JPEG; no `POST Binary`.
+
+**Decision**:
+- Adopt **Option B** for dual compatibility (ALEX + legacy DOM): commit clinical images via **Inbox Scan** using **`POST /FHIR/DocumentReference`** with TIFF (or PDF).
+
+**What shipped (code)**:
+- Vercel commit route now normalises attachments before calling the BFF:
+  - Images are converted to **TIFF under 1 MB**.
+  - PDFs are passed through (must be under 1 MB).
+- Lightsail BFF commit endpoint now writes **FHIR `DocumentReference`** (TIFF/PDF only) via `POST /FHIR/DocumentReference`.
+- Added a debug verification endpoint to fetch a `DocumentReference` by id (and a Vercel proxy route) to confirm write-back behaviour quickly, independent of Evolution UI.
+
+**Verification tooling**:
+- BFF: `GET /api/medtech/document-reference/<id>?facilityId=<FACILITY>`
+- Vercel proxy: `GET /api/medtech/document-reference/<id>?facilityId=<FACILITY>`
+
+**Git evidence**:
+- Branch: `cursor/medtech-image-handling-details-4488`
+- Commits:
+  - `39e313ed` feat(medtech): commit images as scan-compatible DocumentReference
+  - `12527fbb` chore(medtech): add DocumentReference verification endpoint
+
+**Open questions / awaiting Medtech**:
+- Request a known-good example payload/response for `POST /FHIR/DocumentReference` (Inbox Scan) and confirm required fields and any routing constraints.
+- Confirm whether `GET /FHIR/DocumentReference/{id}` is permitted for vendor credentials (read-by-id), even if searches are restricted.
+
+## 2026-01-15 Thu
+### Prep: Inbox Scan validation run (ALEX v1.33/v2.9)
+
+**Context (Medtech support email)**:
+- Scan-folder write-back is released in ALEX v1.33/v2.9.
+- Attachment write-back payload limit is **8MB**.
+- Medtech requested UAT roles for POST and GET DocumentReference (Scan) to be added.
+
+**What changed (code)**:
+- Aligned Scan `DocumentReference` payload with the v1.33/v2.9 requirements:
+  - `identifier.value` present
+  - `type` LOINC coding set (`http://loinc.org|72170-4`, display `Photographic image`)
+  - `content.attachment.title` always set
+  - Prefer absolute `subject.reference` (and `author.reference` when providerId is available)
+  - Enforce 8MB payload guard
+- Added a one-command validation script:
+  - `pnpm tsx scripts/validate-scan-writeback-via-bff.ts --facilityId=... --patientId=... --file=... [--providerId=...]`
+
+**Next**:
+- Once UAT roles are enabled, run the script and then confirm the artefact appears in Evolution UI Inbox Scan for `F99669-C` and is accessible from legacy DOM referral workflows.
+
+## 2026-01-13 Tue
+### Milestone: Implement secure Medtech Evolution launch handoff (Vendor Forms)
+
+**What shipped (code)**:
+- Implemented a dedicated launch entrypoint: `GET /medtech-images/launch?context=...&signature=...`.
+- Launch route calls the allow-listed Lightsail BFF to decode the vendor form payload; it then stores launch context in a **short-lived encrypted HttpOnly cookie** and redirects to `/medtech-images` with **no identifiers in the URL**.
+- Implemented a single-use read mechanism for the cookie (read then clear is acceptable for enforcement).
+- Updated `/medtech-images` to refuse direct access and show the required UX copy.
+
+**Frontend implementation details (Next.js)**:
+- New launch route: `app/(medtech)/medtech-images/launch/route.ts`
+  - Calls `GET <BFF>/api/medtech/launch/decode?context=...&signature=...`
+  - Sets encrypted cookie `medtech_launch_session` (TTL 5 minutes), then redirects to `/medtech-images`.
+- New internal API: `GET /api/medtech/launch-session` (`app/api/(integration)/medtech/launch-session/route.ts`)
+  - Reads and decrypts cookie; **clears cookie on read attempt** (single-use).
+- Updated widget page: `app/(medtech)/medtech-images/page.tsx`
+  - No URL-param context and no demo mode.
+  - If no valid launch session: shows **"Launch from Medtech Evolution"**.
+  - If `patientId` exists but is null: shows **"No patient selected"** and stops.
+- New cookie crypto helper: `src/lib/services/medtech/launch-session-cookie.ts`
+  - AES-256-GCM; expiry enforced; payload includes `{ patientId, facilityId, providerId?, createdTime?, encounterId }`.
+
+**Backend implementation details (Lightsail BFF)**:
+- Added vendor forms decode endpoint:
+  - `GET /api/medtech/launch/decode?context=...&signature=...&correlationId=...`
+  - Calls ALEX: `/vendorforms/api/getlaunchcontextstring/{context}/{signature}`.
+- Hardened Media commit robustness (without changing resource strategy):
+  - Sniffs magic bytes for JPEG/PNG and overrides `content.contentType` when mismatched.
+  - Sets `Media.createdDateTime` using `Pacific/Auckland` offset where possible; records warnings when falling back to UTC.
+
+**Git evidence**:
+- Branch: `cursor/medtech-launch-flow-acd7`
+- Commit: `4154b80e`
+
+**Decisions captured**:
+- Dedicated launch route only; `/medtech-images` must not be opened directly.
+- No identifiers in URL; cookie handoff only; short TTL (2–5 minutes).
+- No demo/testing modes.
+- Do not implement Attachment-tab resource changes until Medtech confirms required FHIR approach and permissions.
+
+**Blockers / awaiting external reply**:
+- Waiting on Medtech support to confirm:
+  - Whether vendor-created `Media` should render inline for JPEGs or always show "View link".
+  - What resource type is required for the patient record **Attachment tab** (for referral workflows) and what additional permissions/scopes are needed (likely DocumentReference/Binary or Medtech-specific mechanism).
+
 ## 2026-01-10 Fri
 ### Milestone: Consolidate logging into `LOG.md`
 - Legacy changelog history has been migrated into this file.
@@ -21,6 +120,88 @@
 
 ---
 
+## 2026-01-11 Sat (Part 2)
+### Learning: Launch Mechanism Guidance from Defne (ALEX Vendor Forms)
+
+**What we learned**:
+- Medtech Evolution uses **ALEX Vendor Forms launch mechanism** for third-party integrations.
+- This is the proper way to launch our widget from within Medtech Evolution (not manual URL construction).
+- Launch flow:
+  1. GP clicks custom icon in Medtech toolbar
+  2. Medtech generates encrypted launch context (patient, facility, provider)
+  3. Launches our widget URL with `context` and `signature` parameters
+  4. Our backend calls ALEX API to decrypt context using JWT token
+  5. Widget initializes with patient/facility data
+
+**Setup steps provided**:
+1. **Icon loading**: Use "MT Icon Loader" utility to import icon into Medtech database
+2. **ALEX Apps Configuration**: Configure app in Options > ALEX > ALEX Apps Configuration
+3. **Launch URL**: Point to our widget with `{context}` and `{signature}` placeholders
+4. **Decrypt endpoint**: Backend must call `/vendorforms/api/getlaunchcontextstring/` to decrypt
+
+**Impact**:
+- Solves the launch mechanism requirement for Phase 1D
+- Provides secure patient context passing (no manual URL construction needed)
+- Gives us provider context (which GP is using the widget)
+- May also solve the UI integration issue (proper launch might fix Inbox/Daily Record display)
+
+**Next steps**:
+1. Create icon for ClinicPro Images
+2. Implement BFF launch decode endpoint
+3. Implement frontend launch route
+4. Test with local facility F99669-C
+5. Re-test UI integration after proper launch
+
+**Documentation**:
+- Created `LAUNCH_MECHANISM_PLAN.md` with detailed implementation plan
+
+---
+
+## 2026-01-11 Sat (Part 1)
+### Milestone: Phase 1D UI Validation Complete (with critical findings)
+
+**What was tested**:
+- Committed 1 test image to local facility `F99669-C` via widget
+- Verified appearance in Medtech Evolution UI (Inbox and Daily Record)
+
+**Test evidence**:
+- Correlation ID: `4bad6cdd-abaf-48f5-b393-156725709a79`
+- File ID: `mxt2BHNXcOGqQYp8Vuo4p`
+- Patient ID (F99669-C): `231f0d896dd1a8875c87a0b7ae41b941`
+- NHI: `ZZZ0016`
+- Timestamp: 11 Jan 2026 23:42
+
+**Results**:
+- ✅ Connectivity verified: Hybrid Connection Manager running; F99669-C reachable via BFF
+- ✅ Commit successful: HTTP 200, status "committed"
+- ✅ Image appears in **Inbox** (two MEDIA entries visible, dated 11 Jan 2026)
+- ❌ Image does **NOT** appear in **Daily Record**
+- ❌ Image displays as clickable link "View ...." instead of inline preview
+- ❌ Link does not work when clicked ("The webpage cannot be displayed" error)
+
+**Critical finding**:
+Creating a plain FHIR `Media` resource via `POST /FHIR/Media` is **not sufficient** for proper Medtech Evolution UI integration. The user expects (and Medtech Evolution supports) inline image display without requiring link clicks.
+
+**Possible causes**:
+1. Missing required FHIR resource (DocumentReference or Communication) to trigger Daily Record entry
+2. `Media.content.url` may be pointing to invalid/inaccessible location (causing "webpage cannot be displayed")
+3. Medtech Evolution may require specific Media resource structure or additional fields for inline rendering
+4. May need to use Medtech-specific API endpoint (not plain FHIR) for proper UI integration
+
+**Next steps** (investigation required):
+1. Contact Medtech support: ask how to properly commit images for inline display in Inbox and Daily Record
+2. Review ALEX API documentation for Media upload best practices
+3. Check if DocumentReference or Communication resource is required alongside Media
+4. Investigate the `content.url` vs `content.data` approach (we're using base64 `content.data`; maybe `content.url` is expected for UI?)
+5. Ask Medtech: what's the difference between images that show inline vs as links?
+
+**Impact**:
+- Phase 1D partially validates end-to-end workflow (images reach Medtech)
+- Workflow is **NOT production-ready** yet (UX is broken)
+- Need Medtech guidance before pilot clinic launch
+
+---
+
 ## 2026-01-10 Sat
 ### Learning: ALEX UAT search works; our query shape was wrong (Defne)
 
@@ -34,7 +215,7 @@
 - Updated the Lightsail BFF `/api/medtech/media` endpoint to require `nhi` and query using `patient.identifier` only (no fallback).
 
 **Impact**:
-- Unblocks reliable “read/verify” for Media in UAT, aligning with ALEX support guidance; reduces time wasted chasing auth issues that are actually URL/query-shape issues.
+- Unblocks reliable "read/verify" for Media in UAT, aligning with ALEX support guidance; reduces time wasted chasing auth issues that are actually URL/query-shape issues.
 
 ## Legacy changelog (migrated from the former `CHANGELOG.md` on 2026-01-10)
 

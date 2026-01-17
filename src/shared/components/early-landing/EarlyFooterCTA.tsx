@@ -12,15 +12,15 @@ export const EarlyFooterCTA = () => {
   const handleJoinClick = async () => {
     setIsLoading(true);
     // Always send public users to sign-up, then redirect straight to clinical consultation
-    window.location.href = '/auth/register?redirect=/app/(clinical)/consultation';
+    window.location.href = '/auth/register?redirect_url=%2Fai-scribe%2Fconsultation';
   };
 
   return (
     <section className="relative bg-gradient-to-br from-nz-green-500 via-nz-green-600 to-nz-blue-600 py-20 sm:py-24 lg:py-32">
       {/* Background Elements - Simplified */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-30">
-        <div className="bg-nz-green-100/4 absolute -right-40 top-20 size-[400px] rounded-full blur-3xl"></div>
-        <div className="bg-nz-blue-100/4 absolute -left-60 bottom-32 size-[400px] rounded-full blur-3xl"></div>
+        <div className="absolute -right-40 top-20 size-[400px] rounded-full bg-nz-green-100/5 blur-3xl"></div>
+        <div className="absolute -left-60 bottom-32 size-[400px] rounded-full bg-nz-blue-100/5 blur-3xl"></div>
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

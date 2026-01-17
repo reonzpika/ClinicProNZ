@@ -2,8 +2,8 @@
 project_name: Medtech ALEX Integration
 project_stage: Build
 owner: Development Team
-last_updated: "2026-01-10"
-version: "1.7.2"
+last_updated: "2026-01-15"
+version: "2.0.0"
 tags:
   - integration
   - medtech
@@ -13,10 +13,11 @@ tags:
 summary: "Clinical images widget integration with Medtech Evolution/Medtech32 via ALEX API. Enables GPs to capture/upload photos from within Medtech, saved back to patient encounters via FHIR API."
 quick_reference:
   current_phase: "Phase 1D"
-  status: "Phase 1C ✅ complete; Phase 1D in progress (Medtech Evolution UI validation using local facility)"
-  next_action: "Customer-side launch prep while away from home desktop (pricing + pilot list + outreach). When home: run Phase 1D UI validation (see DEVELOPMENT_ROADMAP.md): ensure Hybrid Connection Manager is running (test desktop must be awake); resolve local patientId for NHI ZZZ0016 in F99669-C; commit 1 image to F99669-C; confirm it appears in Medtech Evolution Inbox and Daily Record"
+  status: "Phase 1C ✅ complete; Phase 1D ⚠️ in progress (launch handoff implemented; legacy-compatible image write-back implemented via Inbox Scan `DocumentReference`); waiting on Medtech to enable UAT roles for POST and GET DocumentReference (Scan)"
+  next_action: "Once Medtech enables the UAT roles/scopes for POST and GET DocumentReference (Scan), run `pnpm tsx scripts/validate-scan-writeback-via-bff.ts ...` to validate write-back (201 + id + optional GET-by-id), then confirm the artefact appears in the Evolution UI Inbox Scan folder for `F99669-C` and is accessible to legacy DOM referral forms. In parallel: configure the Medtech launch (icon + ALEX Apps Configuration) so real GPs can use the widget in-workflow."
   key_blockers:
-    - "Need local patientId for NHI ZZZ0016 in facility F99669-C"
+    - "Medtech confirmed JPEGs posted as Media will always be a View link (external viewer) and images will not appear in Inbox Attachment tab; for legacy referral compatibility we must use Inbox Scan via POST DocumentReference (TIFF/PDF only)"
+    - "Medtech is adding UAT roles for POST and GET DocumentReference (Scan); until these are active, we cannot reliably validate write-back plus read/verify behaviour end-to-end"
     - "ALEX UAT reads/search are sensitive to URL/query shape; Media verify should use `patient.identifier`; other resources may still return 403 depending on query parameters; keep validating with ALEX support examples"
     - "Waiting on Medtech commercial terms (revenue share/fees/billing route/payment terms) and competitor QuickShot pricing (Intellimed) to finalise pricing strategy"
   facility_id: "F2N060-E (hosted UAT API testing) + F99669-C (local Medtech Evolution UI validation)"
@@ -44,7 +45,8 @@ key_docs:
 ### Environments and facility IDs (critical)
 - **`F2N060-E`**: Medtech hosted UAT facility. Use for API-only checks. This will not appear inside your local Medtech Evolution UI.
 - **`F99669-C`**: your local Medtech Evolution facility. Use for UI validation (Inbox and Daily Record).
-  - **Important**: `F99669-C` relies on **Azure Hybrid Connection Manager** running on your Windows machine (Hybrid Connection tunnel). If that PC is asleep/standby/off, local facility connectivity can appear “offline”.
+  - **Login**: Staff code `ADM`, blank password
+  - **Important**: `F99669-C` relies on **Azure Hybrid Connection Manager** running on your Windows machine (Hybrid Connection tunnel). If that PC is asleep/standby/off, local facility connectivity can appear "offline".
 
 ### OAuth permissions (Medtech-managed)
 Medtech grants permissions at app registration/user profile level. Current known required permissions:
@@ -56,7 +58,7 @@ Medtech grants permissions at app registration/user profile level. Current known
 - `patient.communication.outboxwebform.read` (added by Medtech; supports outbox web form retrieval)
 
 ### Hybrid Connection Manager (local facility `F99669-C`)
-**Context**: Medtech support asked whether “Azure Hybrid Connection Manager” was stopped. In our setup, it is installed on the founder’s **personal desktop** for testing only.
+**Context**: Medtech support asked whether "Azure Hybrid Connection Manager" was stopped. In our setup, it is installed on the founder's **personal desktop** for testing only.
 
 **Implications**:
 - If the desktop goes to **sleep/standby** or is **powered off**, the hybrid connection tunnel drops and `F99669-C` can stop working until the desktop is awake again.
@@ -73,6 +75,8 @@ Medtech grants permissions at app registration/user profile level. Current known
 - **Commit to ALEX (via widget)**: widget calls Vercel route `POST /api/medtech/attachments/commit`, which proxies to BFF.
 - **Commit to ALEX (direct BFF, for smoke tests)**: `POST https://api.clinicpro.co.nz/api/medtech/session/commit`
 - **Media verification (via BFF)**: `GET https://api.clinicpro.co.nz/api/medtech/media?nhi=<NHI>&facilityId=<FACILITY>&count=<N>`
+- **DocumentReference verification (via BFF)**: `GET https://api.clinicpro.co.nz/api/medtech/document-reference/<id>?facilityId=<FACILITY>`
+- **DocumentReference verification (via Vercel proxy)**: `GET https://www.clinicpro.co.nz/api/medtech/document-reference/<id>?facilityId=<FACILITY>`
 
 ### Logs and tracing
 - **Vercel logs**: commit route logs correlationId and returned mediaIds.
@@ -98,276 +102,72 @@ Medtech grants permissions at app registration/user profile level. Current known
   - ALEX support (Defne) demonstrated Media search by patient.identifier works:
     - `GET /FHIR/Media?patient.identifier=<system>|<value>`
   - Our earlier Media reads using `patient=<patientId>` and `subject=Patient/<patientId>` returned `403 Authorization failed` in UAT even when token roles looked correct.
-  - Takeaway: if you see 403s on “reads”, first verify the **base URL** and **search parameter format** matches the ALEX docs and ALEX support examples.
+  - Takeaway: if you see 403s on "reads", first verify the **base URL** and **search parameter format** matches the ALEX docs and ALEX support examples.
 
 ---
 
 ## Current status (kept short)
-- **Phase 1C complete**: commit creates FHIR `Media` in ALEX via Lightsail BFF (static IP).
-- **Phase 1D in progress**: commit into local facility `F99669-C`, then confirm it appears in Medtech Evolution UI (Inbox and Daily Record).
+- **Phase 1C complete**: end-to-end commit pipeline works (widget → Vercel → BFF → ALEX) with facilityId propagation and correlation IDs.
+- **Phase 1D in progress**: legacy-compatible clinical image write-back implemented:
+  - Vercel converts images to **TIFF under 1 MB** (PDF pass-through) before sending to BFF
+  - BFF writes **FHIR `DocumentReference`** (TIFF/PDF only) via `POST /FHIR/DocumentReference` so legacy DOM referrals can access Inbox Scan
+  - Awaiting Medtech to enable UAT roles for POST and GET DocumentReference (Scan) so we can validate the behaviour end-to-end
+
+### Inbox Scan write-back (ALEX v1.33/v2.9) requirements (plan update)
+Medtech released Scan-folder write-back in ALEX v1.33/v2.9. We should treat the following as the required payload shape for our Inbox Scan `DocumentReference` writes:
+
+- **Endpoint**: `POST /FHIR/DocumentReference` (base is UAT or production ALEX FHIR URL)
+- **Required request header**: `mt-facilityid: <HPI Facility ID>`
+- **Payload limit**: total attachment payload must be **< 8MB**
+- **Required fields**:
+  - `subject.reference`: patient reference (use the format Medtech examples use, including the ALEX base URL)
+  - `identifier[0].value`: vendor unique reference for the scan record
+  - `status`: must be `current`
+  - `date`: creation date-time for the scanned document
+  - `type.coding[0]`: `system = http://loinc.org`, `code = 72170-4`, `display = Photographic image`
+  - `content[0].attachment`: `contentType` (`application/pdf` or TIFF), `data` (base64), and `title` (filename)
+- **Author handling**:
+  - Release notes say author is optional; validation examples show missing author can be rejected. For safety, include `author[0].reference` whenever we have it from launch context (providerId).
+- **Scopes**:
+  - POST: `Patient.documentreference.scaninbox.write` (Medtech-provided scope name; confirm it is present on the client-credentials token after roles are enabled).
+
+### Fast validation run (as soon as UAT roles are enabled)
+This gives a single command to validate: POST works, `DocumentReference.id` is returned, and read-by-id works (if permitted).
+
+```bash
+pnpm tsx scripts/validate-scan-writeback-via-bff.ts \
+  --facilityId=F99669-C \
+  --patientId=<PATIENT_ID> \
+  --file=/path/to/test.pdf \
+  --providerId=<PRACTITIONER_ID>
+```
 
 ## Next Session: Pick Up Here
 
-Bring `F99669-C` online (desktop always-on, Hybrid Connection Manager running), then run Phase 1D UI validation (commit 1 image into `F99669-C`; confirm Inbox + Daily Record). If Medtech replies about ALEX UAT search 403, update the approach accordingly.
+### Launch setup (Medtech Evolution)
+1. Create or choose a toolbar icon for ClinicPro Images; load it via MT Icon Loader.
+2. Configure ALEX Apps Configuration launch URL:
+   - `https://www.clinicpro.co.nz/medtech-images/launch?context={context}&signature={signature}`
+3. Ensure Vercel has `MEDTECH_LAUNCH_COOKIE_SECRET` set (required for the encrypted launch cookie).
+4. Test end-to-end launch from Medtech into `/medtech-images`:
+   - Confirm no identifiers are present in the browser URL after redirect.
+   - Confirm expected UX copy:
+     - No launch: **"Launch from Medtech Evolution"**
+     - No patient selected: **"No patient selected"**
+
+### UI integration validation (blocked by Medtech support guidance)
+5. Validate Inbox Scan behaviour (TIFF/PDF) in `F99669-C`:
+  - Confirm it appears where expected in Evolution UI
+  - Confirm legacy DOM referral forms can access the Scan folder artefact
+6. Once Medtech has enabled UAT roles for POST and GET DocumentReference (Scan), validate the write-back behaviour end-to-end:
+  - `POST /FHIR/DocumentReference` returns `201 Created` and includes an `id`
+  - Verify by `GET /FHIR/DocumentReference/{id}` if permitted (or via our BFF verification endpoint)
+  - Confirm the created scan record is visible in Evolution UI Inbox Scan folder and accessible from legacy DOM referral workflows
+
+Detailed implementation plan: `LAUNCH_MECHANISM_PLAN.md`
 
 ---
 
-## Recent updates (last 3-5 only)
+## For full project history
 
-### [2026-01-08] — Customer-side launch prep started (end-of-Jan launch readiness)
-
-**What changed**:
-- Started customer discovery and competitive intel gathering for the Medtech Images launch.
-- Sent two information requests:
-  - **Medtech**: request commercial terms (revenue share %, any platform fees, billing route whether direct billing allowed, payment terms).
-  - **Intellimed (QuickShot)**: request pricing and inclusions (per clinic vs per GP, setup fee, monthly vs one-off, feature scope).
-- Posted in NZ GP Facebook group to learn current real-world workflow for clinical photos (personal vs practice phone), tools used (QuickShot/alternatives), pain points (file size/resizing), and asked for DMs.
-
-**Why this matters**:
-- Pricing and positioning cannot be finalised in a vacuum; need both competitor pricing and Medtech commercial constraints.
-- Community responses will directly shape the differentiation message and onboarding friction points to solve first.
-
-### [2026-01-07] — Phase 1D Unblock: facilityId must be passed end-to-end (local Evo UI uses F99669-C) + tracing helpers
-
-**What changed**:
-- ✅ **Commit now requires `facilityId` end-to-end** (widget → Vercel → Lightsail BFF → ALEX header `mt-facilityid`)
-  - Rationale: committing to hosted UAT facility (`F2N060-E`) will not appear in your local Medtech Evolution UI; UI validation requires your local facility (`F99669-C`)
-- ✅ **Request tracing**:
-  - Commit now emits a `correlationId` (returned to client and logged) and BFF forwards it to ALEX as `mt-correlationid`
-  - Note: ALEX often forbids `GET /Media`; treat Media search as non-authoritative unless proven working.
-
-**Why this matters**:
-- Prevents false negatives during Phase 1D (commit “success” but nothing in UI) caused by facility mismatch.
-
-### [2026-01-08] — Medtech permissions updated + Hybrid Connection Manager test setup clarified
-
-**What changed**:
-- ✅ Medtech confirmed the following permissions were added to our profile:
-  - `patient.media.read`
-  - `patient.task.read`
-  - `patient.communication.generalcommunication.read`
-  - `patient.communication.outboxwebform.read`
-- ✅ Recorded operational constraint for local facility testing (`F99669-C`):
-  - Azure Hybrid Connection Manager runs on the founder’s test desktop; sleep/standby/offline will drop the tunnel and make `F99669-C` appear offline.
-
-**Why this matters**:
-- Prevents wasted time chasing “facility offline” issues that are simply the test desktop being asleep.
-
-### [2026-01-08] — ALEX UAT search returns 403 despite roles present; email sent to Medtech for clarification
-
-**What we observed (hosted facility `F2N060-E`)**:
-- Direct ALEX calls from Lightsail (bypassing the BFF) confirm:
-  - `GET /FHIR/metadata` returns `200`.
-  - `GET /FHIR/Patient/{id}` returns `200`.
-  - Any FHIR **search** against non-Patient resources returns `403` with OperationOutcome "Authorization failed", including:
-    - `GET /FHIR/Task?_count=1` (no patient filter)
-    - `GET /FHIR/Communication?...`
-    - `GET /FHIR/Media?...` (including `patient=` and `subject=` variants)
-    - Previously also observed via BFF: DocumentReference, DiagnosticReport, MedicationRequest searches returning `403`.
-
-**Token validation (client credentials)**:
-- Decoded the token payload and confirmed `roles[]` contains the expected app roles, including:
-  - `patient.task.read`
-  - `patient.media.read`
-  - `patient.communication.generalcommunication.read`
-  - `patient.communication.outboxwebform.read`
-
-**Action taken**:
-- Emailed Medtech support with the setup and evidence, asking whether there is an additional permission/policy requirement for FHIR search operations in UAT.
-
-### [2026-01-07] — ✅ Phase 1C Complete: Commit creates FHIR Media in ALEX via Lightsail BFF (desktop + mobile)
-
-**What changed**:
-- ✅ **Lightsail BFF**: Added real endpoint `POST /api/medtech/session/commit` (static IP) that creates FHIR `Media` in ALEX UAT using:
-  - Mandatory `Media.identifier` with system `https://clinicpro.co.nz/image-id` and UUID value
-  - `content.data` base64 (no S3 URL references)
-  - Per-file size enforcement: `< 1MB`
-  - Accepts source either `{ base64Data }` or `{ downloadUrl }` (BFF fetches `downloadUrl` then base64-encodes)
-- ✅ **Vercel (Next.js)**: `POST /api/medtech/attachments/commit` now proxies to BFF only (no direct ALEX calls)
-  - Requires `patientId` in request
-  - For mobile images, presigns `s3Key` to a `downloadUrl` via existing `s3ImageService`
-- ✅ **Widget**: Commit sends commit-ready sources
-  - Desktop: converts `File` to `base64Data`
-  - Mobile: sends `s3Key`
-  - Always includes `patientId` in commit request
-
-**Key constraints honoured**:
-- Only Lightsail BFF calls ALEX (static IP); Vercel does not call ALEX anymore
-- Size check enforced in BFF before POST (max 1MB)
-
-**What was tested (evidence)**:
-- **Direct BFF smoke test**:
-  - `POST https://api.clinicpro.co.nz/api/medtech/session/commit` returned `status: committed`
-  - Example `mediaId`: `a4fcaddd4b8f24f377eca1c6b889ad76`
-- **Widget UAT (via Vercel logs)**:
-  - `[Medtech Commit] Commit complete { duration: 3330, successCount: 2, errorCount: 0 }`
-  - `POST /api/medtech/attachments/commit` returned `200` with `successCount: 2, errorCount: 0`
-  - Session images endpoint returned `withDownloadUrls: 2`
-  - UI shows green tick (committed) on thumbnails
-- **Health checks (run from Windows)**:
-  - `GET https://api.clinicpro.co.nz/health` OK
-  - `GET https://api.clinicpro.co.nz/api/medtech/test?nhi=ZZZ0016` success
-- **Test widget URL used**:
-  - `https://www.clinicpro.co.nz/medtech-images?encounterId=test-enc-001&patientId=14e52e16edb7a435bfa05e307afd008b&facilityId=F2N060-E`
-
-### [2026-01-06] — 🆕 Task Completion Checker Feature Exploration Started
-
-**New Feature Concept** (validated as technically feasible):
-- AI-powered tool to extract tasks from consultation notes and flag incomplete ones
-- Approach: Hybrid (AI extracts, GP confirms, tool cross-references with ALEX data)
-- Focus: Labs, Prescriptions, Referrals (verifiable via ALEX API)
-- Note format: SOAP structure with Plan section, free text
-
-**What Was Created**:
-- BFF test endpoints: 5 new endpoints in `/lightsail-bff/index.js`
-- Validation script: `/scripts/validate-task-checker-via-bff.ts` (via BFF) and `/scripts/validate-task-checker-api.ts` (direct; needs creds)
-
-**Next Steps**:
-1. Deploy BFF with new endpoints (merge to main)
-2. Run validation script to confirm note text is accessible
-3. If feasible, proceed to AI prompt design and MVP
-
-**Documentation**:
-- Background overview (archived snapshot): `archive/2026-01-07-consolidation/features/task-completion-checker/FEATURE_OVERVIEW.md`
-- UX decision (current): `features/task-completion-checker/UX_DECISION.md`
-
-### [2026-01-08] — Task Completion Checker UX direction documented (Claude.ai); reassess after ALEX READ unblocked
-
-**Decision**:
-- Preferred UX is **passive background checking** with a dedicated Task Checker surface (tab) and queue-based processing; designed to be non-interrupting during consults.
-
-**Blockers**:
-- ALEX READ currently returns 403 for required resources (DocumentReference, DiagnosticReport, MedicationRequest, Communication, Task); waiting on Medtech to grant read permissions.
-- Passive triggers depend on Medtech host capabilities (patient context change detection and/or supported surface for badge/tab); treat as pending until confirmed.
-
-**Reassess point**:
-- Once ALEX READ is granted and note text is retrievable, rerun `/scripts/validate-task-checker-via-bff.ts` and then reassess feasibility, latency, and extraction accuracy before implementing MVP.
-### [2026-01-06] — ✅ Phase 1B Testing Complete & Production Ready
-
-**Testing Complete** (~3 hours across 2 days):
-- ✅ All 11 Phase 1B tests executed (Tests 1-8 manual, 9-11 passive)
-- ✅ 6 bugs identified and fixed during testing
-- ✅ Real-time sync working (mobile → desktop via Ably)
-- ✅ Image deletion from Redis implemented
-- ✅ QR code workflow validated (2-hour TTL)
-- ✅ 20 image per-session limit enforced
-- ✅ S3 lifecycle policy confirmed (24-hour auto-delete)
-
-**Bugs Fixed**:
-1. Duplicate images on upload (stale closure in useAblySessionSync)
-2. Deleted images reappearing after refresh (missing Redis DELETE API)
-3. QR panel not appearing (missing useEffect for auto-generation)
-4. Metadata schema mismatch (mobile: side/description → backend: laterality/notes)
-5. Side dropdown simplified (removed Bilateral/Not applicable, kept Left/Right only)
-6. Image limit error message now displays properly on mobile
-
-**Production Deployment**:
-- ✅ Deployed to: `https://www.clinicpro.co.nz/medtech-images`
-- ✅ CORS configured for production + preview URLs
-- ✅ Environment variables validated
-- ✅ End-to-end flow tested and working
-
-**Impact**:
-- Phase 1B fully functional and ready for GP use
-- Mobile upload → Desktop sync workflow validated
-- Data lifecycle confirmed (session: 2 hours, S3: 24 hours)
-- Ready to proceed to Phase 1C (FHIR commit)
-
----
-
-### [2026-01-02] — ✅ Phase 1B Implementation Complete (Redis + S3 + Mobile + Ably)
-
-**Implementation Complete** (~4 hours):
-- ✅ Redis session service (Upstash) - Per-encounter storage with 2-hour TTL
-- ✅ S3 image service (AWS) - Presigned URLs with auto-retry (3 attempts)
-- ✅ 5 Vercel API endpoints - Session create, token validate, presigned URL, add image, get images
-- ✅ Mobile page (7 screens) - Full metadata capture (laterality + body site)
-- ✅ Desktop Ably listener - Real-time sync with eager fetch
-- ✅ Build successful - TypeScript passes, ready for deployment
-
-**What Was Built**:
-- Infrastructure: Redis + S3 clients (~300 lines)
-- API Layer: 5 new routes (~400 lines)
-- Mobile: Full 7-screen flow with compression (~650 lines)
-- Desktop: Ably hook for real-time sync (~150 lines)
-- **Total: ~1,500 lines, 13 files created/modified, 0 new dependencies**
-
-**Next Steps**:
-1. ✅ Setup S3 bucket + lifecycle policy - COMPLETE
-2. ✅ Verify environment variables in Vercel dashboard - COMPLETE
-3. Deploy to Vercel (merge to main)
-4. Run 11 tests from `PHASE_1B_TESTING.md` (1-2 hours)
-5. Begin Phase 2 (Backend Integration - connect ALEX API)
-
-**Documentation**:
-- Testing Guide: `PHASE_1B_TESTING.md` (11 comprehensive tests)
-- Implementation Summary: `PHASE_1B_COMPLETE.md` (full architecture docs)
-
-### [2026-01-02] — 🔄 BFF Repo Merged into Main Repo
-
-- **Repository consolidation**: Merged `clinicpro-bff` repo into main `ClinicProNZ` repo
-- **New location**: BFF code now in `/lightsail-bff/` folder of main repo
-- **Deployment updated**: GitHub Actions workflow updated to deploy from merged repo
-- **Single source of truth**: All code now in one repository for easier management
-- **Benefits**: Simpler workflow for solo founder, auto-deployment working, cleaner git history
-
-### [2025-12-09] — 🏗️ Phase 1 Architecture Finalized & Documentation Restructure
-
-- **Phase 1 architectural decisions finalized** for 100 concurrent GPs scale
-- Session storage: Redis + S3 (vs in-memory) for reliability and scale
-- Real-time sync: Ably (existing infrastructure, perfect fit)
-- Session lifetime: 10-minute inactivity timeout (no heartbeat)
-- Image compression: Frontend (mobile/desktop) before upload
-- Image format: HEIC → JPEG conversion on frontend (Canvas API)
-- Mobile metadata: Optional basic fields (laterality + body site)
-- **Documentation restructure**: Feature-centric organization (Option A)
-  - Created `features/`, `infrastructure/`, `reference/` folders
-  - Moved feature docs to `features/clinical-images/`
-  - Consolidated config docs: `oauth-and-config.md`
-  - Archived deprecated docs
-- **New docs**: `.cursor/rules/project-medtech-integration.mdc` (project rules), FEATURE_OVERVIEW.md, LOG.md
-- **Updated time estimate**: Phase 1 now 6-8 hours (was 4-6) due to Redis + S3 implementation
-
-### [2025-11-12] — 📚 Documentation Consolidation & Streamlining
-
-- Reduced core project management docs to 2 files (PROJECT_SUMMARY.md and DEVELOPMENT_ROADMAP.md)
-- Consolidated READY_TO_START.md into DEVELOPMENT_ROADMAP.md as "Quick Start" section
-- Cleaned STATUS_DETAILED.md - removed historical decisions/changes, kept only current status
-- Removed inter-document references from all docs except PROJECT_SUMMARY.md
-- Streamlined for better AI navigation (docs only accessible via PROJECT_SUMMARY.md references)
-
-**For full history**: See `LOG.md`
-
-### [2025-11-12] — 📋 Development Roadmap Created & Updated (3-Phase Plan)
-
-- Created comprehensive 3-phase development plan (12-18 hours total)
-- Phase 1: Mobile Upload & Dataflow Review (4-6 hours)
-- Phase 2: Complete Integration (4-6 hours)
-- Phase 3: Widget Launch Mechanism (3-5 hours)
-- Target completion: Nov 17, 2025
-
-### [2025-11-11] — 🎉 MAJOR MILESTONE: POST Media Validated, Widget Can Upload Images!
-
-- POST Media endpoint working (201 Created) ✅
-- Successfully uploaded test image to ALEX API
-- OAuth permissions verified (`patient.media.write`)
-- All critical endpoints tested (7 endpoints: 4 working, 3 expected limitations)
-
-### [2025-11-11] — Lightsail BFF Verified, 503 Error Resolved, Testing Complete
-
-- BFF configuration verified and operational ✅
-- 503 error resolved (changed facility ID to `F2N060-E`)
-- OAuth token acquisition: ✅ Working (249ms)
-- FHIR Patient query: ✅ Working (200 OK)
-
-### [2025-11-10] — Integration Complete, Bug Fixes, Successful Test
-
-- OAuth bug fixed, BFF headers fixed
-- Successful end-to-end test: Retrieved patient data from ALEX API
-- 16 unit tests created (all passing)
-
----
-
-*Project Created: [2025-01-15]*  
-*Last Updated: [2025-12-09] - Phase 1 architecture finalized, documentation reorganized (feature-centric)*  
-*Version: 1.3.0*
+See `LOG.md` for chronological entries with evidence and decisions.
