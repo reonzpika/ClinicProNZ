@@ -115,7 +115,7 @@ Note: Some client SDKs (e.g. Clerk) may require publishable frontend keys; add a
 - Main tools:
   - AI Scribe (consultation): `/ai-scribe/consultation`
   - Templates: `/ai-scribe/templates`
-  - Clinical Images: `/image` (landing) → `/image/app` (tool)
+  - Clinical Images: `/image` (landing) → `/image/app` (standalone tool; rebuilding); existing workflow currently lives at `/ai-scribe/image`
   - ACC tools: `/acc`
   - Dashboard: `/dashboard`
 

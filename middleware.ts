@@ -185,6 +185,10 @@ export default clerkMiddleware(async (auth, req) => {
 
   // Protect /ai-scribe pages - require sign-in only
   if (req.nextUrl.pathname.startsWith('/ai-scribe')) {
+    // Allow the public landing page at /ai-scribe
+    if (req.nextUrl.pathname === '/ai-scribe') {
+      return NextResponse.next();
+    }
     const resolvedAuth = await auth();
     if (!resolvedAuth.userId) {
       return redirectToLogin(req.url);

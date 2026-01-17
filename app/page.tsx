@@ -15,37 +15,31 @@ export default function HomePage() {
         <div className="grid gap-4 md:grid-cols-3">
           <div className="rounded-lg border border-slate-200 p-5">
             <h2 className="text-lg font-semibold text-slate-900">AI Scribe</h2>
-            <p className="mt-1 text-sm text-slate-600">Clinical documentation and note templates.</p>
+            <p className="mt-1 text-sm text-slate-600">Finish notes faster; stay focused on the patient.</p>
             <div className="mt-4 space-y-2">
               <Button asChild className="w-full">
-                <Link href="/ai-scribe/consultation">Open</Link>
+                <Link href="/ai-scribe">Open</Link>
               </Button>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/ai-scribe/templates">Templates</Link>
-              </Button>
-              <div className="text-xs text-slate-500">Sign in required.</div>
             </div>
           </div>
 
           <div className="rounded-lg border border-slate-200 p-5">
             <h2 className="text-lg font-semibold text-slate-900">Clinical Images</h2>
-            <p className="mt-1 text-sm text-slate-600">Capture, upload, and analyse clinical images.</p>
+            <p className="mt-1 text-sm text-slate-600">Get photos captured and sorted quickly; reduce referral friction.</p>
             <div className="mt-4 space-y-2">
               <Button asChild className="w-full">
                 <Link href="/image">Start free</Link>
               </Button>
-              <div className="text-xs text-slate-500">Sign up required to use the tool.</div>
             </div>
           </div>
 
           <div className="rounded-lg border border-slate-200 p-5">
             <h2 className="text-lg font-semibold text-slate-900">ACC Tools</h2>
-            <p className="mt-1 text-sm text-slate-600">Quick utilities for ACC45 workflows.</p>
+            <p className="mt-1 text-sm text-slate-600">Spend less time hunting codes and addresses; submit faster.</p>
             <div className="mt-4 space-y-2">
               <Button asChild className="w-full" variant="outline">
                 <Link href="/acc">Open</Link>
               </Button>
-              <div className="text-xs text-slate-500">No login required.</div>
             </div>
           </div>
         </div>

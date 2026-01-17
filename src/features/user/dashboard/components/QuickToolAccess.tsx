@@ -38,7 +38,7 @@ const tools: ToolLink[] = [
   {
     title: 'Clinical Images',
     description: 'AI-powered medical image analysis',
-    href: '/image/app',
+    href: '/ai-scribe/image',
     icon: Camera,
     color: 'text-purple-600',
   },
