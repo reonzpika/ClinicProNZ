@@ -17,7 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useSimpleAbly } from '@/src/features/clinical/mobile/hooks/useSimpleAbly';
 // Session UI (local-only)
@@ -41,6 +41,7 @@ export default function ClinicalImagePage() {
   const { userId, isSignedIn, isLoaded } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
+  const skeletonKeys = useMemo(() => Array.from({ length: 12 }, () => Math.random().toString(36).slice(2)), []);
 
   // Queries and mutations
   const { data: serverImages = [], isLoading: isLoadingImages } = useServerImages(undefined);
@@ -681,13 +682,19 @@ Cancel
       <div
         className="flex h-full gap-6 py-6"
         onDragEnter={(e) => {
- e.preventDefault(); e.stopPropagation(); setIsDragging(true);
+          e.preventDefault();
+          e.stopPropagation();
+          setIsDragging(true);
 }}
         onDragOver={(e) => {
- e.preventDefault(); e.stopPropagation(); setIsDragging(true);
+          e.preventDefault();
+          e.stopPropagation();
+          setIsDragging(true);
 }}
         onDragLeave={(e) => {
- e.preventDefault(); e.stopPropagation(); setIsDragging(false);
+          e.preventDefault();
+          e.stopPropagation();
+          setIsDragging(false);
 }}
         onDrop={async (e) => {
           e.preventDefault();
@@ -700,7 +707,7 @@ Cancel
 }
             const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
             await uploadImages.mutateAsync({ files, context });
-          } catch (err) {
+          } catch {
             setError('Failed to upload dropped files');
           }
         }}
@@ -748,13 +755,19 @@ image
                 <div
                   className={`${isDragging ? 'rounded border border-dashed border-blue-300 bg-blue-50/50 p-2' : ''}`}
                   onDragEnter={(e) => {
- e.preventDefault(); e.stopPropagation(); setIsDragging(true);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(true);
 }}
                   onDragOver={(e) => {
- e.preventDefault(); e.stopPropagation(); setIsDragging(true);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(true);
 }}
                   onDragLeave={(e) => {
- e.preventDefault(); e.stopPropagation(); setIsDragging(false);
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(false);
 }}
                   onDrop={async (e) => {
                     e.preventDefault();
@@ -767,7 +780,7 @@ image
 }
                       const context = selectedSessionId && selectedSessionId !== 'none' ? { sessionId: selectedSessionId } : { noSession: true };
                       await uploadImages.mutateAsync({ files, context });
-                    } catch (err) {
+                    } catch {
                       setError('Failed to upload dropped files');
                     }
                   }}
@@ -845,8 +858,8 @@ image
               {isLoadingImages
                 ? (
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-                      {Array.from({ length: 12 }).map((_, idx) => (
-                        <GalleryTileSkeleton key={idx} />
+                      {skeletonKeys.map(key => (
+                        <GalleryTileSkeleton key={key} />
                       ))}
                     </div>
                   )
@@ -968,7 +981,8 @@ image
         isOpen={isSessionModalOpen}
         onClose={() => setIsSessionModalOpen(false)}
         onSessionSelected={(id) => {
- setSelectedSessionId(id); setIsSessionModalOpen(false);
+          setSelectedSessionId(id);
+          setIsSessionModalOpen(false);
 }}
         onCreateStart={() => setIsCreatingSession(true)}
         onCreateEnd={() => setIsCreatingSession(false)}
