@@ -1,0 +1,93 @@
+import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { retry } from 'ts-retry-promise';
+
+const PRESIGNED_UPLOAD_EXPIRY_SEC = 300; // 5 min
+const PRESIGNED_DOWNLOAD_EXPIRY_SEC = 3600; // 1 hour
+
+function getS3Client() {
+  return new S3Client({
+    region: process.env.AWS_REGION || 'ap-southeast-2',
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+  });
+}
+
+export function getImageToolBucketName(): string {
+  return process.env.S3_IMAGE_TOOL_BUCKET_NAME
+    || process.env.S3_BUCKET_NAME
+    || 'clinicpro-medtech-sessions';
+}
+
+function extensionForContentType(contentType: string | undefined): string {
+  if (!contentType) {
+    return 'jpg';
+  }
+  if (contentType === 'application/pdf') {
+    return 'pdf';
+  }
+  // default to jpg for all image/* uploads in this tool
+  return 'jpg';
+}
+
+export function buildImageToolS3Key(args: { userId: string; imageId: string; now?: number; contentType?: string }) {
+  const ts = args.now ?? Date.now();
+  const ext = extensionForContentType(args.contentType);
+  return `image/${args.userId}/${ts}_${args.imageId}.${ext}`;
+}
+
+export async function generateImageToolPresignedUpload(args: {
+  userId: string;
+  imageId: string;
+  contentType?: string;
+}) {
+  const s3 = getS3Client();
+  const bucket = getImageToolBucketName();
+  const s3Key = buildImageToolS3Key({ userId: args.userId, imageId: args.imageId, contentType: args.contentType });
+
+  const command = new PutObjectCommand({
+    Bucket: bucket,
+    Key: s3Key,
+    ContentType: args.contentType || 'image/jpeg',
+    ServerSideEncryption: 'AES256',
+    Metadata: {
+      'upload-type': 'image-tool',
+      'uploaded-by': args.userId,
+    },
+  });
+
+  const uploadUrl = await retry(
+    async () => {
+      return await getSignedUrl(s3, command, { expiresIn: PRESIGNED_UPLOAD_EXPIRY_SEC });
+    },
+    { retries: 3, delay: 600, backoff: 'EXPONENTIAL' },
+  );
+
+  return {
+    uploadUrl,
+    s3Key,
+    expiresAt: Date.now() + PRESIGNED_UPLOAD_EXPIRY_SEC * 1000,
+  };
+}
+
+export async function generateImageToolPresignedDownload(s3Key: string) {
+  const s3 = getS3Client();
+  const bucket = getImageToolBucketName();
+  const command = new GetObjectCommand({ Bucket: bucket, Key: s3Key });
+
+  const downloadUrl = await retry(
+    async () => {
+      return await getSignedUrl(s3, command, { expiresIn: PRESIGNED_DOWNLOAD_EXPIRY_SEC });
+    },
+    { retries: 3, delay: 600, backoff: 'EXPONENTIAL' },
+  );
+
+  return {
+    downloadUrl,
+    expiresIn: PRESIGNED_DOWNLOAD_EXPIRY_SEC,
+    expiresAt: Date.now() + PRESIGNED_DOWNLOAD_EXPIRY_SEC * 1000,
+  };
+}
+
