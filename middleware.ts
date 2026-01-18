@@ -203,6 +203,29 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
+  // Allow /image landing page - public
+  if (req.nextUrl.pathname === '/image') {
+    return NextResponse.next();
+  }
+
+  // Allow /image/mobile - token-based auth handled in route
+  if (req.nextUrl.pathname.startsWith('/image/mobile')) {
+    return NextResponse.next();
+  }
+
+  // Protect /image/upgrade - require sign-in only
+  if (req.nextUrl.pathname.startsWith('/image/upgrade')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return redirectToLogin(req.url);
+    }
+  }
+
+  // Protect /api/image routes - authentication handled per route
+  if (req.nextUrl.pathname.startsWith('/api/image')) {
+    return NextResponse.next();
+  }
+
   // Protect /billing page - require sign-in only
   if (req.nextUrl.pathname.startsWith('/billing')) {
     const resolvedAuth = await auth();
@@ -273,13 +296,17 @@ export const config = {
     '/api/consultation/:path*',
     '/api/tools/:path*',
     '/api/search/:path*',
+    '/api/image/:path*', // Image tool API routes
     '/ai-scribe/:path*',
     '/billing/:path*',
     '/admin/:path*',
     '/dashboard/:path*',
     '/settings/:path*',
     '/mobile/:path*',
-    '/image/app/:path*',
+    '/image', // Image tool landing page
+    '/image/app/:path*', // Image tool desktop app
+    '/image/mobile/:path*', // Image tool mobile capture
+    '/image/upgrade/:path*', // Image tool upgrade page
     '/search/:path*',
   ],
 };
