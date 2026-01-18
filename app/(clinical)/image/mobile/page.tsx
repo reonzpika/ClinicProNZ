@@ -1,8 +1,8 @@
 'use client';
 
 import imageCompression from 'browser-image-compression';
-import { Camera, Check, Loader2, Upload, X } from 'lucide-react';
 import { jsPDF } from 'jspdf';
+import { Camera, Check, Loader2, Upload, X } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
@@ -463,7 +463,7 @@ function MobilePageContent() {
       return;
     }
 
-    const newImages: ImageFile[] = Array.from(e.target.files).map((file) => ({
+    const newImages: ImageFile[] = Array.from(e.target.files).map(file => ({
       id: nanoid(),
       file,
       previewUrl: URL.createObjectURL(file),
@@ -475,7 +475,7 @@ function MobilePageContent() {
   }
 
   function removeImage(id: string) {
-    setImages(prev => {
+    setImages((prev) => {
       const next = prev.filter(img => img.id !== id);
       const removed = prev.find(img => img.id === id);
       if (removed) {
@@ -840,7 +840,9 @@ function MobilePageContent() {
                 <Button onClick={() => setStep('review')} className="w-full" type="button" variant="ghost">
                   Review
                   {' '}
-                  ({images.length})
+                  (
+{images.length}
+)
                 </Button>
               )}
             </CardContent>
@@ -1029,4 +1031,3 @@ export default function ImageMobilePage() {
     </Suspense>
   );
 }
-

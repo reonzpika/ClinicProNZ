@@ -39,8 +39,7 @@ export async function GET(
         uploadedAt: new Date(img.uploadedAt).toISOString(),
       })),
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.error('[Debug] Error:', error);
     return NextResponse.json(
       {

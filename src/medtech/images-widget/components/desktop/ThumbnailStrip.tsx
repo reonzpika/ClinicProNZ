@@ -56,8 +56,7 @@ export function ThumbnailStrip({ currentImageId, onImageSelect, onErrorClick }: 
                   if (!response.ok) {
                     console.error('[Delete Image] Failed to delete from session');
                   }
-                }
-                catch (error) {
+                } catch (error) {
                   console.error('[Delete Image] Error:', error);
                 }
               }

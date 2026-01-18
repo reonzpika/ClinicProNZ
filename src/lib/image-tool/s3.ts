@@ -90,4 +90,3 @@ export async function generateImageToolPresignedDownload(s3Key: string) {
     expiresAt: Date.now() + PRESIGNED_DOWNLOAD_EXPIRY_SEC * 1000,
   };
 }
-

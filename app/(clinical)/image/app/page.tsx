@@ -287,4 +287,3 @@ export default function ImageAppPage() {
     </div>
   );
 }
-

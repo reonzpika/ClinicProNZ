@@ -18,4 +18,3 @@ export const imageToolMobileLinks = pgTable('image_tool_mobile_links', {
 
 export type ImageToolMobileLink = typeof imageToolMobileLinks.$inferSelect;
 export type NewImageToolMobileLink = typeof imageToolMobileLinks.$inferInsert;
-

@@ -19,4 +19,3 @@ export const imageToolUsage = pgTable('image_tool_usage', {
 
 export type ImageToolUsage = typeof imageToolUsage.$inferSelect;
 export type NewImageToolUsage = typeof imageToolUsage.$inferInsert;
-

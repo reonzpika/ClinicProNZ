@@ -21,4 +21,3 @@ export const imageToolUploads = pgTable('image_tool_uploads', {
 
 export type ImageToolUpload = typeof imageToolUploads.$inferSelect;
 export type NewImageToolUpload = typeof imageToolUploads.$inferInsert;
-

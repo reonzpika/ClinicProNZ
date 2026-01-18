@@ -47,4 +47,3 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ checkoutUrl: session.url });
 }
-

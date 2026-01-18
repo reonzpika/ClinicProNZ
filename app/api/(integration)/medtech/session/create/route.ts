@@ -20,6 +20,7 @@
  */
 
 import crypto from 'node:crypto';
+
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
       encounterId,
       token: token.slice(0, 8),
       sessionCreatedAt: session.createdAt,
-      mobileUrl: mobileUrl.slice(0, 60) + '...',
+      mobileUrl: `${mobileUrl.slice(0, 60)}...`,
     });
 
     return NextResponse.json({
@@ -87,8 +88,7 @@ export async function POST(request: NextRequest) {
       mobileUrl,
       expiresIn: 7200, // 2 hours
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.error('[Session Create] Error:', error);
     return NextResponse.json(
       {

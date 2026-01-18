@@ -1,7 +1,7 @@
 import { getDb } from 'database/client';
 import { and, eq } from 'drizzle-orm';
 
-import { imageToolMobileLinks, imageToolUsage, imageToolUploads, users } from '@/db/schema';
+import { imageToolMobileLinks, imageToolUploads, imageToolUsage, users } from '@/db/schema';
 
 export const IMAGE_TOOL_FREE_MONTHLY_LIMIT = 20;
 
@@ -89,4 +89,3 @@ export async function recordImageToolUpload(args: {
     expiresAt,
   });
 }
-

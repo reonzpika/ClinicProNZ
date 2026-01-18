@@ -1,5 +1,5 @@
-import Link from 'next/link';
 import { auth } from '@clerk/nextjs/server';
+import Link from 'next/link';
 
 import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
@@ -126,4 +126,3 @@ export default async function ImageLandingPage() {
     </div>
   );
 }
-

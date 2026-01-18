@@ -1,4 +1,3 @@
-
 type ComingSoonPlaceholderProps = {
   title: string;
   description: string;

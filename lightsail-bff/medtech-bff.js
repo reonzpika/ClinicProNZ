@@ -1,6 +1,6 @@
 /**
  * Medtech BFF (Backend-for-Frontend)
- * 
+ *
  * Proxy server that provides ALEX API access to Next.js app
  * Uses allow-listed IP 13.236.58.12
  */
@@ -54,7 +54,7 @@ async function getToken() {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
-    }
+    },
   );
 
   if (!response.ok) {
@@ -67,7 +67,7 @@ async function getToken() {
   tokenExpiry = Date.now() + 55 * 60 * 1000; // 55 minutes
 
   console.log(`[BFF] Token acquired in ${Date.now() - startTime}ms`);
-  
+
   return tokenCache;
 }
 
@@ -145,9 +145,9 @@ app.get('/api/medtech/test', async (req, res) => {
     const nhi = req.query.nhi || 'ZZZ0016';
     const result = await proxyAlexRequest(
       'GET',
-      `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`
+      `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`,
     );
-    
+
     res.json({
       success: true,
       ...result,
@@ -168,15 +168,17 @@ app.get('/api/medtech/test', async (req, res) => {
 
 app.get('/api/medtech/token-info', (req, res) => {
   const expiresIn = tokenCache ? Math.max(0, tokenExpiry - Date.now()) : 0;
-  
+
   res.json({
     tokenCache: {
       isCached: !!tokenCache,
-      expiresIn: expiresIn > 0 ? {
+      expiresIn: expiresIn > 0
+? {
         milliseconds: expiresIn,
         seconds: Math.floor(expiresIn / 1000),
         minutes: Math.floor(expiresIn / 60000),
-      } : null,
+      }
+: null,
     },
   });
 });
@@ -222,7 +224,7 @@ app.get('/api/medtech/locations', async (req, res) => {
 app.get('/api/medtech/patient', async (req, res) => {
   try {
     const { nhi, id } = req.query;
-    
+
     let path;
     if (nhi) {
       path = `/Patient?identifier=https://standards.digital.health.nz/ns/nhi-id|${nhi}`;
@@ -234,7 +236,7 @@ app.get('/api/medtech/patient', async (req, res) => {
         error: 'Either nhi or id parameter required',
       });
     }
-    
+
     const result = await proxyAlexRequest('GET', path);
     res.json(result.data);
   } catch (error) {
@@ -253,7 +255,7 @@ app.get('/api/medtech/patient', async (req, res) => {
 app.post('/api/medtech/media', async (req, res) => {
   try {
     const mediaResource = req.body;
-    
+
     // Validate FHIR Media resource
     if (!mediaResource.resourceType || mediaResource.resourceType !== 'Media') {
       return res.status(400).json({
@@ -261,7 +263,7 @@ app.post('/api/medtech/media', async (req, res) => {
         error: 'Invalid FHIR Media resource',
       });
     }
-    
+
     const result = await proxyAlexRequest('POST', '/Media', mediaResource);
     res.status(result.statusCode).json(result.data);
   } catch (error) {
@@ -280,7 +282,7 @@ app.post('/api/medtech/media', async (req, res) => {
 
 app.all('/api/medtech/proxy/*', async (req, res) => {
   try {
-    const path = '/' + req.params[0] + (req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : '');
+    const path = `/${req.params[0]}${req.url.includes('?') ? req.url.substring(req.url.indexOf('?')) : ''}`;
     const result = await proxyAlexRequest(req.method, path, req.body);
     res.status(result.statusCode).json(result.data);
   } catch (error) {
@@ -317,12 +319,12 @@ app.listen(PORT, () => {
 ║                    Medtech BFF Server                          ║
 ╚════════════════════════════════════════════════════════════════╝
 
-  ���� Server running on port ${PORT}
-  ������ Environment: ${process.env.NODE_ENV || 'development'}
-  ������ ALEX API: ${process.env.MEDTECH_API_BASE_URL}
-  ������ Facility: ${process.env.MEDTECH_FACILITY_ID}
+  ���� Server running on port ${PORT}
+  ������ Environment: ${process.env.NODE_ENV || 'development'}
+  ������ ALEX API: ${process.env.MEDTECH_API_BASE_URL}
+  ������ Facility: ${process.env.MEDTECH_FACILITY_ID}
   
-  ������ Available Endpoints:
+  ������ Available Endpoints:
      GET  /health
      GET  /api/medtech/test
      GET  /api/medtech/token-info
@@ -332,7 +334,7 @@ app.listen(PORT, () => {
      POST /api/medtech/media
      ALL  /api/medtech/proxy/*
 
-  ��⏰ Started at: ${new Date().toISOString()}
+  ��⏰ Started at: ${new Date().toISOString()}
   
 `);
 });

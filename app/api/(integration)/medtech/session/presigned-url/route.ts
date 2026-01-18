@@ -94,8 +94,7 @@ export async function POST(request: NextRequest) {
       s3Key: result.s3Key,
       expiresAt: result.expiresAt,
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.error('[Presigned URL] Error:', error);
     return NextResponse.json(
       {

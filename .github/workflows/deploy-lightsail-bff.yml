@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - 'lightsail-bff/**'
-      - '.github/workflows/deploy-lightsail-bff.yml'
+      - .github/workflows/deploy-lightsail-bff.yml
   workflow_dispatch:
 
 permissions:
@@ -16,7 +16,7 @@ jobs:
   deploy:
     name: Deploy BFF to Lightsail
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -55,8 +55,8 @@ jobs:
           key_path: lightsail.key
           port: 22
           passphrase: ${{ secrets.LIGHTSAIL_SSH_KEY_PASSPHRASE }}
-          source: "lightsail-bff/*"
-          target: "/tmp/clinicpro-bff-staging-${{ github.sha }}"
+          source: 'lightsail-bff/*'
+          target: '/tmp/clinicpro-bff-staging-${{ github.sha }}'
 
       - name: Deploy to Lightsail via SSH
         uses: appleboy/ssh-action@v1.0.0
@@ -138,11 +138,11 @@ jobs:
           sha: ${{ github.sha }}
           body: |
             ✅ **Lightsail BFF deployed successfully!**
-            
+
             - Server: 13.236.58.12
             - Service: clinicpro-bff
             - Status: Running
-            
+
             Check deployment logs in [Actions](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Cleanup runner SSH key

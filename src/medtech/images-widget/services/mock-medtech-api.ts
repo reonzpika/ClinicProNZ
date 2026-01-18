@@ -233,7 +233,7 @@ export const realMedtechAPI = {
     }
 
     const data = await response.json();
-    
+
     // Map Phase 1B response format to MobileSessionResponse
     return {
       mobileUploadUrl: data.mobileUrl,

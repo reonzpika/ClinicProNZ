@@ -63,7 +63,7 @@ export async function DELETE(request: NextRequest) {
 
     // Update session in Redis
     const SESSION_TTL = 7200; // 2 hours
-    await redisSessionService['redis'].setex(
+    await redisSessionService.redis.setex(
       `encounter:${encounterId}`,
       SESSION_TTL,
       JSON.stringify(session),
@@ -79,8 +79,7 @@ export async function DELETE(request: NextRequest) {
       success: true,
       imageCount: session.images.length,
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.error('[Delete Image] Error:', error);
     return NextResponse.json(
       {
