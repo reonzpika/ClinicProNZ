@@ -61,13 +61,8 @@ export async function DELETE(request: NextRequest) {
 
     session.lastActivity = Date.now();
 
-    // Update session in Redis
-    const SESSION_TTL = 7200; // 2 hours
-    await redisSessionService.redis.setex(
-      `encounter:${encounterId}`,
-      SESSION_TTL,
-      JSON.stringify(session),
-    );
+    // Update session using the service's public updateSession method
+    await redisSessionService.updateSession(encounterId, session);
 
     console.log('[Delete Image] Image removed successfully', {
       encounterId,

@@ -6,10 +6,6 @@ const bundleAnalyzer = withBundleAnalyzer({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    // During builds, we'll ignore ESLint errors temporarily to avoid deployment issues
-    ignoreDuringBuilds: true,
-  },
   poweredByHeader: false,
   // Temporarily disable strict mode in development to prevent double Ably connections
   reactStrictMode: process.env.NODE_ENV === 'production',

@@ -189,6 +189,17 @@ export class RedisSessionService {
       JSON.stringify(session),
     );
   }
+
+  /**
+   * Update entire session (useful for bulk updates like removing images)
+   */
+  async updateSession(encounterId: string, session: EncounterSession): Promise<void> {
+    await this.redis.setex(
+      `encounter:${encounterId}`,
+      SESSION_TTL,
+      JSON.stringify(session),
+    );
+  }
 }
 
 // Singleton instance
