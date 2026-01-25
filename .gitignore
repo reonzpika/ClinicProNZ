@@ -55,3 +55,11 @@ local
 
 # obsidian
 .obsidian
+
+# python
+__pycache__/
+*.pyc
+
+# triage feasibility outputs
+triage_test_results_*.json
+triage_feasibility_summary*.md
