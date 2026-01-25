@@ -240,6 +240,8 @@ def evaluate_results(
     temperature: float,
     input_cost_per_mtok_usd: float,
     output_cost_per_mtok_usd: float,
+    max_retries: int,
+    retry_backoff_base_sec: float,
     dry_run: bool,
     max_cases: Optional[int],
     seed: int,
@@ -287,6 +289,8 @@ def evaluate_results(
                     temperature=temperature,
                     input_cost_per_mtok_usd=input_cost_per_mtok_usd,
                     output_cost_per_mtok_usd=output_cost_per_mtok_usd,
+                    max_retries=max_retries,
+                    retry_backoff_base_sec=retry_backoff_base_sec,
                 )
                 response = call_res.response
                 cost = call_res.cost_usd
@@ -395,6 +399,13 @@ def main() -> None:
     parser.add_argument("--model", default=DEFAULT_MODEL, help="Anthropic model name")
     parser.add_argument("--max-tokens", type=int, default=DEFAULT_MAX_TOKENS)
     parser.add_argument("--temperature", type=float, default=0.0)
+    parser.add_argument("--max-retries", type=int, default=3, help="Retries per case for transient API errors")
+    parser.add_argument(
+        "--retry-backoff-base-sec",
+        type=float,
+        default=1.5,
+        help="Exponential backoff base in seconds (sleep = base^(attempt-1))",
+    )
     parser.add_argument("--max-cases", type=int, default=None, help="Limit number of cases for quick test")
     parser.add_argument("--seed", type=int, default=42, help="Shuffle seed for case order")
     parser.add_argument("--dry-run", action="store_true", help="Do not call API; validate pipeline only")
@@ -422,6 +433,8 @@ def main() -> None:
         temperature=args.temperature,
         input_cost_per_mtok_usd=args.input_cost_per_mtok_usd,
         output_cost_per_mtok_usd=args.output_cost_per_mtok_usd,
+        max_retries=args.max_retries,
+        retry_backoff_base_sec=args.retry_backoff_base_sec,
         dry_run=args.dry_run,
         max_cases=args.max_cases,
         seed=args.seed,
