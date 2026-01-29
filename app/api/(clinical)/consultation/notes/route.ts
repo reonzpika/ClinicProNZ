@@ -186,7 +186,7 @@ export async function POST(req: Request) {
           { role: 'system', content: system },
           { role: 'user', content: user },
         ],
-        temperature: 0.1,
+        temperature: 0,
         max_tokens: 2000,
         stream: false,
       }),
