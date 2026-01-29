@@ -1,0 +1,452 @@
+[
+  {
+    "id": 1,
+    "item_type": "lab_result",
+    "content": "PATIENT: Sarah Johnson, 62F\nTEST: Troponin I (high sensitivity)\nResult: 2.80 ng/mL (CRITICALLY HIGH) [Normal: <0.04]\nTime Collected: 08:45 today\nComment: Markedly elevated troponin. Consistent with acute myocardial injury.",
+    "patient_context": "History: Hypertension, hyperlipidaemia; smoker.\nYesterday phoned: central chest tightness radiating to jaw for ~20 minutes; resolved. Advised ED if recurs.\nMedications: Atorvastatin, amlodipine.",
+    "ground_truth_urgency": "HIGH",
+    "ground_truth_reasoning": "Markedly elevated troponin with recent chest pain is highly concerning for ACS or MI.\nEven if asymptomatic now, this requires immediate same-day escalation.",
+    "ground_truth_action": "URGENT: Contact patient immediately. If any ongoing symptoms call ambulance.\nIf currently well, arrange same-day ED assessment with pre-alert; advise no driving."
+  },
+  {
+    "id": 2,
+    "item_type": "radiology_report",
+    "content": "CT HEAD (NON-CONTRAST)\nPatient: Hana Rangi, 76F\nIndication: Fall with head strike; on anticoagulation\nFindings: Acute left convexity subdural haematoma up to 7 mm with mild mass effect; no midline shift.\nImpression: Acute subdural haematoma. URGENT neurosurgical discussion recommended.\nRadiologist: Dr M. Patel",
+    "patient_context": "History: Atrial fibrillation on apixaban; hypertension.\nSeen in ED last night; discharged before CT result finalised.\nLives with daughter.",
+    "ground_truth_urgency": "HIGH",
+    "ground_truth_reasoning": "Acute subdural haematoma on anticoagulation is time-critical; risk of deterioration.\nRequires immediate contact and urgent ED/neurosurgical management today.",
+    "ground_truth_action": "URGENT: Contact patient/family immediately; advise immediate return to ED by ambulance if symptomatic.\nNotify ED that CT has a critical finding; coordinate anticoagulation reversal plan with hospital."
+  },
+  {
+    "id": 3,
+    "item_type": "lab_result",
+    "content": "PATIENT: Grace Liu, 19F\nTEST: Potassium\nResult: 2.1 mmol/L (CRITICALLY LOW) [Normal: 3.5–5.0]\nRepeat sample: 2.2 mmol/L (confirmed)\nComment: Severe hypokalaemia; consider urgent replacement. Risk of arrhythmia.",
+    "patient_context": "Recent consult: \"tired, dizzy\". BMI 16.8.\nReports using laxatives \"for constipation\". Periods irregular.\nNo known cardiac history.",
+    "ground_truth_urgency": "HIGH",
+    "ground_truth_reasoning": "Severe hypokalaemia is potentially life-threatening; arrhythmia risk.\nRequires same-day assessment and treatment, likely ED for IV replacement and monitoring.",
+    "ground_truth_action": "URGENT: Contact patient immediately. Arrange same-day ED assessment for ECG and potassium replacement.\nAssess for eating disorder/laxative misuse; ensure safety supports."
+  },
+  {
+    "id": 4,
+    "item_type": "discharge_summary",
+    "content": "EMERGENCY DEPARTMENT DISCHARGE SUMMARY\nPatient: Robert Thompson, 71M\nPresentation: Collapse at home; ~30 min loss of consciousness\nECG: Mobitz Type II AV block\nDiagnosis: Syncope, likely cardiac\nDisposition: Discharged home\nPlan: URGENT cardiology review for pacing assessment\nSigned: Dr A. Singh (ED Registrar)",
+    "patient_context": "Lives alone; history of IHD and CABG.\nMedications: Aspirin, atorvastatin, ramipril.\nNo GP follow-up booked.",
+    "ground_truth_urgency": "HIGH",
+    "ground_truth_reasoning": "Mobitz II with syncope is high-risk for progression to complete heart block and sudden deterioration.\nRequires urgent same-day follow-up and likely re-presentation for monitoring/pacing.",
+    "ground_truth_action": "URGENT: Contact patient today to assess symptoms; advise no driving.\nArrange urgent cardiology review within 24–48h; consider immediate return to ED if symptomatic."
+  },
+  {
+    "id": 5,
+    "item_type": "lab_result",
+    "content": "PATIENT: Emma Williams, 28F\nTEST: Serum β-hCG\nResult: Positive 2,450 IU/L\nMedication note: Patient currently prescribed methotrexate 15 mg weekly.",
+    "patient_context": "Rheumatoid arthritis on methotrexate for 6 months.\nLMP unclear. No contraception documented. Last GP review 3 weeks ago.",
+    "ground_truth_urgency": "HIGH",
+    "ground_truth_reasoning": "Methotrexate is highly teratogenic and contraindicated in pregnancy.\nImmediate action is required to stop the drug and arrange urgent specialist input.",
+    "ground_truth_action": "URGENT: Contact patient today; stop methotrexate immediately.\nArrange urgent obstetric advice and rheumatology review; start high-dose folic acid as advised; book urgent dating scan."
+  },
+  {
+    "id": 6,
+    "item_type": "lab_result",
+    "content": "PATIENT: Moana Te Whaiti, 66F\nTEST: INR (on warfarin)\nINR: 8.5 (CRITICAL) [Target: 2.0–3.0]\nComment: Result phoned to practice nurse at 11:05. Patient reports gum bleeding this morning.",
+    "patient_context": "Indication: Mechanical mitral valve; warfarin regimen recently adjusted.\nAlso started trimethoprim-sulfamethoxazole by after-hours 3 days ago for UTI.",
+    "ground_truth_urgency": "HIGH",
+    "ground_truth_reasoning": "INR 8.5 with bleeding is high risk of major haemorrhage; interacting antibiotic likely contributor.\nRequires same-day management and possible hospital assessment.",
+    "ground_truth_action": "URGENT: Contact patient immediately; hold warfarin; assess bleeding.\nArrange same-day ED or urgent GP assessment; consider vitamin K per protocol; stop interacting antibiotic and liaise with anticoagulation clinic."
+  },
+  {
+    "id": 7,
+    "item_type": "radiology_report",
+    "content": "CHEST X-RAY REPORT\nPatient: Michael Chen, 45M\nIndication: Persistent cough and weight loss\nFindings: 4.5 cm irregular right upper lobe mass with spiculated margins; right hilar lymphadenopathy.\nImpression: Highly suspicious for primary lung malignancy. Urgent CT staging recommended.",
+    "patient_context": "Seen 2 weeks ago: 6-week dry cough, 5 kg weight loss, night sweats.\nNon-smoker. Patient unaware of report.",
+    "ground_truth_urgency": "HIGH",
+    "ground_truth_reasoning": "Likely malignancy requires prompt communication and urgent referral pathway activation.\nSame-day action is appropriate because delay increases harm and patient needs urgent next steps arranged.",
+    "ground_truth_action": "URGENT: Contact patient today to arrange face-to-face review within 48h.\nInitiate urgent suspected cancer referral; arrange CT chest/abdomen; document safety-netting and support."
+  },
+  {
+    "id": 8,
+    "item_type": "lab_result",
+    "content": "PATIENT: Peter van Dijk, 72M\nTEST: Urea & Electrolytes\nCreatinine: 452 µmol/L (CRIT) [Baseline: 92 µmol/L 4 months ago]\neGFR: 10 mL/min/1.73m²\nPotassium: 5.6 mmol/L (H)\nComment: Acute kidney injury; please clinically correlate urgently.",
+    "patient_context": "History: CKD stage 2 previously, hypertension.\nStarted naproxen OTC for back pain 1 week ago; also on ramipril.\nReports reduced urine output and nausea per triage note yesterday.",
+    "ground_truth_urgency": "HIGH",
+    "ground_truth_reasoning": "Severe AKI with hyperkalaemia is potentially life-threatening and may need urgent inpatient management.\nRequires same-day contact and likely ED/hospital assessment.",
+    "ground_truth_action": "URGENT: Contact patient immediately; stop NSAIDs and ACE inhibitor pending review.\nArrange same-day ED assessment for AKI workup, ECG, repeat labs; manage hyperkalaemia risk."
+  },
+  {
+    "id": 9,
+    "item_type": "discharge_summary",
+    "content": "EMERGENCY DEPARTMENT DISCHARGE SUMMARY\nPatient: Aroha Ngatai, 54F\nPresentation: Transient right arm weakness and speech difficulty (~15 minutes), resolved\nWorking diagnosis: TIA\nCT head: No acute bleed\nTreatment: Aspirin 300 mg stat in ED; discharged on aspirin 100 mg daily\nPlan: Urgent TIA clinic referral; GP to arrange risk factor management",
+    "patient_context": "History: Hypertension, type 2 diabetes; not on statin.\nBP in ED 186/98. Smoker.\nLives rurally; limited transport.",
+    "ground_truth_urgency": "HIGH",
+    "ground_truth_reasoning": "TIA is a warning sign for imminent stroke risk, highest in first 24–48h.\nSame-day GP action is warranted to ensure referral, BP management, and safety-netting.",
+    "ground_truth_action": "URGENT: Contact patient today. Ensure urgent TIA clinic referral is actioned and transport plan.\nOptimise BP and start high-intensity statin unless contraindicated; provide stroke red-flag advice and return precautions."
+  },
+  {
+    "id": 10,
+    "item_type": "lab_result",
+    "content": "PATIENT: Liam O'Connor, 38M\nTEST: Full Blood Count\nWCC: 0.9 x10^9/L (LOW)\nNeutrophils: 0.2 x10^9/L (CRITICAL)\nHb: 132 g/L\nPlatelets: 210 x10^9/L\nLab note: Please contact patient urgently if febrile or unwell.",
+    "patient_context": "On carbimazole for Graves' disease; dose increased 4 weeks ago.\nTriage note from yesterday: \"sore throat and chills overnight\"; no appointment booked.",
+    "ground_truth_urgency": "HIGH",
+    "ground_truth_reasoning": "Severe neutropenia/agranulocytosis on carbimazole with systemic symptoms is an emergency.\nRequires immediate cessation of medication and urgent same-day hospital assessment.",
+    "ground_truth_action": "URGENT: Contact patient now; stop carbimazole immediately; advise immediate ED assessment for sepsis workup and IV antibiotics if febrile.\nInform endocrinology; document drug reaction alert."
+  },
+  {
+    "id": 11,
+    "item_type": "lab_result",
+    "content": "PATIENT: David Brown, 55M\nTEST: HbA1c\nResult: 68 mmol/mol (8.4%) [Target: <58]\nPrevious: 64 mmol/mol 3 months ago\nComment: Suboptimal diabetes control; mild worsening.",
+    "patient_context": "Type 2 diabetes x 5 years. Meds: metformin 1 g BD.\nNext booked review in 2 weeks.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "HbA1c is elevated but not acutely dangerous; can be managed at planned review within 1–3 days or next booked slot.",
+    "ground_truth_action": "ROUTINE: Discuss at next review; consider adding SGLT2 inhibitor or GLP-1 agonist; reinforce lifestyle; check complications and screening."
+  },
+  {
+    "id": 12,
+    "item_type": "lab_result",
+    "content": "PATIENT: Priya Singh, 43F\nTEST: Thyroid function\nTSH: 6.8 mIU/L (H) [0.4–4.0]\nFree T4: 12 pmol/L [10–22]\nTPO antibodies: Pending",
+    "patient_context": "Symptoms: tiredness and weight gain. No pregnancy. No goitre on last exam.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Subclinical hypothyroidism; requires follow-up but not same-day. Can be reviewed within days.",
+    "ground_truth_action": "ROUTINE: Book follow-up within 1–3 weeks; repeat TFTs and review symptoms; consider trial levothyroxine if persistent and symptomatic or TPO positive."
+  },
+  {
+    "id": 13,
+    "item_type": "lab_result",
+    "content": "PATIENT: Thomas Reilly, 61M\nTEST: Lipid profile\nTotal cholesterol: 6.2 mmol/L (H)\nLDL-C: 4.1 mmol/L (H)\nHDL-C: 1.0 mmol/L\nTriglycerides: 2.0 mmol/L (H)",
+    "patient_context": "No known CVD. Family history: father MI at 54.\nBP borderline. Non-smoker. Considering primary prevention.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Cardiovascular risk management is important but not urgent. Suitable for routine follow-up.",
+    "ground_truth_action": "ROUTINE: Calculate CVD risk; discuss lifestyle; consider statin depending on risk; recheck fasting lipids if needed."
+  },
+  {
+    "id": 14,
+    "item_type": "lab_result",
+    "content": "PATIENT: Mei Lin, 29F\nTEST: Liver function tests\nALT: 78 U/L (H) [<40]\nAST: 52 U/L (H) [<40]\nALP: 95 U/L\nBilirubin: 10 µmol/L\nComment: Mild transaminitis.",
+    "patient_context": "Recent viral URTI. Started combined oral contraceptive 2 months ago.\nAlcohol: 6–8 standard drinks/week.\nNo jaundice, no abdominal pain.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Mild ALT/AST elevation without red flags is not a same-day issue; warrants planned follow-up and repeat testing.",
+    "ground_truth_action": "ROUTINE: Repeat LFTs in 4–6 weeks; review alcohol/medications; consider hepatitis serology if persistent or risk factors."
+  },
+  {
+    "id": 15,
+    "item_type": "lab_result",
+    "content": "PATIENT: George Miller, 70M\nTEST: Complete Blood Count\nHb: 108 g/L (L) [130–170]\nMCV: 74 fL (L)\nFerritin: 9 µg/L (L)\nWCC/Platelets: within range",
+    "patient_context": "Fatigue. No overt bleeding. On aspirin.\nLast colonoscopy 8 years ago (normal).",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "AMBIGUOUS: Iron deficiency anaemia needs timely workup. Some clinicians would prioritise faster contact due to malignancy risk,\nwhile others manage within routine time frames if the patient is clinically stable and haemoglobin is only moderately reduced.",
+    "ground_truth_action": "ROUTINE: Contact patient within 1–3 days; arrange iron studies review, start oral iron if appropriate; investigate for GI blood loss (FIT, endoscopy referral depending on age/risk)."
+  },
+  {
+    "id": 16,
+    "item_type": "lab_result",
+    "content": "PATIENT: Isla MacDonald, 36F\nTEST: Urea & Electrolytes\nSodium: 131 mmol/L (L) [135–145]\nPotassium: 4.2 mmol/L\nCreatinine: 62 µmol/L\nComment: Mild hyponatraemia.",
+    "patient_context": "On sertraline 100 mg daily. Recently increased water intake during heatwave.\nNo confusion, no seizures. Eating normally.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Mild asymptomatic hyponatraemia can be managed with outpatient review and repeat labs.",
+    "ground_truth_action": "ROUTINE: Advise moderate fluid intake; repeat sodium in 1–2 weeks; review meds and symptoms; assess for SIADH risk if persistent."
+  },
+  {
+    "id": 17,
+    "item_type": "lab_result",
+    "content": "PATIENT: Nikhil Sharma, 48M\nTEST: Renal profile\nCreatinine: 128 µmol/L (H) [60–110]\neGFR: 58 mL/min/1.73m²\nPrevious creatinine: 118 µmol/L 12 months ago",
+    "patient_context": "Hypertension; on losartan. Muscular build; exercises.\nNo urinary symptoms. BP controlled.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Mild CKD stage 3a; stable trend. Routine monitoring and cardiovascular risk management.",
+    "ground_truth_action": "ROUTINE: Repeat U&E and urine ACR in 3–6 months; optimise BP; avoid NSAIDs; provide CKD education."
+  },
+  {
+    "id": 18,
+    "item_type": "lab_result",
+    "content": "PATIENT: Olivia Stewart, 22F\nTEST: D-dimer\nResult: 620 ng/mL FEU (H) [Normal: <500]\nComment: Mild elevation; interpret in clinical context.",
+    "patient_context": "Seen yesterday for pleuritic chest pain after a long flight; no dyspnoea; oxygen saturation 98% on room air.\nNo calf swelling. On combined oral contraceptive. Pain improved with paracetamol.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "AMBIGUOUS: Mildly raised D-dimer can be false positive; however thromboembolic risk factors exist.\nReasonable clinicians may choose HIGH for safety if clinical suspicion is moderate or symptoms worsen.",
+    "ground_truth_action": "ROUTINE: Reassess clinically within 1–3 days. If any dyspnoea, syncope, tachycardia, haemoptysis, or worsening pain, send to ED same day.\nConsider ED-based imaging (CTPA/VQ) if suspicion increases."
+  },
+  {
+    "id": 19,
+    "item_type": "lab_result",
+    "content": "PATIENT: Ben Wilson, 58M\nTEST: PSA\nPSA: 6.1 µg/L (H) [Age-specific reference: <4.5]\nFree PSA: Not performed",
+    "patient_context": "Lower urinary tract symptoms; no weight loss. No UTI symptoms.\nOn tamsulosin started recently.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "AMBIGUOUS: Moderately raised PSA can reflect BPH, prostatitis, recent ejaculation/cycling, or malignancy.\nMost clinicians would not treat this as same-day, but opinions vary depending on symptoms and risk factors.",
+    "ground_truth_action": "ROUTINE: Repeat PSA in 6 weeks avoiding ejaculation/cycling; check DRE; rule out UTI; discuss urology referral depending on repeat and risk."
+  },
+  {
+    "id": 20,
+    "item_type": "radiology_report",
+    "content": "ABDOMINAL ULTRASOUND\nPatient: Stephanie King, 39F\nIndication: RUQ discomfort\nFindings: Multiple gallstones. No gallbladder wall thickening. CBD 4 mm. No intrahepatic duct dilatation.\nImpression: Cholelithiasis without sonographic cholecystitis.",
+    "patient_context": "Intermittent RUQ pain after fatty meals; afebrile; no jaundice.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Symptomatic gallstones without cholecystitis can be managed routinely with planned surgical referral if persistent.",
+    "ground_truth_action": "ROUTINE: Arrange GP follow-up; provide dietary advice and red flags; consider elective surgical referral if recurrent biliary colic."
+  },
+  {
+    "id": 21,
+    "item_type": "radiology_report",
+    "content": "CHEST X-RAY\nPatient: Ajay Kumar, 27M\nIndication: Cough 10 days\nFindings: Mild patchy left lower zone opacity.\nImpression: Changes consistent with mild community-acquired pneumonia.",
+    "patient_context": "Seen 2 days ago; started amoxicillin. Improving fever; still coughing.\nNo comorbidities.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Expected finding aligning with current management; follow-up can be routine.",
+    "ground_truth_action": "ROUTINE: Continue antibiotics; review clinically if worsening; consider repeat CXR in 6 weeks if smoker or persistent symptoms."
+  },
+  {
+    "id": 22,
+    "item_type": "radiology_report",
+    "content": "BRAIN MRI\nPatient: Emily Hart, 33F\nIndication: Headaches and visual aura\nFindings: No mass lesion. No acute infarct. Mild non-specific white matter changes.\nImpression: No acute intracranial abnormality.",
+    "patient_context": "Migraine history. Neuro exam normal.",
+    "ground_truth_urgency": "FYI",
+    "ground_truth_reasoning": "Reassuring imaging with no acute abnormality; can be filed and discussed at routine follow-up if needed.",
+    "ground_truth_action": "FYI: File result; optional brief message to patient that imaging is reassuring."
+  },
+  {
+    "id": 23,
+    "item_type": "radiology_report",
+    "content": "RENAL ULTRASOUND\nPatient: Colin Edwards, 64M\nIndication: Reduced eGFR\nFindings: Kidneys normal size. No hydronephrosis. Mild increased cortical echogenicity.\nImpression: No obstruction. Features may reflect chronic parenchymal disease.",
+    "patient_context": "CKD 3a. No urinary symptoms.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "No obstruction; chronic disease features support routine management.",
+    "ground_truth_action": "ROUTINE: Continue CKD monitoring; manage BP; check urine ACR and metabolic parameters."
+  },
+  {
+    "id": 24,
+    "item_type": "radiology_report",
+    "content": "KNEE X-RAY\nPatient: James Parker, 58M\nIndication: Knee pain\nFindings: Mild medial compartment osteoarthritic change. No fracture.\nImpression: Mild osteoarthritis.",
+    "patient_context": "Chronic knee pain; wants options.",
+    "ground_truth_urgency": "FYI",
+    "ground_truth_reasoning": "Mild osteoarthritis on imaging; no urgent action required. Can be filed and addressed at routine musculoskeletal review.",
+    "ground_truth_action": "FYI: File result; discuss management options at next routine visit if the patient requests."
+  },
+  {
+    "id": 25,
+    "item_type": "radiology_report",
+    "content": "ABDOMINAL ULTRASOUND\nPatient: Leilani Fong, 46F\nIndication: Abnormal LFTs\nFindings: Mild fatty infiltration of the liver. No focal lesion. Biliary tree normal.\nImpression: Hepatic steatosis.",
+    "patient_context": "BMI 32. Drinks 1–2 glasses of wine most nights. Prediabetes.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Fatty liver is common and managed outpatient.",
+    "ground_truth_action": "ROUTINE: Counsel on weight loss and alcohol reduction; assess metabolic syndrome; repeat LFTs; consider Fib-4 risk stratification."
+  },
+  {
+    "id": 26,
+    "item_type": "radiology_report",
+    "content": "CHEST X-RAY\nPatient: Zoe Fraser, 31F\nIndication: Pre-employment screening\nFindings: Normal heart size. Clear lungs. No focal consolidation or effusion.\nImpression: Normal chest radiograph.",
+    "patient_context": "No symptoms. Required for employment paperwork.",
+    "ground_truth_urgency": "FYI",
+    "ground_truth_reasoning": "Normal screening result; no clinical action required.",
+    "ground_truth_action": "FYI: File result; provide copy to patient/employer if requested."
+  },
+  {
+    "id": 27,
+    "item_type": "radiology_report",
+    "content": "ABDOMINAL X-RAY\nPatient: Isaac Ng, 9M\nIndication: Constipation\nFindings: Moderate faecal loading. No obstruction.\nImpression: Constipation pattern.",
+    "patient_context": "Ongoing constipation. No vomiting. Eating and drinking.",
+    "ground_truth_urgency": "FYI",
+    "ground_truth_reasoning": "Expected finding; no urgent action beyond usual constipation management plan.",
+    "ground_truth_action": "FYI: Add result to record; continue constipation plan; review if red flags."
+  },
+  {
+    "id": 28,
+    "item_type": "discharge_summary",
+    "content": "HOSPITAL DISCHARGE SUMMARY\nPatient: Karen Watts, 63F\nAdmission: Elective laparoscopic cholecystectomy\nCourse: Uncomplicated. Discharged day 1.\nMedications: Paracetamol, ibuprofen PRN. Continue usual meds.\nFollow-up: GP to remove port-site dressings in 5–7 days.",
+    "patient_context": "Type 2 diabetes, well controlled. No anticoagulants.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Post-op follow-up tasks are routine and can be booked within days.",
+    "ground_truth_action": "ROUTINE: Arrange nurse appointment for wound check/dressing removal; remind about infection signs and when to seek care."
+  },
+  {
+    "id": 29,
+    "item_type": "discharge_summary",
+    "content": "ED DISCHARGE SUMMARY\nPatient: Tariq Ali, 24M\nPresentation: Asthma exacerbation\nTreatment: Salbutamol nebs; prednisone 5-day course.\nDisposition: Discharged; improved.\nFollow-up: GP review in 2–3 days to optimise preventer therapy.",
+    "patient_context": "Known asthma; inconsistent preventer use.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Follow-up within a few days is appropriate; not same-day given improvement.",
+    "ground_truth_action": "ROUTINE: Book GP review; check inhaler technique; start/step-up ICS; provide action plan and triggers advice."
+  },
+  {
+    "id": 30,
+    "item_type": "discharge_summary",
+    "content": "HOSPITAL DISCHARGE SUMMARY\nPatient: Noel Bennett, 79M\nAdmission: Community-acquired pneumonia\nTreatment: IV antibiotics; switched to oral amoxicillin-clavulanate to complete 5 days.\nDisposition: Discharged with home supports.\nFollow-up: GP review in 1 week; repeat CXR in 6 weeks.",
+    "patient_context": "COPD; ex-smoker. Lives with spouse.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Standard post-discharge care; review within days to a week.",
+    "ground_truth_action": "ROUTINE: Ensure medication course; arrange follow-up; confirm supports; organise repeat imaging if indicated."
+  },
+  {
+    "id": 31,
+    "item_type": "discharge_summary",
+    "content": "ED DISCHARGE SUMMARY\nPatient: Chloe Martin, 31F\nPresentation: Renal colic\nCT KUB: 4 mm distal ureteric stone.\nPlan: Conservative management; tamsulosin for 2 weeks.\nFollow-up: GP to ensure symptom resolution; urology referral if persistent pain or no passage in 4 weeks.",
+    "patient_context": "No fever. Pain controlled with NSAIDs.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Small stone managed conservatively; follow-up routine with safety-netting.",
+    "ground_truth_action": "ROUTINE: Review in 1–2 weeks; advise red flags (fever, uncontrolled pain, anuria); consider repeat imaging if symptoms persist."
+  },
+  {
+    "id": 32,
+    "item_type": "discharge_summary",
+    "content": "HOSPITAL DISCHARGE SUMMARY\nPatient: Marcel Dupont, 52M\nAdmission: New diagnosis heart failure (HFrEF)\nEcho: LVEF 35%\nMedications on discharge: bisoprolol, ACE inhibitor, furosemide.\nFollow-up: GP in 1 week for blood pressure, renal function, and symptom check.",
+    "patient_context": "Previously untreated hypertension; works as builder.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Important follow-up but can be arranged within days. No acute instability described.",
+    "ground_truth_action": "ROUTINE: Arrange GP review in 3–7 days; organise U&E in 1 week; counsel on daily weights, fluid, and red flags."
+  },
+  {
+    "id": 33,
+    "item_type": "discharge_summary",
+    "content": "ED DISCHARGE SUMMARY\nPatient: Sophie Evans, 18F\nPresentation: Alcohol intoxication\nCourse: Observed overnight; medically well.\nPlan: GP follow-up for mental health and alcohol support.",
+    "patient_context": "University student; prior anxiety noted.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Requires follow-up and support but not a same-day medical emergency based on this note alone.",
+    "ground_truth_action": "ROUTINE: Offer appointment within 1–3 days; assess mental health, safety, and substance use; provide resources and supports."
+  },
+  {
+    "id": 34,
+    "item_type": "discharge_summary",
+    "content": "HOSPITAL DISCHARGE SUMMARY\nPatient: Helen Grant, 67F\nAdmission: Cellulitis of lower leg\nTreatment: IV antibiotics then oral cefalexin to complete 7 days.\nFollow-up: GP review in 2–3 days to check response.",
+    "patient_context": "Diabetes. No systemic symptoms at discharge.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Routine clinical review in a few days is appropriate to ensure improvement.",
+    "ground_truth_action": "ROUTINE: Book review; check for spreading, fever, glycaemic control; mark borders and safety-net."
+  },
+  {
+    "id": 35,
+    "item_type": "discharge_summary",
+    "content": "ED DISCHARGE SUMMARY\nPatient: Daniel Wu, 40M\nPresentation: Back pain with sciatica\nExam: No neurological deficit. No red flags.\nPlan: Analgesia, activity advice, physiotherapy.\nFollow-up: GP as needed.",
+    "patient_context": "Warehouse worker. Wants time off work note.",
+    "ground_truth_urgency": "FYI",
+    "ground_truth_reasoning": "Non-urgent ED discharge summary with advice already provided; no immediate action required unless the patient re-presents.",
+    "ground_truth_action": "FYI: File; follow-up if patient requests review or develops red flags."
+  },
+  {
+    "id": 36,
+    "item_type": "specialist_letter",
+    "content": "CARDIOLOGY OUTPATIENT LETTER\nPatient: Mark Davies, 60M\nReason: Palpitations\nHolter: Frequent PACs; no sustained arrhythmia\nPlan: Reassurance. Reduce caffeine. Consider beta blocker if symptomatic.\nFollow-up: Discharged back to GP care.",
+    "patient_context": "Anxious about symptoms; otherwise well.",
+    "ground_truth_urgency": "FYI",
+    "ground_truth_reasoning": "Reassurance letter with discharge back to GP; no immediate action required.",
+    "ground_truth_action": "FYI: File; mention at next contact if patient remains concerned."
+  },
+  {
+    "id": 37,
+    "item_type": "specialist_letter",
+    "content": "ENDOCRINOLOGY LETTER\nPatient: Lucy Patel, 47F\nCondition: Type 2 diabetes\nPlan: Start empagliflozin 10 mg daily; continue metformin.\nDiscussed sick day rules and genital infection risk.\nFollow-up: Endocrinology in 6 months.",
+    "patient_context": "HbA1c recently 72. eGFR 75.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Medication initiation should be actioned in routine time frame with counselling.",
+    "ground_truth_action": "ROUTINE: Arrange prescription; counsel re sick day rules, hydration, and infection symptoms; check baseline renal function and BP."
+  },
+  {
+    "id": 38,
+    "item_type": "specialist_letter",
+    "content": "GASTROENTEROLOGY LETTER\nPatient: Alan McKenzie, 52M\nProcedure: Colonoscopy\nFindings: 2 small adenomatous polyps removed; no cancer.\nPlan: Surveillance colonoscopy in 5 years.",
+    "patient_context": "Prior positive FIT.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Benign findings; routine communication and record update.",
+    "ground_truth_action": "ROUTINE: Inform patient; update recall for surveillance in 5 years; reinforce bowel symptom safety-netting."
+  },
+  {
+    "id": 39,
+    "item_type": "specialist_letter",
+    "content": "RESPIRATORY CLINIC LETTER\nPatient: Nora Bell, 69F\nDiagnosis: COPD\nPlan: Continue tiotropium; start pulmonary rehab referral.\nExacerbation plan discussed; influenza and pneumococcal vaccination recommended.",
+    "patient_context": "Ex-smoker; 2 exacerbations last year.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Care optimisation steps are important but routine.",
+    "ground_truth_action": "ROUTINE: Arrange vaccinations; support pulmonary rehab enrolment; review inhaler technique and action plan."
+  },
+  {
+    "id": 40,
+    "item_type": "specialist_letter",
+    "content": "RHEUMATOLOGY LETTER\nPatient: Sione Taufa, 41M\nCondition: Gout\nPlan: Titrate allopurinol to target urate <0.36 mmol/L.\nProvided flare plan (naproxen if no contraindication; colchicine alternative).",
+    "patient_context": "On allopurinol 100 mg daily; urate 0.48.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Medication titration and monitoring can be done routinely.",
+    "ground_truth_action": "ROUTINE: Arrange urate check in 4 weeks after dose changes; counsel re flare prophylaxis; review renal function and interactions."
+  },
+  {
+    "id": 41,
+    "item_type": "specialist_letter",
+    "content": "NEUROLOGY LETTER\nPatient: Kim Robertson, 26F\nReason: Episodes of dizziness\nAssessment: Benign paroxysmal positional vertigo (BPPV) likely.\nPlan: Epley manoeuvre; physio vestibular exercises. No red flags.",
+    "patient_context": "No hearing loss; neuro exam normal.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Benign diagnosis with conservative plan; routine follow-up.",
+    "ground_truth_action": "ROUTINE: Offer physio referral; provide BPPV advice and red flags (new neuro symptoms, severe headache)."
+  },
+  {
+    "id": 42,
+    "item_type": "specialist_letter",
+    "content": "ORTHOPAEDICS LETTER\nPatient: Ian Scott, 57M\nCondition: Shoulder impingement\nPlan: Subacromial steroid injection performed; physiotherapy recommended.\nFollow-up: PRN.",
+    "patient_context": "Manual worker. Wants return-to-work guidance.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Routine advice and physio coordination.",
+    "ground_truth_action": "ROUTINE: Arrange physio; advise graded activity; provide work certificate if required."
+  },
+  {
+    "id": 43,
+    "item_type": "specialist_letter",
+    "content": "DERMATOLOGY OUTPATIENT LETTER\nPatient: Jennifer Smith, 34F\nReferral: Eczema\nAssessment: Mild atopic eczema; well controlled.\nPlan: Continue emollients; intermittent topical steroid PRN.\nDischarged back to GP care.",
+    "patient_context": "Referral 3 months ago for flares; improved recently.",
+    "ground_truth_urgency": "FYI",
+    "ground_truth_reasoning": "Specialist discharge letter without required actions; information only.",
+    "ground_truth_action": "FYI: File in record; no action needed unless patient re-presents."
+  },
+  {
+    "id": 44,
+    "item_type": "specialist_letter",
+    "content": "OPHTHALMOLOGY LETTER\nPatient: Robert King, 58M\nReason: Diabetic retinopathy screening\nFindings: No retinopathy. Mild cataract.\nPlan: Routine screening in 24 months.",
+    "patient_context": "Type 2 diabetes; HbA1c improving.",
+    "ground_truth_urgency": "FYI",
+    "ground_truth_reasoning": "Routine screening outcome with no action required.",
+    "ground_truth_action": "FYI: Record result; set recall for 24 months."
+  },
+  {
+    "id": 45,
+    "item_type": "specialist_letter",
+    "content": "ENT LETTER\nPatient: Maria Lopez, 45F\nReason: Recurrent sinusitis\nAssessment: Allergic rhinitis predominant; no surgical indication.\nPlan: Continue intranasal steroid; saline rinses. Discharged.",
+    "patient_context": "Seasonal symptoms; no asthma.",
+    "ground_truth_urgency": "FYI",
+    "ground_truth_reasoning": "Information only; no urgent clinical action required.",
+    "ground_truth_action": "FYI: File; reinforce management if patient asks."
+  },
+  {
+    "id": 46,
+    "item_type": "medication_related",
+    "content": "PHARMACY QUERY\nPatient: Riley Thompson, 14M\nMedication: Methylphenidate LA\nRequest: Early repeat requested, 10 days before due. Pharmacy asks if OK to dispense.",
+    "patient_context": "ADHD. Stable on current dose. Previous early repeat 2 months ago.\nLives with mum; school holidays currently.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Requires clinical review of adherence/diversion but not same-day medical urgency.",
+    "ground_truth_action": "ROUTINE: Contact caregiver within 1–3 days; clarify reason for early request; check stock loss vs dose change; consider controlled drug policy and schedule review."
+  },
+  {
+    "id": 47,
+    "item_type": "medication_related",
+    "content": "DRUG INTERACTION ALERT\nPatient: Aria Wilson, 67F\nAlert: Clarithromycin prescribed by after-hours; patient on simvastatin 40 mg nightly.\nInteraction: Increased risk of myopathy/rhabdomyolysis.",
+    "patient_context": "Simvastatin for secondary prevention.\nClarithromycin started for presumed chest infection; day 2 of course.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Clinically important interaction requiring timely action, but if asymptomatic can be managed promptly within days (hold statin and/or change antibiotic).",
+    "ground_truth_action": "ROUTINE: Contact patient within 1–3 days; advise hold simvastatin while on clarithromycin and for 3 days after; consider alternative antibiotic if appropriate; document interaction counselling."
+  },
+  {
+    "id": 48,
+    "item_type": "medication_related",
+    "content": "REPEAT PRESCRIPTION REQUEST\nPatient: Mason Carter, 51M\nMedication: Omeprazole 20 mg daily\nNote: Long-term use >2 years; request continuation. Pharmacy asks if review needed.",
+    "patient_context": "History of reflux. No alarm symptoms documented.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Long-term PPI warrants review, but not urgent.",
+    "ground_truth_action": "ROUTINE: Approve short supply; book medication review; consider step-down, lifestyle measures, and check indications."
+  },
+  {
+    "id": 49,
+    "item_type": "medication_related",
+    "content": "DRUG INTERACTION ALERT\nPatient: Kiri Wallace, 35F\nAlert: Ibuprofen purchased OTC regularly; patient prescribed lithium carbonate.\nInteraction: NSAIDs may increase lithium levels and risk toxicity (tremor, nausea, confusion).",
+    "patient_context": "Bipolar disorder; stable on lithium for 3 years.\nRecent back pain; taking ibuprofen 400 mg TDS most days for 1 week.\nNo current symptoms of toxicity documented.",
+    "ground_truth_urgency": "ROUTINE",
+    "ground_truth_reasoning": "Clinically important interaction that should be addressed promptly, but if asymptomatic can be managed within 1–3 days with advice and monitoring.",
+    "ground_truth_action": "ROUTINE: Contact patient within 1–3 days; advise avoid NSAIDs; suggest alternative analgesia.\nArrange lithium level and renal function if NSAID use occurred; safety-net for toxicity symptoms."
+  },
+  {
+    "id": 50,
+    "item_type": "medication_related",
+    "content": "MEDICATION CHANGE NOTICE (Hospital)\nPatient: Linda Moore, 74F\nNotice: Metoprolol changed to bisoprolol during admission.\nReason: Heart failure guideline therapy.\nDischarge meds attached.",
+    "patient_context": "Seen in hospital last week for heart failure optimisation; feeling better.",
+    "ground_truth_urgency": "FYI",
+    "ground_truth_reasoning": "Administrative notice of a medication change already implemented; no immediate action required beyond record update.",
+    "ground_truth_action": "FYI: Update medication list; ensure patient has correct script supply; address at next routine review."
+  }
+]
