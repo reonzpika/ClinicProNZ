@@ -28,7 +28,7 @@ export default function HomePage() {
             <p className="mt-1 text-sm text-slate-600">Get photos captured and sorted quickly; reduce referral friction.</p>
             <div className="mt-4 space-y-2">
               <Button asChild className="w-full">
-                <Link href="/image">Start free</Link>
+                <Link href="/referral-images/desktop">Start free</Link>
               </Button>
             </div>
           </div>

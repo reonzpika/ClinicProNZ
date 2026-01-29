@@ -2,6 +2,7 @@
 name: ""
 overview: ""
 todos: []
+isProject: false
 ---
 
 # ClinicPro Image Freemium Implementation Guide
@@ -127,7 +128,7 @@ We already have working image tools at `/medtech-images` that include:
 - Use userId (not randomly generated sessionId)
 - Link is permanent per user: `/image/mobile?u={shortUserId}` (shortened for easy sharing)
 - Share buttons pre-populate message: "My clinical photo tool: [link]"
-- QR code optional (for GPs who prefer scanning) 
+- QR code optional (for GPs who prefer scanning)
 
 #### 2. Mobile Landing Page (`/image/mobile?u={userId}`)
 
@@ -537,12 +538,10 @@ s3://clinicpro-images/image/{userId}/{sessionId}/{timestamp}-{imageId}.jpg
 1. GP lands on `/image/app`
 2. Not logged in → Show auth prompt: "Sign in to start capturing photos"
 3. Clerk signup form:
-
-   - Email (required)
-   - Name (required)
-   - Password or magic link
-   - Checkbox: "I agree to receive product updates" (pre-checked)
-
+  - Email (required)
+  - Name (required)
+  - Password or magic link
+  - Checkbox: "I agree to receive product updates" (pre-checked)
 4. After signup → Desktop shows QR code
 5. Email captured ✅
 
@@ -625,7 +624,7 @@ s3://clinicpro-images/image/{userId}/{sessionId}/{timestamp}-{imageId}.jpg
 
 ---
 
-## 
+
 
 ---
 
@@ -680,25 +679,20 @@ s3://clinicpro-images/image/{userId}/{sessionId}/{timestamp}-{imageId}.jpg
 **New Features to Build (Priority Order):**
 
 1. **Freemium logic** (highest priority):
-
-   - Usage tracking: count images per user per month
-   - Enforce 20 images/month limit for free tier
-   - Display usage counter on desktop and mobile
-   - Block uploads when limit reached (show upgrade prompt)
-
+  - Usage tracking: count images per user per month
+  - Enforce 20 images/month limit for free tier
+  - Display usage counter on desktop and mobile
+  - Block uploads when limit reached (show upgrade prompt)
 2. **PDF export** (premium feature):
-
-   - Library: `jsPDF` or `pdfkit`
-   - Convert captured images to PDF format
-   - Single PDF with all images (one per page)
-   - <1MB total file size
-
+  - Library: `jsPDF` or `pdfkit`
+  - Convert captured images to PDF format
+  - Single PDF with all images (one per page)
+  - <1MB total file size
 3. **Mobile annotation/editing** (premium feature):
-
-   - Tools: arrows, circles, crop, free draw/markup
-   - Library: Check if `konva` already exists in codebase (used elsewhere)
-   - Mobile-optimized UI (large touch targets)
-   - Save annotated image as new JPEG
+  - Tools: arrows, circles, crop, free draw/markup
+  - Library: Check if `konva` already exists in codebase (used elsewhere)
+  - Mobile-optimized UI (large touch targets)
+  - Save annotated image as new JPEG
 
 **User-Facing Comparison Table:**
 
@@ -746,18 +740,14 @@ Before building anything new:
 
 1. **Copy** `/medtech-images/` → `/image/`
 2. **Examine** existing code:
-
-   - Desktop QR generation
-   - Mobile camera capture
-   - Image upload/compression
-   - Real-time sync
-
+  - Desktop QR generation
+  - Mobile camera capture
+  - Image upload/compression
+  - Real-time sync
 3. **Remove** Medtech-specific features:
-
-   - ALEX API integration
-   - FHIR DocumentReference
-   - Launch context handling
-
+  - ALEX API integration
+  - FHIR DocumentReference
+  - Launch context handling
 4. **Test** basic workflow: Desktop QR → Mobile capture → Upload → Display
 5. **Verify** S3 upload and compression still works
 
