@@ -25,8 +25,8 @@ import * as Ably from 'ably';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
-import { redisSessionService } from '@/src/lib/services/session-storage';
 import type { SessionImage } from '@/src/lib/services/session-storage';
+import { redisSessionService } from '@/src/lib/services/session-storage';
 
 // Initialize Ably client (server-side)
 const getAblyClient = () => {
@@ -92,8 +92,7 @@ export async function POST(request: NextRequest) {
       success: true,
       imageCount: session.images.length,
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.error('[Session Images] Error:', error);
     return NextResponse.json(
       {

@@ -84,9 +84,11 @@ export function MetadataChips({
           Description
 {' '}
 <span className="text-red-600">*</span>
-          {!image.metadata.notes || image.metadata.notes.trim() === '' ? (
+          {!image.metadata.notes || image.metadata.notes.trim() === ''
+? (
             <span className="ml-2 text-xs font-normal text-red-600">(is required)</span>
-          ) : null}
+          )
+: null}
         </label>
         <textarea
           id={`notes-${imageId}`}

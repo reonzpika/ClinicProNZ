@@ -1,6 +1,5 @@
 'use client';
 
-
 export function GalleryTileSkeleton() {
   return (
     <div className="animate-pulse">

@@ -40,7 +40,7 @@ type Step =
   | 'uploading'
   | 'success';
 
-interface ImageFile {
+type ImageFile = {
   id: string;
   file: File;
   previewUrl: string;
@@ -48,15 +48,15 @@ interface ImageFile {
     side?: 'left' | 'right';
     description?: string;
   };
-}
+};
 
-interface EncounterContext {
+type EncounterContext = {
   encounterId: string;
   patientId: string;
   patientName?: string;
   patientNHI?: string;
   facilityId: string;
-}
+};
 
 function MobilePageContent() {
   const searchParams = useSearchParams();
@@ -102,8 +102,7 @@ function MobilePageContent() {
       });
 
       setStep('capture');
-    }
-    catch (err) {
+    } catch (err) {
       console.error('[Mobile] Token validation failed:', err);
       setError(err instanceof Error ? err.message : 'Failed to validate token');
       setStep('error');
@@ -118,7 +117,7 @@ function MobilePageContent() {
 return;
 }
 
-    const newImages: ImageFile[] = Array.from(e.target.files).map((file) => ({
+    const newImages: ImageFile[] = Array.from(e.target.files).map(file => ({
       id: nanoid(),
       file,
       previewUrl: URL.createObjectURL(file),
@@ -191,8 +190,7 @@ return;
         );
       }
       setCurrentMetadataIndex(prev => prev + 1);
-    }
-    else {
+    } else {
       // All metadata entered, proceed to upload
       startUpload();
     }
@@ -327,8 +325,7 @@ throw new Error('No encounter context');
 
       // All uploaded successfully
       setStep('success');
-    }
-    catch (err) {
+    } catch (err) {
       console.error('[Mobile] Upload failed:', err);
       setError(err instanceof Error ? err.message : 'Upload failed');
       setStep('error');
@@ -633,12 +630,14 @@ throw new Error('No encounter context');
                   className="flex-1"
                   disabled={!images[currentMetadataIndex]!.metadata.description || images[currentMetadataIndex]!.metadata.description.trim() === ''}
                 >
-                  {currentMetadataIndex < images.length - 1 ? (
+                  {currentMetadataIndex < images.length - 1
+? (
                     <>
                       Next
                       <ChevronRight className="ml-1 size-4" />
                     </>
-                  ) : (
+                  )
+: (
                     <>
                       <Upload className="mr-2 size-4" />
                       Upload All

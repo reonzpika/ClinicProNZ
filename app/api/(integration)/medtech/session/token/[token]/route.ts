@@ -58,8 +58,7 @@ export async function GET(
       facilityId: tokenData.facilityId,
       valid: true,
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.error('[Token Validate] Error:', error);
     return NextResponse.json(
       {

@@ -2,7 +2,10 @@ import { clerkClient } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
+import { getDb } from 'database/client';
+import { users } from 'database/schema';
 import { getTierByStripePriceId } from '@/src/shared/utils/billing-config';
+import { eq } from 'drizzle-orm';
 
 // Helper function to find user by Stripe customer ID
 async function findUserByStripeCustomerId(customerId: string | Stripe.Customer | Stripe.DeletedCustomer): Promise<string | null> {
@@ -50,6 +53,7 @@ export async function POST(req: Request) {
     }
 
     const stripe = new Stripe(stripeSecretKey);
+    const db = getDb();
 
     const body = await req.text();
     const signature = req.headers.get('stripe-signature');
@@ -92,7 +96,7 @@ export async function POST(req: Request) {
           return NextResponse.json({ error: 'Missing user identification' }, { status: 400 });
         }
 
-        // Get the subscription to find the price ID
+        // Handle subscription payments (AI Scribe)
         if (session.subscription) {
           try {
             await clerk.users.updateUserMetadata(clientReferenceId, {
@@ -107,6 +111,29 @@ export async function POST(req: Request) {
           } catch (error) {
             console.error('Error updating user metadata:', error);
             // Don't fail the webhook for metadata update errors
+          }
+        }
+        // Handle one-time payments (Referral Images)
+        else if (session.mode === 'payment' && session.metadata?.product === 'referral_images') {
+          try {
+            const paymentIntentId = typeof session.payment_intent === 'string' 
+              ? session.payment_intent 
+              : session.payment_intent?.id;
+
+            // Update database: set user to premium tier
+            await db
+              .update(users)
+              .set({
+                imageTier: 'premium',
+                stripePaymentId: paymentIntentId || null,
+                upgradedAt: new Date(),
+              })
+              .where(eq(users.id, clientReferenceId));
+
+            console.log(`[Webhook] Referral Images upgrade completed for user ${clientReferenceId}`);
+          } catch (error) {
+            console.error('Error updating Referral Images user to premium:', error);
+            // Don't fail the webhook for database update errors
           }
         }
         break;

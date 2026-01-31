@@ -2,7 +2,7 @@
 project_name: ClinicPro SaaS
 project_stage: Operational
 owner: Development Team
-last_updated: "2025-11-07"
+last_updated: "2026-01-31"
 version: "1.0.4"
 tags:
   - saas
@@ -29,7 +29,7 @@ Maintenance only. If you touch ClinicPro this week, keep it to stability fixes; 
 
 ---
 
-## Current Status [2025-01-15]
+## Current Status [2026-01-18]
 
 ### Production Status
 - ✅ **Deployed**: Vercel (frontend) + AWS Lightsail BFF (backend)
@@ -38,6 +38,9 @@ Maintenance only. If you touch ClinicPro this week, keep it to stability fixes; 
 - ✅ **Features**: Core features in production use
 
 ### Recent Updates
+- **2026-01-31**: Referral Images filename and overlay — Filenames now use date+time (no random ID); desktop card label shows side + description and full filename on hover.
+- **2026-01-31**: GP Referral Images — Standalone referral photo workflow (freemium: Month 1 unlimited, then 10 images/month, 2 grace unlocks; $50 one-time premium). E2E testing complete; all phases passed.
+- **2026-01-18**: Photo Tool Freemium Feature — Standalone medical photo capture with freemium model (20 images/month free, $50 premium upgrade)
 - **2025-01-15**: Project management system installed — NexWave system adapted for ClinicPro workspace
 - **2024-10-01**: Clinical notes API improvements — Multi-source data handling, transcription error handling, anti-hallucination rules
 
@@ -49,6 +52,8 @@ Maintenance only. If you touch ClinicPro this week, keep it to stability fixes; 
 - **AI Clinical Notes**: OpenAI‑powered templated note generation (`app/api/(clinical)/consultation/notes`)
 - **Recording Systems**: Desktop and mobile audio capture with Deepgram STT (nova‑3‑medical) and Ably signalling
 - **Clinical Image Analysis**: Anthropic Claude Vision inference over images stored in S3
+- **Photo Tool (Freemium)**: Standalone medical photo capture with mobile-first UX, 20 images/month free tier, premium upgrade ($50) for unlimited images + PDF export + annotations
+- **Referral Images (Freemium)**: Standalone referral photo workflow (phone to desktop). Landing at `/referral-images`; desktop and mobile capture pages; freemium limits and Stripe upgrade; E2E passed.
 - **RAG (Pilot)**: LlamaIndex/Weaviate plan; current vector search via Postgres/pgvector
 
 ### Platform Features
@@ -126,13 +131,13 @@ Medtech ALEX / External Services
 ## Routing Snapshot (high‑level)
 
 - Pages (`app/`):
-  - Marketing: `(marketing)/landing-page`, `about`, `ai-scribing`, `clinicpro`, `contact`, `roadmap`
-  - Clinical: `(clinical)/ai-scribe/consultation`, `(clinical)/ai-scribe/templates`, `(clinical)/ai-scribe/image`, `(clinical)/image` (landing), `(clinical)/image/app` (standalone placeholder), `chat`, `search`, `differential-diagnosis`, `(clinical)/acc/*`
+  - Marketing: `(marketing)/landing-page`, `about`, `ai-scribing`, `clinicpro`, `contact`, `roadmap`, `(marketing)/referral-images` (landing)
+  - Clinical: `(clinical)/ai-scribe/consultation`, `(clinical)/ai-scribe/templates`, `(clinical)/ai-scribe/image`, `(clinical)/image` (landing), `(clinical)/image/app` (desktop photo tool), `(clinical)/image/mobile` (mobile capture), `(clinical)/image/upgrade` (pricing), `(clinical)/referral-images/desktop`, `(clinical)/referral-images/capture`, `(clinical)/referral-images/setup-complete`, `(clinical)/referral-images/success`, `chat`, `search`, `differential-diagnosis`, `(clinical)/acc/*`
   - User: `(user)/dashboard`, `settings`, auth
   - Business: `(business)/billing`, `pricing`
   - Admin: `(admin)/admin`, `emergency-admin`
   - Integration: `(integration)/mobile`; Medtech: `(medtech)/medtech-images`
-- APIs (`app/api/`): grouped under `(clinical)`, `(user)`, `(business)`, `(admin)`, `(integration)`, `(marketing)`, plus `current-session`, `maintenance`, `search`.
+- APIs (`app/api/`): grouped under `(clinical)`, `(user)`, `(business)`, `(admin)`, `(integration)`, `(marketing)`, plus `current-session`, `maintenance`, `search`, `image/*` (photo tool freemium), `referral-images/*` (signup, status, upload, unlock-grace, download, upgrade/checkout, upgrade/webhook).
 
 ---
 
@@ -220,6 +225,7 @@ Medtech ALEX / External Services
   - `image-mobile.md` — Mobile image capture
   - `qa-system.md` — Q&A system documentation
 - `llamaindex-rag-chatbot.md` — RAG implementation plan
+- `project-management/clinicpro/features/referral-images/README.md` — Referral Images feature overview and code pointers; working/strategy docs in `features/referral-images/archive/`
 
 **Code References**:
 - API Routes: `/app/api/`

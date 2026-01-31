@@ -3,8 +3,8 @@
  * Auto-injects headers and handles OAuth
  */
 
-const oauthTokenService = require('./oauth-token-service')
-const { randomUUID } = require('crypto')
+const oauthTokenService = require('./oauth-token-service');
+const { randomUUID } = require('node:crypto');
 
 class AlexApiClient {
   async request(endpoint, options = {}) {
@@ -13,16 +13,16 @@ class AlexApiClient {
       body,
       correlationId = randomUUID(),
       facilityId,
-    } = options
+    } = options;
 
-    const baseUrl = process.env.MEDTECH_API_BASE_URL
-    const effectiveFacilityId =
-      (typeof facilityId === 'string' && facilityId.trim() ? facilityId.trim() : null)
-      || process.env.MEDTECH_FACILITY_ID
-    const url = `${baseUrl}${endpoint}`
+    const baseUrl = process.env.MEDTECH_API_BASE_URL;
+    const effectiveFacilityId
+      = (typeof facilityId === 'string' && facilityId.trim() ? facilityId.trim() : null)
+        || process.env.MEDTECH_FACILITY_ID;
+    const url = `${baseUrl}${endpoint}`;
 
     try {
-      const accessToken = await oauthTokenService.getAccessToken()
+      const accessToken = await oauthTokenService.getAccessToken();
 
       const headers = {
         'Authorization': `Bearer ${accessToken}`,
@@ -31,48 +31,48 @@ class AlexApiClient {
         // Request tracing across BFF <-> ALEX.
         // Documented in ALEX API reference as `mt-correlationid`.
         'mt-correlationid': correlationId,
-      }
+      };
 
-      const requestOptions = { method, headers }
+      const requestOptions = { method, headers };
       if (body) {
-        requestOptions.body = JSON.stringify(body)
+        requestOptions.body = JSON.stringify(body);
       }
 
-      console.log('[ALEX API] Request', { method, endpoint, correlationId })
+      console.log('[ALEX API] Request', { method, endpoint, correlationId });
 
-      const response = await fetch(url, requestOptions)
+      const response = await fetch(url, requestOptions);
 
       // Retry on 401
       if (response.status === 401 && !options.retried) {
-        console.warn('[ALEX API] 401, refreshing token')
-        await oauthTokenService.forceRefresh()
-        return this.request(endpoint, { ...options, retried: true })
+        console.warn('[ALEX API] 401, refreshing token');
+        await oauthTokenService.forceRefresh();
+        return this.request(endpoint, { ...options, retried: true });
       }
 
       if (!response.ok) {
-        const errorText = await response.text()
-        const err = new Error(`ALEX API error: ${response.status} ${errorText}`)
-        err.statusCode = response.status
-        err.correlationId = correlationId
-        throw err
+        const errorText = await response.text();
+        const err = new Error(`ALEX API error: ${response.status} ${errorText}`);
+        err.statusCode = response.status;
+        err.correlationId = correlationId;
+        throw err;
       }
 
-      const data = await response.json()
-      console.log('[ALEX API] Success', { status: response.status, correlationId })
-      return data
+      const data = await response.json();
+      console.log('[ALEX API] Success', { status: response.status, correlationId });
+      return data;
     } catch (error) {
-      console.error('[ALEX API] Failed', { endpoint, error: error.message, correlationId })
-      throw error
+      console.error('[ALEX API] Failed', { endpoint, error: error.message, correlationId });
+      throw error;
     }
   }
 
   async get(endpoint, options) {
-    return this.request(endpoint, { ...options, method: 'GET' })
+    return this.request(endpoint, { ...options, method: 'GET' });
   }
 
   async post(endpoint, body, options) {
-    return this.request(endpoint, { ...options, method: 'POST', body })
+    return this.request(endpoint, { ...options, method: 'POST', body });
   }
 }
 
-module.exports = new AlexApiClient()
+module.exports = new AlexApiClient();

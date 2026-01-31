@@ -7,11 +7,10 @@
 
 'use client';
 
-import { nanoid } from 'nanoid';
-import { useEffect, useRef } from 'react';
-
 // Dynamic import Ably to avoid SSR issues
 import type * as AblyTypes from 'ably';
+import { nanoid } from 'nanoid';
+import { useEffect, useRef } from 'react';
 
 import { useImageWidgetStore } from '../stores/imageWidgetStore';
 import type { WidgetImage } from '../types';
@@ -38,7 +37,7 @@ export function useAblySessionSync(encounterId: string | null | undefined) {
 
     // Initialize Ably client (client-side only, dynamic import)
     let cleanupFn: (() => void) | null = null;
-    
+
     (async () => {
       const Ably = (await import('ably')).default;
       const ably = new Ably.Realtime({ key: ablyApiKey });
@@ -71,7 +70,7 @@ export function useAblySessionSync(encounterId: string | null | undefined) {
           for (const img of data.images) {
             // Get CURRENT store state (avoid stale closure)
             const currentImages = useImageWidgetStore.getState().sessionImages;
-            
+
             // Check if image already exists in store (by s3Key, not downloadUrl)
             const exists = currentImages.some(storeImg =>
               storeImg.s3Key === img.s3Key,
@@ -112,8 +111,7 @@ export function useAblySessionSync(encounterId: string | null | undefined) {
         }
 
         hasInitialFetchRef.current = true;
-      }
-      catch (error) {
+      } catch (error) {
         console.error('[Ably Sync] Error fetching session images:', error);
       }
     }

@@ -1,13 +1,13 @@
 // @ts-nocheck
 /**
  * ALEX API Validation Script for Task Completion Checker Feature
- * 
+ *
  * Tests critical endpoints needed for the feature:
  * 1. DocumentReference (consultation notes) - Can we get note TEXT content?
  * 2. DiagnosticReport (lab orders/results)
  * 3. MedicationRequest (prescriptions)
  * 4. Communication/Outbox (referrals)
- * 
+ *
  * Run: npx tsx scripts/validate-task-checker-api.ts
  */
 
@@ -24,7 +24,7 @@ const CONFIG = {
   clientSecret: process.env.MEDTECH_CLIENT_SECRET,
   tenantId: process.env.MEDTECH_TENANT_ID || '8a024e99-aba3-4b25-b875-28b0c0ca6096',
   scope: process.env.MEDTECH_API_SCOPE || 'api://bf7945a6-e812-4121-898a-76fea7c13f4d/.default',
-  
+
   // Test patient (from UAT environment)
   testPatientNhi: 'ZZZ0016',
   testPatientId: '14e52e16edb7a435bfa05e307afd008b',
@@ -52,7 +52,7 @@ async function getAccessToken(): Promise<string> {
   });
 
   console.log('\n🔐 Acquiring OAuth token...');
-  
+
   const response = await fetch(tokenUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -65,7 +65,7 @@ async function getAccessToken(): Promise<string> {
   }
 
   const data = await response.json();
-  
+
   cachedToken = {
     accessToken: data.access_token,
     expiresAt: Date.now() + 55 * 60 * 1000, // 55 min cache
@@ -110,15 +110,15 @@ async function alexGet<T = unknown>(endpoint: string): Promise<T> {
 // Test Functions
 // ============================================================================
 
-interface FhirBundle {
+type FhirBundle = {
   resourceType: 'Bundle';
   total?: number;
   entry?: Array<{
     resource: Record<string, unknown>;
   }>;
-}
+};
 
-interface DocumentReference {
+type DocumentReference = {
   resourceType: 'DocumentReference';
   id: string;
   status: string;
@@ -128,14 +128,14 @@ interface DocumentReference {
     attachment?: {
       contentType?: string;
       data?: string; // Base64 encoded content
-      url?: string;  // Reference to Binary resource
+      url?: string; // Reference to Binary resource
     };
   }>;
   description?: string;
-}
+};
 
 async function testDocumentReference(): Promise<void> {
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('TEST 1: DocumentReference (Consultation Notes)');
   console.log('='.repeat(70));
   console.log('Goal: Check if we can retrieve consultation note TEXT content\n');
@@ -143,7 +143,7 @@ async function testDocumentReference(): Promise<void> {
   try {
     // Try by patient ID first
     const bundle = await alexGet<FhirBundle>(
-      `/DocumentReference?patient=${CONFIG.testPatientId}&_count=5`
+      `/DocumentReference?patient=${CONFIG.testPatientId}&_count=5`,
     );
 
     console.log(`\n📊 Results: ${bundle.total ?? bundle.entry?.length ?? 0} documents found`);
@@ -152,13 +152,13 @@ async function testDocumentReference(): Promise<void> {
     if (entries.length > 0) {
       console.log('\n📄 Sample DocumentReference:');
       const doc = entries[0]!.resource as unknown as DocumentReference;
-      
+
       console.log(`   ID: ${doc.id}`);
       console.log(`   Status: ${doc.status}`);
       console.log(`   Date: ${doc.date}`);
       console.log(`   Type: ${doc.type?.coding?.[0]?.display || 'N/A'}`);
       console.log(`   Description: ${doc.description || 'N/A'}`);
-      
+
       // Check content structure
       const contentArray = doc.content ?? [];
       if (contentArray.length > 0) {
@@ -167,7 +167,7 @@ async function testDocumentReference(): Promise<void> {
         console.log(`      Content-Type: ${attachment?.contentType || 'N/A'}`);
         console.log(`      Has inline data: ${attachment?.data ? 'YES ✅' : 'NO'}`);
         console.log(`      Has URL reference: ${attachment?.url ? 'YES' : 'NO'}`);
-        
+
         if (attachment?.data) {
           // Try to decode base64 content
           try {
@@ -183,7 +183,7 @@ async function testDocumentReference(): Promise<void> {
         } else if (attachment?.url) {
           console.log(`\n   ⚠️ Content is referenced via URL: ${attachment.url}`);
           console.log('   Need to fetch Binary resource separately');
-          
+
           // Try to fetch the Binary resource
           try {
             const binaryUrl = attachment.url.replace(CONFIG.baseUrl, '');
@@ -219,14 +219,14 @@ async function testDocumentReference(): Promise<void> {
 }
 
 async function testDiagnosticReport(): Promise<void> {
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('TEST 2: DiagnosticReport (Lab Orders/Results)');
   console.log('='.repeat(70));
   console.log('Goal: Check if we can see lab ORDERS (not just results)\n');
 
   try {
     const bundle = await alexGet<FhirBundle>(
-      `/DiagnosticReport?patient=${CONFIG.testPatientId}&_count=5`
+      `/DiagnosticReport?patient=${CONFIG.testPatientId}&_count=5`,
     );
 
     console.log(`\n📊 Results: ${bundle.total ?? bundle.entry?.length ?? 0} reports found`);
@@ -245,14 +245,14 @@ async function testDiagnosticReport(): Promise<void> {
 }
 
 async function testMedicationRequest(): Promise<void> {
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('TEST 3: MedicationRequest (Prescriptions)');
   console.log('='.repeat(70));
   console.log('Goal: Check if we can see prescriptions written today\n');
 
   try {
     const bundle = await alexGet<FhirBundle>(
-      `/MedicationRequest?patient=${CONFIG.testPatientId}&_count=5`
+      `/MedicationRequest?patient=${CONFIG.testPatientId}&_count=5`,
     );
 
     console.log(`\n📊 Results: ${bundle.total ?? bundle.entry?.length ?? 0} prescriptions found`);
@@ -271,7 +271,7 @@ async function testMedicationRequest(): Promise<void> {
 }
 
 async function testCommunication(): Promise<void> {
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('TEST 4: Communication (Outbox/Referrals)');
   console.log('='.repeat(70));
   console.log('Goal: Check if we can see referrals sent\n');
@@ -279,7 +279,7 @@ async function testCommunication(): Promise<void> {
   try {
     // Try Communication resource first
     const bundle = await alexGet<FhirBundle>(
-      `/Communication?patient=${CONFIG.testPatientId}&_count=5`
+      `/Communication?patient=${CONFIG.testPatientId}&_count=5`,
     );
 
     console.log(`\n📊 Results: ${bundle.total ?? bundle.entry?.length ?? 0} communications found`);
@@ -299,14 +299,14 @@ async function testCommunication(): Promise<void> {
 }
 
 async function testTask(): Promise<void> {
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('TEST 5: Task (Existing Tasks)');
   console.log('='.repeat(70));
   console.log('Goal: Check if we can read/write tasks\n');
 
   try {
     const bundle = await alexGet<FhirBundle>(
-      `/Task?patient=${CONFIG.testPatientId}&_count=5`
+      `/Task?patient=${CONFIG.testPatientId}&_count=5`,
     );
 
     console.log(`\n📊 Results: ${bundle.total ?? bundle.entry?.length ?? 0} tasks found`);
@@ -329,7 +329,7 @@ async function testTask(): Promise<void> {
 // ============================================================================
 
 async function testAlternativeQueries(): Promise<void> {
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('BONUS: Alternative Query Patterns');
   console.log('='.repeat(70));
 
@@ -337,7 +337,7 @@ async function testAlternativeQueries(): Promise<void> {
   console.log('\n🔍 Trying query by NHI (ZZZ0016)...');
   try {
     const bundle = await alexGet<FhirBundle>(
-      `/DocumentReference?patient.identifier=ZZZ0016&_count=3`
+      `/DocumentReference?patient.identifier=ZZZ0016&_count=3`,
     );
     console.log(`   Result: ${bundle.total ?? bundle.entry?.length ?? 0} documents`);
   } catch (e) {
@@ -348,7 +348,7 @@ async function testAlternativeQueries(): Promise<void> {
   console.log('\n🔍 Trying to list recent documents (no patient filter)...');
   try {
     const bundle = await alexGet<FhirBundle>(
-      `/DocumentReference?_count=3&_sort=-date`
+      `/DocumentReference?_count=3&_sort=-date`,
     );
     console.log(`   Result: ${bundle.total ?? bundle.entry?.length ?? 0} documents`);
     if (bundle.entry && bundle.entry.length > 0) {
@@ -367,13 +367,13 @@ async function main(): Promise<void> {
   console.log('╔══════════════════════════════════════════════════════════════════════╗');
   console.log('║     ALEX API Validation for Task Completion Checker Feature          ║');
   console.log('╚══════════════════════════════════════════════════════════════════════╝');
-  
+
   console.log('\n📋 Configuration:');
   console.log(`   Base URL: ${CONFIG.baseUrl}`);
   console.log(`   Facility ID: ${CONFIG.facilityId}`);
   console.log(`   Test Patient NHI: ${CONFIG.testPatientNhi}`);
   console.log(`   Test Patient ID: ${CONFIG.testPatientId}`);
-  console.log(`   Client ID: ${CONFIG.clientId ? '***' + CONFIG.clientId.slice(-8) : '❌ NOT SET'}`);
+  console.log(`   Client ID: ${CONFIG.clientId ? `***${CONFIG.clientId.slice(-8)}` : '❌ NOT SET'}`);
   console.log(`   Client Secret: ${CONFIG.clientSecret ? '***[SET]' : '❌ NOT SET'}`);
 
   if (!CONFIG.clientId || !CONFIG.clientSecret) {
@@ -392,7 +392,7 @@ async function main(): Promise<void> {
     await testAlternativeQueries();
 
     // Summary
-    console.log('\n' + '='.repeat(70));
+    console.log(`\n${'='.repeat(70)}`);
     console.log('SUMMARY');
     console.log('='.repeat(70));
     console.log(`
@@ -415,7 +415,6 @@ Based on these tests, we can determine:
 
 If TEST 1 shows we can get note text, the feature is FEASIBLE! 🎉
 `);
-
   } catch (error) {
     console.error('\n💥 Script failed:', error);
     process.exit(1);

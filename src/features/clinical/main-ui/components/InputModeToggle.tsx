@@ -1,6 +1,5 @@
 'use client';
 
-
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
 export function InputModeToggle() {

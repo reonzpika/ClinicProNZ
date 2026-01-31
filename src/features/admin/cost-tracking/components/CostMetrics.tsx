@@ -2,7 +2,6 @@
  * Cost metrics display component
  */
 
-
 import type { CostSummary } from '../hooks/useCostTracking';
 import { formatCost } from '../services/costCalculator';
 

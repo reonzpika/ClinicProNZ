@@ -78,8 +78,7 @@ export async function GET(
       patientId: session.patientId,
       facilityId: session.facilityId,
     });
-  }
-  catch (error) {
+  } catch (error) {
     console.error('[Get Session Images] Error:', error);
     return NextResponse.json(
       {

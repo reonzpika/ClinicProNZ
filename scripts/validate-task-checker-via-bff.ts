@@ -1,10 +1,10 @@
 // @ts-nocheck
 /**
  * ALEX API Validation via BFF
- * 
+ *
  * Tests critical endpoints for Task Completion Checker feature
  * Uses new BFF endpoints: /api/medtech/documents, /labs, /prescriptions, etc.
- * 
+ *
  * Run: npx tsx scripts/validate-task-checker-via-bff.ts
  */
 
@@ -18,14 +18,14 @@ const TEST_PATIENT_NHI = 'ZZZ0016';
 async function bffGet<T = unknown>(path: string): Promise<T> {
   const url = `${BFF_BASE_URL}${path}`;
   console.log(`📡 GET ${path}`);
-  
+
   const response = await fetch(url, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
   });
 
   const data = await response.json();
-  
+
   if (!response.ok) {
     console.log(`❌ Error: ${response.status}`);
     console.log(`   Response: ${JSON.stringify(data).substring(0, 300)}`);
@@ -39,7 +39,7 @@ async function bffGet<T = unknown>(path: string): Promise<T> {
 function truncateJson(obj: unknown, maxLength = 2000): string {
   const str = JSON.stringify(obj, null, 2);
   if (str.length > maxLength) {
-    return str.substring(0, maxLength) + '\n... (truncated)';
+    return `${str.substring(0, maxLength)}\n... (truncated)`;
   }
   return str;
 }
@@ -48,7 +48,7 @@ function truncateJson(obj: unknown, maxLength = 2000): string {
 // Types
 // ============================================================================
 
-interface BffResponse<T> {
+type BffResponse<T> = {
   success: boolean;
   duration: number;
   patientId?: string;
@@ -59,9 +59,9 @@ interface BffResponse<T> {
   prescriptions?: T[];
   communications?: T[];
   tasks?: T[];
-}
+};
 
-interface DocumentReference {
+type DocumentReference = {
   id: string;
   status: string;
   date?: string;
@@ -73,14 +73,14 @@ interface DocumentReference {
       url?: string;
     };
   }>;
-}
+};
 
 // ============================================================================
 // Tests
 // ============================================================================
 
 async function testBffHealth(): Promise<boolean> {
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('PRE-CHECK: BFF Health & New Endpoints');
   console.log('='.repeat(70));
 
@@ -97,14 +97,14 @@ async function testBffHealth(): Promise<boolean> {
 }
 
 async function testDocumentReference(): Promise<void> {
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('TEST 1: DocumentReference (Consultation Notes) ⭐ CRITICAL');
   console.log('='.repeat(70));
   console.log('Question: Can we get the actual NOTE TEXT content?\n');
 
   try {
     const result = await bffGet<BffResponse<DocumentReference>>(
-      `/api/medtech/documents?nhi=${TEST_PATIENT_NHI}&count=3`
+      `/api/medtech/documents?nhi=${TEST_PATIENT_NHI}&count=3`,
     );
 
     console.log(`\n📊 Found: ${result.total} documents`);
@@ -112,13 +112,13 @@ async function testDocumentReference(): Promise<void> {
 
     if (result.documents && result.documents.length > 0) {
       const doc = result.documents[0];
-      
+
       console.log('\n📄 First DocumentReference:');
       console.log(`   ID: ${doc.id}`);
       console.log(`   Status: ${doc.status}`);
       console.log(`   Date: ${doc.date}`);
       console.log(`   Type: ${doc.type?.coding?.[0]?.display || 'N/A'}`);
-      
+
       // Check for content
       if (doc.content && doc.content.length > 0) {
         const attachment = doc.content[0].attachment;
@@ -131,10 +131,10 @@ async function testDocumentReference(): Promise<void> {
           try {
             const decoded = Buffer.from(attachment.data, 'base64').toString('utf-8');
             console.log('\n   📝 DECODED NOTE CONTENT:');
-            console.log('   ' + '-'.repeat(50));
+            console.log(`   ${'-'.repeat(50)}`);
             const preview = decoded.substring(0, 1000).replace(/\n/g, '\n   ');
             console.log(`   ${preview}`);
-            console.log('   ' + '-'.repeat(50));
+            console.log(`   ${'-'.repeat(50)}`);
             console.log('\n   ✅ SUCCESS: Note text IS accessible inline!');
             console.log('   → Feature is FEASIBLE from data access perspective');
           } catch (e) {
@@ -164,13 +164,13 @@ async function testDocumentReference(): Promise<void> {
 }
 
 async function testDiagnosticReport(): Promise<void> {
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('TEST 2: DiagnosticReport (Lab Orders/Results)');
   console.log('='.repeat(70));
 
   try {
     const result = await bffGet<BffResponse<unknown>>(
-      `/api/medtech/labs?nhi=${TEST_PATIENT_NHI}&count=3`
+      `/api/medtech/labs?nhi=${TEST_PATIENT_NHI}&count=3`,
     );
 
     console.log(`\n📊 Found: ${result.total} lab reports`);
@@ -188,13 +188,13 @@ async function testDiagnosticReport(): Promise<void> {
 }
 
 async function testMedicationRequest(): Promise<void> {
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('TEST 3: MedicationRequest (Prescriptions)');
   console.log('='.repeat(70));
 
   try {
     const result = await bffGet<BffResponse<unknown>>(
-      `/api/medtech/prescriptions?nhi=${TEST_PATIENT_NHI}&count=3`
+      `/api/medtech/prescriptions?nhi=${TEST_PATIENT_NHI}&count=3`,
     );
 
     console.log(`\n📊 Found: ${result.total} prescriptions`);
@@ -212,13 +212,13 @@ async function testMedicationRequest(): Promise<void> {
 }
 
 async function testCommunication(): Promise<void> {
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('TEST 4: Communication (Referrals)');
   console.log('='.repeat(70));
 
   try {
     const result = await bffGet<BffResponse<unknown>>(
-      `/api/medtech/communications?nhi=${TEST_PATIENT_NHI}&count=3`
+      `/api/medtech/communications?nhi=${TEST_PATIENT_NHI}&count=3`,
     );
 
     console.log(`\n📊 Found: ${result.total} communications`);
@@ -236,13 +236,13 @@ async function testCommunication(): Promise<void> {
 }
 
 async function testTask(): Promise<void> {
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('TEST 5: Task Resource');
   console.log('='.repeat(70));
 
   try {
     const result = await bffGet<BffResponse<unknown>>(
-      `/api/medtech/tasks?nhi=${TEST_PATIENT_NHI}&count=3`
+      `/api/medtech/tasks?nhi=${TEST_PATIENT_NHI}&count=3`,
     );
 
     console.log(`\n📊 Found: ${result.total} tasks`);
@@ -267,7 +267,7 @@ async function main(): Promise<void> {
   console.log('╔══════════════════════════════════════════════════════════════════════╗');
   console.log('║   Task Completion Checker - API Validation                           ║');
   console.log('╚══════════════════════════════════════════════════════════════════════╝');
-  
+
   console.log('\n📋 Configuration:');
   console.log(`   BFF URL: ${BFF_BASE_URL}`);
   console.log(`   Test Patient NHI: ${TEST_PATIENT_NHI}`);
@@ -286,7 +286,7 @@ async function main(): Promise<void> {
   await testTask();
 
   // Summary
-  console.log('\n' + '='.repeat(70));
+  console.log(`\n${'='.repeat(70)}`);
   console.log('SUMMARY');
   console.log('='.repeat(70));
   console.log(`

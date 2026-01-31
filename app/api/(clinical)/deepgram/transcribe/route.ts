@@ -14,13 +14,6 @@ import { createUserSession } from '@/src/lib/services/guest-session-service';
 
 export const runtime = 'nodejs'; // Ensure Node.js runtime for Buffer support
 
-export const config = {
-  api: {
-    bodyParser: false, // Required for formidable to handle multipart
-    sizeLimit: '100mb',
-  },
-};
-
 export async function POST(req: NextRequest) {
   try {
     const db = getDb();

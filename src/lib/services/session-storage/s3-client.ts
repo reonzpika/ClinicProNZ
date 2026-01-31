@@ -136,8 +136,7 @@ export class S3ImageService {
         try {
           const result = await this.generatePresignedDownloadUrl(s3Key);
           results.set(s3Key, result);
-        }
-        catch (error) {
+        } catch (error) {
           console.error('[S3] Failed to generate download URL:', s3Key, error);
           // Skip failed URLs (will be handled by caller)
         }

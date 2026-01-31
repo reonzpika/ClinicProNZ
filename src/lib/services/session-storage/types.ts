@@ -4,7 +4,7 @@
  * Redis schema for per-encounter image sessions
  */
 
-export interface SessionImage {
+export type SessionImage = {
   /** S3 key for the image */
   s3Key: string;
 
@@ -23,9 +23,9 @@ export interface SessionImage {
 
   /** When image was uploaded */
   uploadedAt: number;
-}
+};
 
-export interface EncounterSession {
+export type EncounterSession = {
   /** Encounter ID from Medtech */
   encounterId: string;
 
@@ -49,9 +49,9 @@ export interface EncounterSession {
 
   /** Last activity timestamp (for TTL refresh) */
   lastActivity: number;
-}
+};
 
-export interface SessionToken {
+export type SessionToken = {
   /** Encounter ID this token is for */
   encounterId: string;
 
@@ -69,9 +69,9 @@ export interface SessionToken {
 
   /** When token was created */
   createdAt: number;
-}
+};
 
-export interface PresignedUploadResult {
+export type PresignedUploadResult = {
   /** Presigned PUT URL for S3 upload */
   uploadUrl: string;
 
@@ -80,12 +80,12 @@ export interface PresignedUploadResult {
 
   /** Expiry time (5 minutes from now) */
   expiresAt: number;
-}
+};
 
-export interface PresignedDownloadResult {
+export type PresignedDownloadResult = {
   /** Presigned GET URL for S3 download */
   downloadUrl: string;
 
   /** Expiry time (1 hour from now) */
   expiresAt: number;
-}
+};
