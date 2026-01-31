@@ -46,7 +46,7 @@ export function generateFilename(image: ImageWithMetadata): string {
   const timestamp = typeof image.createdAt === 'string'
     ? image.createdAt
     : image.createdAt.toISOString();
-  const date = timestamp.split('T')[0];
+  const date = timestamp.split('T')[0] ?? '';
   parts.push(date);
 
   // Add short ID to prevent conflicts

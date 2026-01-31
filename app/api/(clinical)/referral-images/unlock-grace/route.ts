@@ -51,14 +51,15 @@ export async function POST(req: NextRequest) {
       )
       .limit(1);
 
-    if (!usageRow.length) {
+    const usage = usageRow[0];
+    if (!usage) {
       return NextResponse.json(
         { error: 'No usage record found for this month' },
         { status: 404 }
       );
     }
 
-    const graceUnlocksUsed = usageRow[0].graceUnlocksUsed || 0;
+    const graceUnlocksUsed = usage.graceUnlocksUsed || 0;
 
     // Check if user can use grace unlock
     if (!canUseGraceUnlock(graceUnlocksUsed)) {

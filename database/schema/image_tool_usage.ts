@@ -8,6 +8,7 @@ export const imageToolUsage = pgTable('image_tool_usage', {
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   month: text('month').notNull(), // YYYY-MM
   imageCount: integer('image_count').default(0).notNull(),
+  graceUnlocksUsed: integer('grace_unlocks_used').default(0).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => {

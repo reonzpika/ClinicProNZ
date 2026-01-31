@@ -96,9 +96,7 @@ export async function sendUsageTipEmail(data: EmailData) {
 /**
  * Email 3: Value Reinforcement (Day 7, if 3+ images)
  */
-export async function sendValueReinforcement
-
-Email(data: EmailData & { imageCount: number }) {
+export async function sendValueReinforcementEmail(data: EmailData & { imageCount: number }) {
   const { email, name, imageCount } = data;
   const timeSaved = imageCount * 5;
   const hoursSaved = Math.floor(timeSaved / 60);

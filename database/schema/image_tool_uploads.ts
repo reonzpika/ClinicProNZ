@@ -10,6 +10,8 @@ export const imageToolUploads = pgTable('image_tool_uploads', {
   imageId: text('image_id').notNull(), // client-generated id (nanoid)
   s3Key: text('s3_key').notNull(),
   fileSize: integer('file_size'),
+  side: text('side'), // 'R' | 'L' | null
+  description: text('description'), // optional description
   createdAt: timestamp('created_at').defaultNow().notNull(),
   expiresAt: timestamp('expires_at').notNull(),
 }, (table) => {

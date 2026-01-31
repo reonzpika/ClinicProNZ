@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { Suspense, useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Copy, Mail, MessageSquare, QrCode, Download, CheckCircle, AlertCircle } from 'lucide-react';
 import Ably from 'ably';
@@ -26,7 +26,7 @@ interface StatusData {
   images: ImageData[];
 }
 
-export default function ReferralImagesDesktopPage() {
+function ReferralImagesDesktopPageContent() {
   const searchParams = useSearchParams();
   const userId = searchParams?.get('u');
 
@@ -61,9 +61,9 @@ export default function ReferralImagesDesktopPage() {
 
   // Ably real-time sync
   useEffect(() => {
-    if (!userId || !process.env.NEXT_PUBLIC_ABLY_KEY) return;
+    if (!userId || !process.env.NEXT_PUBLIC_ABLY_API_KEY) return;
 
-    const ably = new Ably.Realtime({ key: process.env.NEXT_PUBLIC_ABLY_KEY });
+    const ably = new Ably.Realtime({ key: process.env.NEXT_PUBLIC_ABLY_API_KEY });
     const channel = ably.channels.get(`user:${userId}`);
 
     channel.subscribe('image-uploaded', () => {
@@ -77,7 +77,9 @@ export default function ReferralImagesDesktopPage() {
     };
   }, [userId, fetchStatus]);
 
-  const mobileLink = `${window.location.origin}/referral-images/capture?u=${userId}`;
+  const mobileLink = typeof window !== 'undefined' 
+    ? `${window.location.origin}/referral-images/capture?u=${userId}`
+    : '';
 
   const copyToClipboard = async () => {
     try {
@@ -327,5 +329,19 @@ export default function ReferralImagesDesktopPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function ReferralImagesDesktopPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <p className="text-text-secondary">Loading...</p>
+        </div>
+      }
+    >
+      <ReferralImagesDesktopPageContent />
+    </Suspense>
   );
 }

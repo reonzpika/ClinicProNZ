@@ -16,9 +16,7 @@ function getS3Client() {
 }
 
 export function getImageToolBucketName(): string {
-  return process.env.S3_IMAGE_TOOL_BUCKET_NAME
-    || process.env.S3_BUCKET_NAME
-    || 'clinicpro-medtech-sessions';
+  return process.env.S3_REFERRAL_IMAGES || process.env.S3_BUCKET_NAME || 'clinicpro-medtech-sessions';
 }
 
 function extensionForContentType(contentType: string | undefined): string {
@@ -42,34 +40,35 @@ export async function generateImageToolPresignedUpload(args: {
   userId: string;
   imageId: string;
   contentType?: string;
+  s3Key?: string; // Optional pre-generated s3Key to avoid timestamp mismatch
 }) {
   const s3 = getS3Client();
   const bucket = getImageToolBucketName();
-  const s3Key = buildImageToolS3Key({ userId: args.userId, imageId: args.imageId, contentType: args.contentType });
+  // Use provided s3Key or generate new one (for backwards compatibility)
+  const s3Key = args.s3Key || buildImageToolS3Key({ userId: args.userId, imageId: args.imageId, contentType: args.contentType });
 
   const command = new PutObjectCommand({
     Bucket: bucket,
     Key: s3Key,
     ContentType: args.contentType || 'image/jpeg',
-    ServerSideEncryption: 'AES256',
-    Metadata: {
-      'upload-type': 'image-tool',
-      'uploaded-by': args.userId,
-    },
   });
 
-  const uploadUrl = await retry(
-    async () => {
-      return await getSignedUrl(s3, command, { expiresIn: PRESIGNED_UPLOAD_EXPIRY_SEC });
-    },
-    { retries: 3, delay: 600, backoff: 'EXPONENTIAL' },
-  );
+  try {
+    const uploadUrl = await retry(
+      async () => {
+        return await getSignedUrl(s3, command, { expiresIn: PRESIGNED_UPLOAD_EXPIRY_SEC });
+      },
+      { retries: 3, delay: 600, backoff: 'EXPONENTIAL' },
+    );
 
-  return {
-    uploadUrl,
-    s3Key,
-    expiresAt: Date.now() + PRESIGNED_UPLOAD_EXPIRY_SEC * 1000,
-  };
+    return {
+      uploadUrl,
+      s3Key,
+      expiresAt: Date.now() + PRESIGNED_UPLOAD_EXPIRY_SEC * 1000,
+    };
+  } catch (error: any) {
+    throw error;
+  }
 }
 
 export async function generateImageToolPresignedDownload(s3Key: string) {

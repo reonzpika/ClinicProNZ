@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle } from 'lucide-react';
 
-export default function ReferralImagesSuccessPage() {
+function ReferralImagesSuccessPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const sessionId = searchParams?.get('session_id');
@@ -88,5 +88,19 @@ export default function ReferralImagesSuccessPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function ReferralImagesSuccessPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <p className="text-text-secondary">Loading...</p>
+        </div>
+      }
+    >
+      <ReferralImagesSuccessPageContent />
+    </Suspense>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Camera, Clock, Shield, Zap, CheckCircle, Mail, Smartphone } from 'lucide-react';
+import { Camera, Clock, Shield, Zap, CheckCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function ReferralImagesLandingPage() {

@@ -35,7 +35,7 @@ export const maxDuration = 60;
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { userId, imageData, filename, format, metadata } = body;
+    const { userId, imageData, metadata } = body;
 
     if (!userId || !imageData) {
       return NextResponse.json(
@@ -57,15 +57,16 @@ export async function POST(req: NextRequest) {
       .where(eq(users.id, userId))
       .limit(1);
 
-    if (!userRow.length) {
+    const user = userRow[0];
+    if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
 
-    const tier = userRow[0].tier || 'free';
-    const accountCreatedMonth = getMonthFromDate(userRow[0].createdAt);
+    const tier = user.tier || 'free';
+    const accountCreatedMonth = getMonthFromDate(user.createdAt);
 
     // Get or create usage record for current month
     const usageRow = await db
@@ -97,8 +98,11 @@ export async function POST(req: NextRequest) {
         updatedAt: new Date(),
       });
     } else {
-      imageCount = usageRow[0].imageCount;
-      graceUnlocksUsed = usageRow[0].graceUnlocksUsed || 0;
+      const usage = usageRow[0];
+      if (usage) {
+        imageCount = usage.imageCount;
+        graceUnlocksUsed = usage.graceUnlocksUsed || 0;
+      }
     }
 
     // Calculate limit
@@ -146,24 +150,30 @@ export async function POST(req: NextRequest) {
     // Generate imageId and S3 key
     const imageId = nanoid(12);
     const s3Key = buildImageToolS3Key({ userId, imageId, contentType: 'image/jpeg' });
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/b70ba97c-65e6-4de6-addd-e020eb9f4fec',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'upload/route.ts:148',message:'s3Key generated ONCE',data:{s3Key,imageId,userId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'FIX',runId:'post-fix'})}).catch(()=>{});
+    // #endregion
 
-    // Get presigned upload URL
+    // Get presigned upload URL using the pre-generated s3Key
     const { uploadUrl } = await generateImageToolPresignedUpload({
       userId,
       imageId,
       contentType: 'image/jpeg',
+      s3Key, // Pass the pre-generated key to avoid timestamp mismatch
     });
 
     // Upload to S3
     const uploadResponse = await fetch(uploadUrl, {
       method: 'PUT',
-      body: compressedBuffer,
+      body: new Uint8Array(compressedBuffer),
       headers: {
         'Content-Type': 'image/jpeg',
       },
     });
 
     if (!uploadResponse.ok) {
+      const errorText = await uploadResponse.text().catch(() => 'Could not read error body');
+      console.error('[referral-images/upload] S3 upload failed:', uploadResponse.status, errorText.substring(0, 200));
       throw new Error(`S3 upload failed: ${uploadResponse.status}`);
     }
 

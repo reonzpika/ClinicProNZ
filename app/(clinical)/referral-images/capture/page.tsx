@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { Suspense, useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Camera, Upload, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
@@ -17,7 +17,7 @@ interface CapturedImage {
 
 type Screen = 'loading' | 'capture' | 'review' | 'metadata' | 'uploading' | 'success' | 'limit-reached' | 'error';
 
-export default function ReferralImagesMobilePage() {
+function ReferralImagesMobilePageContent() {
   const searchParams = useSearchParams();
   const userId = searchParams?.get('u');
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -27,6 +27,7 @@ export default function ReferralImagesMobilePage() {
   const [currentMetadataIndex, setCurrentMetadataIndex] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [upgradeError, setUpgradeError] = useState<string | null>(null);
   const [usageStatus, setUsageStatus] = useState<{
     imageCount: number;
     limit: number;
@@ -49,7 +50,7 @@ export default function ReferralImagesMobilePage() {
           limit: data.limit,
           graceUnlocksRemaining: data.graceUnlocksRemaining,
         });
-        setScreen('capture');
+        setScreen(data.limitReached === true ? 'limit-reached' : 'capture');
       })
       .catch(() => {
         setScreen('error');
@@ -121,7 +122,9 @@ export default function ReferralImagesMobilePage() {
   const handleMetadataNext = () => {
     if (currentMetadataIndex < images.length - 1) {
       // Carry forward metadata to next image
-      const currentMetadata = images[currentMetadataIndex].metadata;
+      const currentImage = images[currentMetadataIndex];
+      if (!currentImage) return;
+      const currentMetadata = currentImage.metadata;
       setImages(prev => prev.map((img, idx) => 
         idx === currentMetadataIndex + 1 ? { ...img, metadata: { ...currentMetadata } } : img
       ));
@@ -148,11 +151,9 @@ export default function ReferralImagesMobilePage() {
     
     for (let i = 0; i < images.length; i++) {
       const image = images[i];
-      
-      try {
-        // Convert file to base64
-        const base64 = image.dataUrl.split(',')[1];
+      if (!image) continue;
 
+      try {
         const response = await fetch('/api/referral-images/upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -225,6 +226,7 @@ export default function ReferralImagesMobilePage() {
   const handleUpgradeClick = async () => {
     if (!userId) return;
 
+    setUpgradeError(null);
     try {
       const response = await fetch('/api/referral-images/upgrade/checkout', {
         method: 'POST',
@@ -236,9 +238,12 @@ export default function ReferralImagesMobilePage() {
 
       if (result.checkoutUrl) {
         window.location.href = result.checkoutUrl;
+        return;
       }
+      setUpgradeError(result.error || result.details || 'Checkout failed. Please try again.');
     } catch (err) {
       console.error('Failed to create checkout:', err);
+      setUpgradeError('Checkout failed. Please try again.');
     }
   };
 
@@ -343,7 +348,8 @@ export default function ReferralImagesMobilePage() {
   // Metadata Input Screen
   if (screen === 'metadata') {
     const currentImage = images[currentMetadataIndex];
-    
+    if (!currentImage) return null;
+
     return (
       <div className="min-h-screen bg-background flex flex-col">
         <div className="bg-white border-b border-border p-4 flex justify-between items-center">
@@ -537,10 +543,13 @@ export default function ReferralImagesMobilePage() {
                 >
                   Give Me 10 More Free Images
                 </button>
-                <p className="text-xs text-text-tertiary">
-                  ({usageStatus.graceUnlocksRemaining} unlock{usageStatus.graceUnlocksRemaining !== 1 ? 's' : ''} remaining)
-                </p>
               </>
+            )}
+
+            {upgradeError && (
+              <p className="text-sm text-red-600 mt-2" role="alert">
+                {upgradeError}
+              </p>
             )}
           </div>
         </div>
@@ -569,5 +578,22 @@ export default function ReferralImagesMobilePage() {
         </button>
       </div>
     </div>
+  );
+}
+
+export default function ReferralImagesMobilePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="text-center">
+            <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+            <p className="text-text-secondary">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <ReferralImagesMobilePageContent />
+    </Suspense>
   );
 }

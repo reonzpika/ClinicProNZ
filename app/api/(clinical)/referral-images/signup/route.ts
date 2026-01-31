@@ -45,40 +45,99 @@ export async function POST(req: NextRequest) {
     }
 
     const db = getDb();
-
-    // Check if email already exists
-    const existingUser = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
+    const clerk = await clerkClient();
 
     let userId: string;
 
-    if (existingUser.length > 0) {
-      // User already exists, return existing userId
-      userId = existingUser[0].id;
-    } else {
-      // Create Clerk user
-      const clerk = await clerkClient();
-      const clerkUser = await clerk.users.createUser({
+    // Step 1: Check if user exists in Clerk first (source of truth)
+    try {
+      const existingClerkUsers = await clerk.users.getUserList({
         emailAddress: [email],
-        ...(name && {
-          firstName: name.split(' ')[0],
-          lastName: name.split(' ').slice(1).join(' '),
-        }),
       });
 
-      userId = clerkUser.id;
+      const existingUser = existingClerkUsers.data[0];
+      if (existingUser) {
+        // User exists in Clerk
+        userId = existingUser.id;
+        console.log('[referral-images/signup] User exists in Clerk:', userId);
 
-      // Insert into database
-      await db.insert(users).values({
-        id: userId,
+        // Ensure database entry exists (sync Clerk -> DB)
+        const [dbUser] = await db
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+
+        if (!dbUser) {
+          console.log('[referral-images/signup] Syncing Clerk user to database:', userId);
+          await db.insert(users).values({
+            id: userId,
+            email: email,
+            imageTier: 'free',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+      } else {
+        // User doesn't exist - create new user in Clerk
+        console.log('[referral-images/signup] Creating new user in Clerk:', email);
+        
+        try {
+          const clerkUser = await clerk.users.createUser({
+            emailAddress: [email],
+            skipPasswordRequirement: true,
+            skipPasswordChecks: true,
+            ...(name && {
+              firstName: name.split(' ')[0],
+              lastName: name.split(' ').slice(1).join(' '),
+            }),
+          });
+
+          userId = clerkUser.id;
+          console.log('[referral-images/signup] Clerk user created:', userId);
+
+          // Insert into database
+          await db.insert(users).values({
+            id: userId,
+            email: email,
+            imageTier: 'free',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+          console.log('[referral-images/signup] Database entry created:', userId);
+        } catch (clerkError: any) {
+          // Comprehensive error logging for diagnosis
+          console.error('[referral-images/signup] Clerk API Error:', {
+            status: clerkError.status,
+            code: clerkError.code,
+            message: clerkError.message,
+            errors: clerkError.errors,
+            clerkTraceId: clerkError.clerkTraceId,
+            email: email,
+          });
+
+          // Return user-friendly error with details for debugging
+          return NextResponse.json(
+            {
+              error: 'Failed to create account',
+              details: clerkError.errors || clerkError.message,
+              clerkTraceId: clerkError.clerkTraceId,
+            },
+            { status: clerkError.status || 500 }
+          );
+        }
+      }
+    } catch (clerkListError: any) {
+      // Error checking for existing users
+      console.error('[referral-images/signup] Clerk getUserList Error:', {
+        status: clerkListError.status,
+        message: clerkListError.message,
         email: email,
-        imageTier: 'free',
-        createdAt: new Date(),
-        updatedAt: new Date(),
       });
+      return NextResponse.json(
+        { error: 'Failed to verify account status' },
+        { status: 500 }
+      );
     }
 
     // Generate or get existing mobile token
@@ -88,9 +147,10 @@ export async function POST(req: NextRequest) {
       .where(eq(imageToolMobileLinks.userId, userId))
       .limit(1);
 
+    const existingLink = existingToken[0];
     let token: string;
-    if (existingToken.length > 0) {
-      token = existingToken[0].token;
+    if (existingLink) {
+      token = existingLink.token;
     } else {
       // Generate new token
       token = nanoid(12);

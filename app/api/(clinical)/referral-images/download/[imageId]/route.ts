@@ -7,6 +7,7 @@ import { generateFilename } from '@/src/lib/services/referral-images/utils';
 import { getDb } from 'database/client';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { getImageToolBucketName } from '@/src/lib/image-tool/s3';
 
 export const runtime = 'nodejs';
 
@@ -50,6 +51,12 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     }
 
     const image = imageRow[0];
+    if (!image) {
+      return NextResponse.json(
+        { error: 'Image not found' },
+        { status: 404 }
+      );
+    }
 
     // Generate meaningful filename
     const filename = generateFilename({
@@ -68,7 +75,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
       },
     });
 
-    const bucket = process.env.S3_IMAGE_TOOL_BUCKET_NAME || 'clinicpro-medtech-sessions';
+    const bucket = getImageToolBucketName();
 
     const command = new GetObjectCommand({
       Bucket: bucket,

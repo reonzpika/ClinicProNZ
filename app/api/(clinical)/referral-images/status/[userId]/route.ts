@@ -46,15 +46,16 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
       .where(eq(users.id, userId))
       .limit(1);
 
-    if (!userRow.length) {
+    const user = userRow[0];
+    if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
       );
     }
 
-    const tier = userRow[0].tier || 'free';
-    const accountCreatedMonth = getMonthFromDate(userRow[0].createdAt);
+    const tier = user.tier || 'free';
+    const accountCreatedMonth = getMonthFromDate(user.createdAt);
 
     // Get usage for current month
     const usageRow = await db

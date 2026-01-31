@@ -1,6 +1,9 @@
-import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
+
+import { getDb } from 'database/client';
+import { users } from 'database/schema';
+import { eq } from 'drizzle-orm';
 
 export const runtime = 'nodejs';
 
@@ -10,57 +13,100 @@ export const runtime = 'nodejs';
  * Create Stripe checkout session for GP Referral Images upgrade
  *
  * Request body:
- * - userId: string
- * - email: string
+ * - email: string (optional)
  *
  * Response:
  * - checkoutUrl: string
  */
 export async function POST(req: Request) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-  }
-
-  const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-  if (!stripeSecretKey) {
-    return NextResponse.json({ error: 'Payment service not configured' }, { status: 500 });
-  }
-
   try {
-    const body = await req.json();
-    const { email } = body;
+    // Initialize Stripe
+    const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+    // Debug: log which mode (do not log the key itself)
+    console.log('[referral-images/upgrade/checkout] Stripe key mode:', stripeSecretKey?.slice(0, 7) ?? 'missing');
+    if (!stripeSecretKey) {
+      console.error('STRIPE_SECRET_KEY environment variable not set');
+      return NextResponse.json(
+        { error: 'Payment service configuration error' },
+        { status: 500 },
+      );
+    }
 
     const stripe = new Stripe(stripeSecretKey);
+
+    // Parse request body
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 },
+      );
+    }
+
+    const { userId } = body;
+
+    // Require userId
+    if (!userId || typeof userId !== 'string') {
+      return NextResponse.json(
+        { error: 'User ID is required' },
+        { status: 400 },
+      );
+    }
+
+    const db = getDb();
+
+    // Check if user already upgraded
+    const [existingUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (existingUser?.imageTier === 'premium') {
+      return NextResponse.json(
+        { error: 'Already upgraded to premium' },
+        { status: 400 },
+      );
+    }
+
+    // Get price ID from environment
+    const priceId = process.env.STRIPE_REFERRAL_IMAGES_ID;
+    if (!priceId) {
+      return NextResponse.json(
+        { error: 'Stripe price ID not configured for Referral Images' },
+        { status: 500 },
+      );
+    }
+
     const origin = req.headers.get('origin') || 'https://clinicpro.co.nz';
 
-    // Use environment variable for price ID, or create inline
-    const priceId = process.env.STRIPE_REFERRAL_IMAGES_PRICE_ID;
-
+    // Create checkout session for ONE-TIME payment
     const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      customer_email: email,
-      line_items: priceId
-        ? [{ price: priceId, quantity: 1 }]
-        : [{
-            price_data: {
-              currency: 'nzd',
-              unit_amount: 5000, // $50 NZD
-              product_data: {
-                name: 'GP Referral Images - Unlimited',
-                description: 'Unlimited referral images forever + all future features',
-              },
-            },
-            quantity: 1,
-          }],
+      mode: 'payment', // ONE-TIME payment (not subscription)
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
       client_reference_id: userId,
+      ...(existingUser?.email && { customer_email: existingUser.email }),
       success_url: `${origin}/referral-images/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/referral-images/capture`,
+      cancel_url: `${origin}/referral-images/capture?u=${userId}`,
       metadata: {
-        product: 'referral_images_premium',
-        userId,
-        email: email || '',
+        product: 'referral_images',
+        userId: userId,
       },
+      payment_intent_data: {
+        metadata: {
+          product: 'referral_images',
+          userId: userId,
+        },
+      },
+      billing_address_collection: 'required',
+      payment_method_types: ['card'],
     });
 
     if (!session.url) {
@@ -68,11 +114,16 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ checkoutUrl: session.url });
-  } catch (error) {
-    console.error('[referral-images/checkout] Error:', error);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    const stripeError =
+      error && typeof error === 'object' && 'type' in error
+        ? { type: (error as { type: string }).type, code: (error as { code?: string }).code, message }
+        : null;
+    console.error('[referral-images/upgrade/checkout] Error:', message, stripeError ?? error);
     return NextResponse.json(
-      { error: 'Failed to create checkout session' },
-      { status: 500 }
+      { error: 'Failed to create checkout session', details: stripeError?.message ?? message },
+      { status: 500 },
     );
   }
 }

@@ -80,10 +80,11 @@ export async function POST(req: Request) {
               .where(eq(users.id, userId))
               .limit(1);
 
-            if (userRow.length > 0 && userRow[0].email) {
+            const user = userRow[0];
+            if (user?.email) {
               await sendPremiumConfirmationEmail({
-                email: userRow[0].email,
-                name: userRow[0].email.split('@')[0],
+                email: user.email,
+                name: user.email.split('@')[0],
               });
             }
           } catch (emailError) {
@@ -100,15 +101,15 @@ export async function POST(req: Request) {
         break;
       }
 
-      case 'payment_intent.failed': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        console.error('[referral-images/webhook] Payment failed:', paymentIntent.id, paymentIntent.last_payment_error);
-        // TODO: Alert support
-        break;
+      default: {
+        if ((event.type as string) === 'payment_intent.failed') {
+          const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          console.error('[referral-images/webhook] Payment failed:', paymentIntent.id, paymentIntent.last_payment_error);
+          // TODO: Alert support
+        } else {
+          console.log('[referral-images/webhook] Unhandled event type:', event.type);
+        }
       }
-
-      default:
-        console.log('[referral-images/webhook] Unhandled event type:', event.type);
     }
 
     return NextResponse.json({ received: true });
