@@ -2,8 +2,22 @@
 
 import { Suspense, useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Camera, Upload, X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { Camera, Image, Upload, X, ChevronLeft, ChevronRight, Loader2, Share2 } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
+
+import { ShareModal } from '../components/ShareModal';
+import { useShare } from '../components/useShare';
+import {
+  incrementUploadCount,
+  isSharePromptThreshold,
+} from '../components/share-prompt-threshold';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/src/shared/components/ui/dialog';
+import { useToast } from '@/src/shared/components/ui/toast';
 
 interface CapturedImage {
   id: string;
@@ -17,10 +31,23 @@ interface CapturedImage {
 
 type Screen = 'loading' | 'capture' | 'review' | 'metadata' | 'uploading' | 'success' | 'limit-reached' | 'error';
 
+type Platform = 'ios' | 'android' | 'other';
+
+function detectPlatform(): Platform {
+  if (typeof navigator === 'undefined') return 'other';
+  const ua = navigator.userAgent;
+  if (/iPhone|iPad|iPod/.test(ua)) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  return 'other';
+}
+
+const HAS_SEEN_SAVE_PROMPT = 'referral-images-hasSeenSavePrompt';
+
 function ReferralImagesMobilePageContent() {
   const searchParams = useSearchParams();
   const userId = searchParams?.get('u');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const [screen, setScreen] = useState<Screen>('loading');
   const [images, setImages] = useState<CapturedImage[]>([]);
@@ -33,6 +60,32 @@ function ReferralImagesMobilePageContent() {
     limit: number;
     graceUnlocksRemaining: number;
   } | null>(null);
+  const [showSavePrompt, setShowSavePrompt] = useState(false);
+  const [showSharePromptAfterUpload, setShowSharePromptAfterUpload] = useState(false);
+
+  const shareUrl =
+    typeof window !== 'undefined' && userId
+      ? `${window.location.origin}/referral-images/capture?u=${userId}`
+      : '';
+  const { handleShare, shareModalOpen, setShareModalOpen, shareLocation } = useShare(
+    userId ?? null,
+    shareUrl
+  );
+  const toast = useToast();
+
+  const onShareClick = async (location: string) => {
+    const usedNative = await handleShare(location);
+    if (usedNative) toast.show({ title: 'Thanks for sharing!', durationMs: 3000 });
+  };
+
+  const handleSavedPrompt = () => {
+    if (typeof window !== 'undefined') localStorage.setItem(HAS_SEEN_SAVE_PROMPT, 'true');
+    setShowSavePrompt(false);
+  };
+
+  const handleRemindLater = () => {
+    setShowSavePrompt(false);
+  };
 
   // Check usage status on load
   useEffect(() => {
@@ -97,8 +150,12 @@ function ReferralImagesMobilePageContent() {
     }
   };
 
-  const handleCaptureClick = () => {
-    fileInputRef.current?.click();
+  const handleCameraClick = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const handleGalleryClick = () => {
+    galleryInputRef.current?.click();
   };
 
   const removeImage = (id: string) => {
@@ -182,7 +239,11 @@ function ReferralImagesMobilePageContent() {
     }
 
     if (successCount === images.length) {
+      const newTotal = incrementUploadCount(userId, successCount);
       setScreen('success');
+      if (isSharePromptThreshold(newTotal)) {
+        setShowSharePromptAfterUpload(true);
+      }
       // Reset after 2 seconds
       setTimeout(() => {
         setImages([]);
@@ -260,33 +321,142 @@ function ReferralImagesMobilePageContent() {
   }
 
   // Capture Screen
+  const desktopLink = typeof window !== 'undefined' && userId
+    ? `${window.location.origin}/referral-images/desktop?u=${userId}`
+    : '';
+
   if (screen === 'capture') {
     return (
       <div className="min-h-screen bg-background flex flex-col">
-        <div className="flex-1 flex items-center justify-center p-4">
-          <div className="text-center">
-            <button
-              onClick={handleCaptureClick}
-              className="w-32 h-32 rounded-full bg-primary text-white flex items-center justify-center shadow-lg hover:bg-primary-dark transition-colors"
-            >
-              <Camera className="w-16 h-16" />
-            </button>
-            <p className="mt-6 text-text-secondary">
-              Tap to capture or select photos
-            </p>
-            {usageStatus && usageStatus.limit !== 999999 && (
-              <p className="mt-2 text-sm text-text-tertiary">
-                {usageStatus.imageCount} / {usageStatus.limit} used this month
+        {/* Save to Home Screen modal */}
+        {showSavePrompt && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-sm w-full p-6 shadow-xl">
+              <div className="text-center text-4xl mb-4">📱</div>
+              <h2 className="text-xl font-bold text-text-primary mb-2 text-center">Save to Home Screen</h2>
+              <p className="text-text-secondary text-sm mb-4 text-center">
+                Save this page for instant access during consults. It&apos;ll work like an app - no need to find the link again.
               </p>
-            )}
+              {detectPlatform() === 'ios' && (
+                <ol className="list-decimal list-inside space-y-2 text-text-secondary text-sm mb-4 text-left">
+                  <li>Tap the <strong>Share button</strong> (□↑) at the bottom</li>
+                  <li>Scroll down and tap <strong>&quot;Add to Home Screen&quot;</strong></li>
+                  <li>Tap <strong>&quot;Add&quot;</strong> in the top-right</li>
+                </ol>
+              )}
+              {detectPlatform() === 'android' && (
+                <ol className="list-decimal list-inside space-y-2 text-text-secondary text-sm mb-4 text-left">
+                  <li>Tap the <strong>menu</strong> (⋮) in the top-right corner</li>
+                  <li>Tap <strong>&quot;Add to Home screen&quot;</strong></li>
+                  <li>Tap <strong>&quot;Add&quot;</strong></li>
+                </ol>
+              )}
+              {detectPlatform() === 'other' && (
+                <p className="text-text-secondary text-sm mb-4 text-center">
+                  Look for &quot;Add to Home Screen&quot; or &quot;Install App&quot; in your browser menu.
+                </p>
+              )}
+              <div className="flex flex-col gap-2">
+                <button
+                  onClick={handleSavedPrompt}
+                  className="w-full py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium"
+                >
+                  I&apos;ve Saved It
+                </button>
+                <button
+                  onClick={handleRemindLater}
+                  className="w-full py-3 border border-border rounded-lg hover:bg-surface transition-colors text-text-secondary"
+                >
+                  Remind Me Later
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <header className="py-4 px-4 text-center border-b border-border bg-white">
+          <a href="/" className="text-lg font-semibold text-primary hover:underline block">
+            ClinicPro
+          </a>
+          <p className="text-sm text-text-secondary mt-1">Referral Images</p>
+        </header>
+
+        <ShareModal
+          open={shareModalOpen}
+          onOpenChange={setShareModalOpen}
+          shareUrl={shareUrl}
+          location={shareLocation}
+          userId={userId ?? ''}
+          onShareComplete={() => setShareModalOpen(false)}
+        />
+
+        <div className="flex-1 flex items-center justify-center p-4 relative">
+          <button
+            type="button"
+            onClick={() => onShareClick('capture_content')}
+            disabled={!userId || !shareUrl}
+            className="absolute top-4 right-4 shrink-0 inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-text-primary bg-white"
+            title={shareUrl ? 'Share with colleagues' : 'Share'}
+          >
+            <Share2 className="w-4 h-4" />
+            Share
+          </button>
+          <div className="text-center">
+            <div className="flex gap-8 justify-center items-start">
+              <button
+                onClick={handleCameraClick}
+                className="w-24 h-24 rounded-full bg-primary text-white flex flex-col items-center justify-center shadow-lg hover:bg-primary-dark transition-colors gap-2"
+                type="button"
+              >
+                <Camera className="w-10 h-10" />
+                <span className="text-xs font-medium">Camera</span>
+              </button>
+              <button
+                onClick={handleGalleryClick}
+                className="w-24 h-24 rounded-full bg-primary text-white flex flex-col items-center justify-center shadow-lg hover:bg-primary-dark transition-colors gap-2"
+                type="button"
+              >
+                <Image className="w-10 h-10" />
+                <span className="text-xs font-medium">Gallery</span>
+              </button>
+            </div>
+            <p className="mt-6 text-text-secondary">
+              Take a photo or choose from gallery
+            </p>
           </div>
         </div>
 
+        <div className="py-3 px-4 text-center border-t border-border bg-white">
+          <button
+            type="button"
+            onClick={() => setShowSavePrompt(true)}
+            className="text-sm text-primary hover:underline"
+          >
+            Add to Home Screen for quick access
+          </button>
+        </div>
+
+        {desktopLink && (
+          <footer className="py-4 px-4 text-center border-t border-border bg-white">
+            <a href={desktopLink} className="text-sm text-primary hover:underline">
+              On desktop? Switch to desktop page
+            </a>
+          </footer>
+        )}
+
         <input
-          ref={fileInputRef}
+          ref={cameraInputRef}
           type="file"
           accept="image/*"
           capture="environment"
+          multiple
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*"
           multiple
           onChange={handleFileSelect}
           className="hidden"
@@ -329,7 +499,7 @@ function ReferralImagesMobilePageContent() {
 
         <div className="bg-white border-t border-border p-4 space-y-3">
           <button
-            onClick={handleCaptureClick}
+            onClick={handleGalleryClick}
             className="w-full px-6 py-3 border border-border rounded-lg hover:bg-surface transition-colors"
           >
             Add More Photos
@@ -478,17 +648,57 @@ function ReferralImagesMobilePageContent() {
   // Success Screen
   if (screen === 'success') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <div className="text-center">
-          <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Camera className="w-10 h-10 text-green-600" />
+      <>
+        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Camera className="w-10 h-10 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-text-primary mb-2">Success!</h2>
+            <p className="text-text-secondary">
+              {images.length} image{images.length !== 1 ? 's' : ''} uploaded
+            </p>
           </div>
-          <h2 className="text-2xl font-bold text-text-primary mb-2">Success!</h2>
-          <p className="text-text-secondary">
-            {images.length} image{images.length !== 1 ? 's' : ''} uploaded
-          </p>
         </div>
-      </div>
+
+        {/* Share prompt after upload (at 10, 20, 50, then every 50) */}
+        <Dialog open={showSharePromptAfterUpload} onOpenChange={setShowSharePromptAfterUpload}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <span>Upload complete!</span>
+              </DialogTitle>
+            </DialogHeader>
+            <p className="text-text-secondary">Ready to attach to your referral.</p>
+            <div className="border-t border-border my-4" />
+            <p className="text-text-primary">Just saved &gt;10 minutes?</p>
+            <p className="text-sm text-text-secondary mb-4">
+              Know GPs in your practice who still email photos to themselves?
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSharePromptAfterUpload(false);
+                  onShareClick('capture_after_upload');
+                }}
+                className="px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
+              >
+                <Share2 className="w-4 h-4" />
+                Share ClinicPro
+              </button>
+              <p className="text-xs text-text-tertiary text-center">(Takes 5 seconds)</p>
+              <button
+                type="button"
+                onClick={() => setShowSharePromptAfterUpload(false)}
+                className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 

@@ -18,9 +18,9 @@ export interface ImageWithMetadata {
  * Generate meaningful filename from image metadata
  *
  * Examples:
- * - "right-wound-infection-2026-01-29-a3f9e2.jpg"
- * - "left-ulcer-2026-01-29-b7c4d1.jpg"
- * - "clinical-photo-2026-01-29-e8f2a9.jpg" (no metadata)
+ * - "right-wound-infection-2026-01-31-143052123.jpg"
+ * - "left-ulcer-2026-01-31-091523456.jpg"
+ * - "clinical-photo-2026-01-31-143052123.jpg" (no metadata)
  */
 export function generateFilename(image: ImageWithMetadata): string {
   const parts: string[] = [];
@@ -42,19 +42,24 @@ export function generateFilename(image: ImageWithMetadata): string {
     }
   }
 
-  // Add date for uniqueness
+  // Parse date and time from createdAt (ISO string)
   const timestamp = typeof image.createdAt === 'string'
     ? image.createdAt
     : image.createdAt.toISOString();
-  const date = timestamp.split('T')[0] ?? '';
+  const [datePart, timePart] = timestamp.split('T');
+  const date = datePart ?? '';
+  // HHmmssSSS for uniqueness (avoids same-second collisions)
+  const time = timePart
+    ? timePart.replace(/[^0-9]/g, '').substring(0, 9)
+    : '000000000';
+  const timeCompact = time.length >= 9 ? time : time.padEnd(9, '0');
+
   parts.push(date);
+  parts.push(timeCompact);
 
-  // Add short ID to prevent conflicts
-  parts.push(image.imageId.substring(0, 6));
-
-  // Fallback if no metadata (only date + ID)
+  // Fallback if no metadata (only date + time)
   if (parts.length === 2) {
-    return `clinical-photo-${date}-${image.imageId.substring(0, 6)}.jpg`;
+    return `clinical-photo-${date}-${timeCompact}.jpg`;
   }
 
   return `${parts.join('-')}.jpg`;

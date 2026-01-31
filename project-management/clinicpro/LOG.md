@@ -1,5 +1,32 @@
 # Project Log - ClinicPro SaaS
 
+## 2026-01-31 Sat
+### Referral Images: Filename (date+time, no ID) and desktop overlay
+
+**Context**: User requested filenames to include date and time (for multiple "left wound" images), remove random short ID (e.g. Pue9VP), and make desktop card label reflect side and optionally full filename.
+
+### Progress
+- ✅ **Filename generator** (`src/lib/services/referral-images/utils.ts`): `generateFilename()` now uses date (YYYY-MM-DD) + time (HHmmssSSS from `createdAt`) instead of short `imageId`; no random ID in filename. Example: `left-wound-image-2026-01-31-143052123.jpg`.
+- ✅ **Desktop overlay** (`app/(clinical)/referral-images/desktop/page.tsx`): Card label now shows side when present (e.g. "Right – wound image"); fallback to description or filename. Full filename on hover via `title={image.filename}`.
+- ✅ Build passed.
+
+### Decisions
+- Time uses HHmmssSSS (milliseconds) to avoid same-second filename collisions.
+- Overlay: side + description when both exist; otherwise description or filename; tooltip shows full download filename.
+
+### Referral Images: Implementation complete; docs tidied
+
+**Context**: Referral Images feature implementation finished. Documentation tidy: archive working/strategy docs, add feature README, update PROJECT_SUMMARY.
+
+### Progress
+- ✅ Archived: Strategy & Implementation Plan and E2E Testing Results moved to `project-management/clinicpro/features/referral-images/archive/`
+- ✅ Added `archive/README.md` describing archived contents
+- ✅ Created `features/referral-images/README.md` as single entry point (summary, status, URLs, API routes, code locations)
+- ✅ Updated `PROJECT_SUMMARY.md`: last_updated, Recent Updates, Key Features (Referral Images), Routing Snapshot (marketing + clinical referral-images routes and APIs), Technical Documentation References
+
+### Decisions
+- Working and strategy docs preserved in archive; README is current source of truth for overview and navigation.
+
 ## 2026-01-18 Sat
 ### Feature: Photo Tool Freemium Implementation
 

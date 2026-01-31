@@ -37,23 +37,34 @@ export async function sendWelcomeEmail(data: EmailData) {
         
         <p>Your referral photo tool is set up and ready.</p>
         
-        <h3>🖥️ Desktop Link (bookmark this):</h3>
+        <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+        
+        <h3>🖥️ Desktop Link (bookmark this on your computer):</h3>
         <p><a href="${desktopLink}" style="color: #0070e0;">${desktopLink}</a></p>
         
-        <h3>📱 Mobile Capture Link (save to phone's home screen):</h3>
+        <h3>📱 Mobile Link (save to your phone's home screen):</h3>
         <p><a href="${mobileLink}" style="color: #0070e0;">${mobileLink}</a></p>
+        
+        <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
         
         <h3>💡 Quick Start:</h3>
         <ol>
-          <li>Open desktop link on computer (bookmark it)</li>
-          <li>Send mobile link to your phone</li>
-          <li>Save mobile link to home screen</li>
-          <li>Open when you need referral photos</li>
+          <li>Bookmark the desktop link on your computer</li>
+          <li>Save the mobile link to your phone's home screen</li>
+          <li>Open the mobile page when you need referral photos</li>
+          <li>Photos appear on desktop instantly</li>
         </ol>
+        
+        <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
         
         <p>These are YOUR permanent links. Same links work every time.</p>
         
+        <p>No credit card required. Free to use.</p>
+        
         <p>Cheers,<br>ClinicPro Team</p>
+        
+        <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+        <p style="font-size: 12px; color: #888;">Need help? Reply to this email or visit clinicpro.app/support</p>
       </div>
     `,
   });

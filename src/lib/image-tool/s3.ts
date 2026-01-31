@@ -1,4 +1,4 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { retry } from 'ts-retry-promise';
 
@@ -88,4 +88,55 @@ export async function generateImageToolPresignedDownload(s3Key: string) {
     expiresIn: PRESIGNED_DOWNLOAD_EXPIRY_SEC,
     expiresAt: Date.now() + PRESIGNED_DOWNLOAD_EXPIRY_SEC * 1000,
   };
+}
+
+/**
+ * Get an object from the image-tool S3 bucket as a Buffer.
+ * Used for server-side operations (e.g. rotate) that need the image bytes.
+ */
+export async function getImageToolObject(s3Key: string): Promise<Buffer> {
+  const s3 = getS3Client();
+  const bucket = getImageToolBucketName();
+  const response = await s3.send(new GetObjectCommand({ Bucket: bucket, Key: s3Key }));
+  const body = response.Body;
+  if (!body) {
+    throw new Error(`Empty body for key: ${s3Key}`);
+  }
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of body as AsyncIterable<Uint8Array>) {
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+}
+
+/**
+ * Put a buffer into the image-tool S3 bucket (overwrites existing object).
+ * Used after rotating an image in-place.
+ */
+export async function putImageToolObject(s3Key: string, body: Buffer, contentType = 'image/jpeg'): Promise<void> {
+  const s3 = getS3Client();
+  const bucket = getImageToolBucketName();
+  await s3.send(
+    new PutObjectCommand({
+      Bucket: bucket,
+      Key: s3Key,
+      Body: body,
+      ContentType: contentType,
+    })
+  );
+}
+
+/**
+ * Delete an object from the image-tool S3 bucket.
+ * Used when a user deletes an image from the desktop gallery.
+ */
+export async function deleteImageToolObject(s3Key: string): Promise<void> {
+  const s3 = getS3Client();
+  const bucket = getImageToolBucketName();
+  try {
+    await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: s3Key }));
+  } catch (error) {
+    console.error('[image-tool/s3] deleteImageToolObject failed:', s3Key, error);
+    throw error;
+  }
 }

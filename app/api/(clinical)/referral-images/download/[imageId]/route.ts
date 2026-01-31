@@ -1,13 +1,11 @@
-import { eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { imageToolUploads } from '@/db/schema';
 import { generateFilename } from '@/src/lib/services/referral-images/utils';
 import { getDb } from 'database/client';
-import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { getImageToolBucketName } from '@/src/lib/image-tool/s3';
+import { getImageToolObject } from '@/src/lib/image-tool/s3';
 
 export const runtime = 'nodejs';
 
@@ -18,19 +16,26 @@ interface RouteParams {
 }
 
 /**
- * GET /api/referral-images/download/[imageId]
+ * GET /api/referral-images/download/[imageId]?u=userId
  *
- * Download single image with metadata-based filename
- *
- * Response: Redirects to presigned S3 URL with Content-Disposition header
+ * Proxy download: stream image from S3 so the client gets same-origin response
+ * (avoids CORS issues with direct S3 presigned URLs). Requires u=userId so
+ * users can only download their own images.
  */
-export async function GET(_req: NextRequest, { params }: RouteParams) {
+export async function GET(req: NextRequest, { params }: RouteParams) {
   const { imageId } = await params;
+  const userId = req.nextUrl.searchParams.get('u');
+
+  if (!userId) {
+    return NextResponse.json(
+      { error: 'Missing user ID (u)' },
+      { status: 400 }
+    );
+  }
 
   try {
     const db = getDb();
 
-    // Get image metadata
     const imageRow = await db
       .select({
         s3Key: imageToolUploads.s3Key,
@@ -40,7 +45,13 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
         imageId: imageToolUploads.imageId,
       })
       .from(imageToolUploads)
-      .where(eq(imageToolUploads.imageId, imageId))
+      .where(
+        and(
+          eq(imageToolUploads.imageId, imageId),
+          eq(imageToolUploads.userId, userId)
+        )
+      )
+      .orderBy(desc(imageToolUploads.createdAt))
       .limit(1);
 
     if (!imageRow.length) {
@@ -58,7 +69,6 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Generate meaningful filename
     const filename = generateFilename({
       imageId: image.imageId,
       side: image.side || undefined,
@@ -66,33 +76,20 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
       createdAt: image.createdAt,
     });
 
-    // Generate presigned URL with custom filename
-    const s3 = new S3Client({
-      region: process.env.AWS_REGION || 'ap-southeast-2',
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    const buffer = await getImageToolObject(image.s3Key);
+
+    return new NextResponse(new Uint8Array(buffer), {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/jpeg',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'private, no-cache',
       },
     });
-
-    const bucket = getImageToolBucketName();
-
-    const command = new GetObjectCommand({
-      Bucket: bucket,
-      Key: image.s3Key,
-      ResponseContentDisposition: `attachment; filename="${filename}"`,
-    });
-
-    const downloadUrl = await getSignedUrl(s3, command, {
-      expiresIn: 3600, // 1 hour
-    });
-
-    // Redirect to presigned URL
-    return NextResponse.redirect(downloadUrl);
   } catch (error) {
     console.error('[referral-images/download] Error:', error);
     return NextResponse.json(
-      { error: 'Failed to generate download URL' },
+      { error: 'Failed to download image' },
       { status: 500 }
     );
   }

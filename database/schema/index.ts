@@ -14,6 +14,8 @@ export * from './patient_sessions';
 export * from './prompt_rollouts';
 export * from './prompt_versions';
 export * from './rag';
+export * from './referrals';
+export * from './share_events';
 export * from './survey_responses';
 export * from './templates';
 export * from './user_settings';

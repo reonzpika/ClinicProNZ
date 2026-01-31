@@ -26,6 +26,7 @@
     "test:llm-classification": "tsx scripts/test-llm-classification.ts",
     "test:allergies": "tsx scripts/test-allergies-extraction.ts",
     "db:status": "tsx scripts/check-db-status.ts",
+    "db:run-migration": "tsx scripts/run-migration.ts",
     "db:ingest-healthify-a": "tsx healthify/scripts/ingest-healthify-a.ts",
     "db:ingest-healthify-chunks": "tsx healthify/scripts/ingest-healthify-chunks.ts",
     "test": "vitest run",
