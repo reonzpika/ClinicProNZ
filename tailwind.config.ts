@@ -57,7 +57,12 @@ export default {
         'primary': {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
+          dark: 'hsl(221 83% 45%)',
         },
+        'text-primary': 'hsl(var(--foreground))',
+        'text-secondary': 'hsl(var(--muted-foreground))',
+        'text-tertiary': 'hsl(var(--muted-foreground) / 0.9)',
+        'surface': 'hsl(var(--muted))',
         'secondary': {
           DEFAULT: 'hsl(var(--secondary))',
           foreground: 'hsl(var(--secondary-foreground))',
