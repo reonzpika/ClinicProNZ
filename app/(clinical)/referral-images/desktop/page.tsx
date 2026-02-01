@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Copy, Mail, MessageSquare, QrCode, Download, CheckCircle, AlertCircle, Share2, Trash2, Smartphone, RotateCcw, RotateCw } from 'lucide-react';
+import { Copy, Mail, MessageSquare, QrCode, Download, CheckCircle, AlertCircle, Share2, Trash2, Smartphone, RotateCcw, RotateCw, Loader2 } from 'lucide-react';
 import Ably from 'ably';
 
 import { ShareModal } from '../components/ShareModal';
@@ -82,6 +82,8 @@ function ReferralImagesDesktopPageContent() {
   const [bookmarkBannerDismissed, setBookmarkBannerDismissed] = useState(true); // start true, set false in useEffect if not dismissed
   const [showBookmarkInstructions, setShowBookmarkInstructions] = useState(false);
   const [enlargedImage, setEnlargedImage] = useState<ImageData | null>(null);
+  const [downloadingImageIds, setDownloadingImageIds] = useState<Set<string>>(new Set());
+  const [isDownloadingAll, setIsDownloadingAll] = useState(false);
 
   // Fallback to desktop page URL when referralCode not returned by API so Share is always clickable
   const shareUrl =
@@ -147,6 +149,11 @@ function ReferralImagesDesktopPageContent() {
     const ably = new Ably.Realtime({ key: process.env.NEXT_PUBLIC_ABLY_API_KEY });
     const channel = ably.channels.get(`user:${userId}`);
 
+    // Refetch when connection is ready so we don't miss uploads that happened during connect
+    ably.connection.on('connected', () => {
+      fetchStatus();
+    });
+
     channel.subscribe('image-uploaded', () => {
       console.log('[Ably] Image uploaded event received');
       fetchStatus();
@@ -206,28 +213,43 @@ function ReferralImagesDesktopPageContent() {
   const downloadAll = async () => {
     if (!status?.images.length || !userId) return;
 
-    let successCount = 0;
-    for (const image of status.images) {
-      const url = downloadUrl(image);
-      if (!url) continue;
-      const ok = await triggerFileDownload(url, image.filename);
-      if (ok) successCount++;
-      else toast.show({ title: `Failed to download ${image.filename}`, variant: 'destructive' });
-      await new Promise((resolve) => setTimeout(resolve, 300));
+    setIsDownloadingAll(true);
+    try {
+      let successCount = 0;
+      for (const image of status.images) {
+        const url = downloadUrl(image);
+        if (!url) continue;
+        const ok = await triggerFileDownload(url, image.filename);
+        if (ok) successCount++;
+        else toast.show({ title: `Failed to download ${image.filename}`, variant: 'destructive' });
+        await new Promise((resolve) => setTimeout(resolve, 300));
+      }
+      const newTotal = incrementDownloadCount(userId, successCount);
+      setShowDownloadSuccessModal(isSharePromptThreshold(newTotal));
+    } finally {
+      setIsDownloadingAll(false);
     }
-    const newTotal = incrementDownloadCount(userId, successCount);
-    setShowDownloadSuccessModal(isSharePromptThreshold(newTotal));
   };
 
   const downloadSingleImage = async (image: ImageData) => {
     const url = downloadUrl(image);
     if (!url) return;
-    const ok = await triggerFileDownload(url, image.filename);
-    if (ok) {
-      const newTotal = incrementDownloadCount(userId, 1);
-      setShowDownloadSuccessModal(isSharePromptThreshold(newTotal));
-    } else {
-      toast.show({ title: 'Failed to download image', variant: 'destructive' });
+
+    setDownloadingImageIds(prev => new Set(prev).add(image.imageId));
+    try {
+      const ok = await triggerFileDownload(url, image.filename);
+      if (ok) {
+        const newTotal = incrementDownloadCount(userId, 1);
+        setShowDownloadSuccessModal(isSharePromptThreshold(newTotal));
+      } else {
+        toast.show({ title: 'Failed to download image', variant: 'destructive' });
+      }
+    } finally {
+      setDownloadingImageIds(prev => {
+        const next = new Set(prev);
+        next.delete(image.imageId);
+        return next;
+      });
     }
   };
 
@@ -545,10 +567,20 @@ function ReferralImagesDesktopPageContent() {
                   onClick={() => {
                     downloadSingleImage(enlargedImage);
                   }}
-                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
+                  disabled={downloadingImageIds.has(enlargedImage.imageId)}
+                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Download className="w-4 h-4" />
-                  Download
+                  {downloadingImageIds.has(enlargedImage.imageId) ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Downloading...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="w-4 h-4" />
+                      Download
+                    </>
+                  )}
                 </button>
                 <button
                   type="button"
@@ -687,10 +719,20 @@ function ReferralImagesDesktopPageContent() {
             {status && status.images.length > 0 && (
               <button
                 onClick={downloadAll}
-                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-2"
+                disabled={isDownloadingAll}
+                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Download className="w-4 h-4" />
-                Download All
+                {isDownloadingAll ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Downloading...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    Download All
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -763,11 +805,16 @@ function ReferralImagesDesktopPageContent() {
                         downloadSingleImage(image);
                       }}
                       onKeyDown={(e) => e.stopPropagation()}
-                      className="p-2 rounded-lg bg-black/50 text-white hover:bg-black/70 transition-colors"
+                      disabled={downloadingImageIds.has(image.imageId)}
+                      className="p-2 rounded-lg bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-50"
                       title="Download"
                       aria-label="Download"
                     >
-                      <Download className="w-4 h-4" />
+                      {downloadingImageIds.has(image.imageId) ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Download className="w-4 h-4" />
+                      )}
                     </button>
                     <button
                       type="button"
@@ -802,10 +849,20 @@ function ReferralImagesDesktopPageContent() {
             <div className="mt-6 flex justify-center">
               <button
                 onClick={downloadAll}
-                className="w-full max-w-md px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
+                disabled={isDownloadingAll}
+                className="w-full max-w-md px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Download className="w-5 h-5" />
-                Download All {status.images.length} Image{status.images.length !== 1 ? 's' : ''}
+                {isDownloadingAll ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Downloading...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-5 h-5" />
+                    Download All {status.images.length} Image{status.images.length !== 1 ? 's' : ''}
+                  </>
+                )}
               </button>
             </div>
           )}

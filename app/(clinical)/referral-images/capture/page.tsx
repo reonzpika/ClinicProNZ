@@ -62,6 +62,8 @@ function ReferralImagesMobilePageContent() {
   } | null>(null);
   const [showSavePrompt, setShowSavePrompt] = useState(false);
   const [showSharePromptAfterUpload, setShowSharePromptAfterUpload] = useState(false);
+  const [lastAddSource, setLastAddSource] = useState<'camera' | 'gallery'>('gallery');
+  const [isProcessingFiles, setIsProcessingFiles] = useState(false);
 
   const shareUrl =
     typeof window !== 'undefined' && userId
@@ -115,47 +117,99 @@ function ReferralImagesMobilePageContent() {
     const files = Array.from(e.target.files || []);
     if (!files.length) return;
 
+    setIsProcessingFiles(true);
+    // Reset input so same input can be opened again later
+    e.target.value = '';
+
     const newImages: CapturedImage[] = [];
 
-    for (const file of files) {
-      try {
-        // Compress image
-        const compressed = await imageCompression(file, {
-          maxSizeMB: 0.5,
-          maxWidthOrHeight: 1920,
-          useWebWorker: true,
-        });
+    try {
+      for (const file of files) {
+        try {
+          // Compress image
+          const compressed = await imageCompression(file, {
+            maxSizeMB: 0.5,
+            maxWidthOrHeight: 1920,
+            useWebWorker: true,
+          });
 
-        // Convert to data URL
-        const dataUrl = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(compressed);
-        });
+          // Convert to data URL
+          const dataUrl = await new Promise<string>((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.readAsDataURL(compressed);
+          });
 
-        newImages.push({
-          id: `img-${Date.now()}-${Math.random()}`,
-          dataUrl,
-          file: compressed,
-          metadata: {},
-        });
-      } catch (err) {
-        console.error('Failed to process image:', err);
+          newImages.push({
+            id: `img-${Date.now()}-${Math.random()}`,
+            dataUrl,
+            file: compressed,
+            metadata: {},
+          });
+        } catch (err) {
+          console.error('Failed to process image:', err);
+        }
       }
-    }
 
-    if (newImages.length > 0) {
-      setImages(prev => [...prev, ...newImages]);
-      setScreen('review');
+      if (newImages.length > 0) {
+        setImages(prev => [...prev, ...newImages]);
+        setScreen('review');
+      }
+    } finally {
+      setIsProcessingFiles(false);
     }
   };
 
   const handleCameraClick = () => {
-    cameraInputRef.current?.click();
+    setLastAddSource('camera');
+    const input = cameraInputRef.current;
+    if (input) {
+      input.value = '';
+      input.click();
+    }
   };
 
   const handleGalleryClick = () => {
-    galleryInputRef.current?.click();
+    setLastAddSource('gallery');
+    const input = galleryInputRef.current;
+    if (input) {
+      input.value = '';
+      input.click();
+    }
+  };
+
+  /** Open the same source (camera or gallery) as last time; used for "Add More Photos". */
+  const handleAddMorePhotos = () => {
+    if (lastAddSource === 'camera') {
+      const input = cameraInputRef.current;
+      if (input) {
+        input.value = '';
+        input.click();
+      }
+    } else {
+      const input = galleryInputRef.current;
+      if (input) {
+        input.value = '';
+        input.click();
+      }
+    }
+  };
+
+  /** Open the other source (gallery if last was camera, camera if last was gallery). */
+  const handleAddFromOtherSource = () => {
+    if (lastAddSource === 'camera') {
+      const input = galleryInputRef.current;
+      if (input) {
+        input.value = '';
+        input.click();
+      }
+    } else {
+      const input = cameraInputRef.current;
+      if (input) {
+        input.value = '';
+        input.click();
+      }
+    }
   };
 
   const removeImage = (id: string) => {
@@ -328,6 +382,15 @@ function ReferralImagesMobilePageContent() {
   if (screen === 'capture') {
     return (
       <div className="min-h-screen bg-background flex flex-col">
+        {/* Processing photos overlay (gallery/camera pick) */}
+        {isProcessingFiles && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-white rounded-lg p-6 mx-4 flex flex-col items-center gap-4">
+              <Loader2 className="w-12 h-12 animate-spin text-primary" />
+              <p className="text-text-primary font-medium">Processing photos...</p>
+            </div>
+          </div>
+        )}
         {/* Save to Home Screen modal */}
         {showSavePrompt && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
@@ -499,10 +562,17 @@ function ReferralImagesMobilePageContent() {
 
         <div className="bg-white border-t border-border p-4 space-y-3">
           <button
-            onClick={handleGalleryClick}
+            onClick={handleAddMorePhotos}
             className="w-full px-6 py-3 border border-border rounded-lg hover:bg-surface transition-colors"
           >
             Add More Photos
+          </button>
+          <button
+            type="button"
+            onClick={handleAddFromOtherSource}
+            className="w-full px-6 py-3 border border-border rounded-lg hover:bg-surface transition-colors text-text-secondary text-sm"
+          >
+            {lastAddSource === 'camera' ? 'Add from gallery' : 'Take another photo'}
           </button>
           <button
             onClick={proceedToMetadata}
@@ -511,6 +581,26 @@ function ReferralImagesMobilePageContent() {
             Continue
           </button>
         </div>
+        {/* Hidden file inputs must be in DOM on review so Add More Photos / Add from gallery work */}
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          multiple
+          onChange={handleFileSelect}
+          className="hidden"
+          aria-hidden
+        />
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleFileSelect}
+          className="hidden"
+          aria-hidden
+        />
       </div>
     );
   }
