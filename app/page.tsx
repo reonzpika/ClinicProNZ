@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+import { MapPin, Sparkles, Stethoscope } from 'lucide-react';
+
 import { ReferralImagesHomeCard } from '@/src/features/referral-images/ReferralImagesHomeCard';
 import { Container } from '@/src/shared/components/layout/Container';
 
@@ -37,7 +39,6 @@ const FAQ_ITEMS = [
 
 export default function HomePage() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
-  const [waitlistEmail, setWaitlistEmail] = useState('');
 
   return (
     <div className="min-h-screen bg-background">
@@ -137,9 +138,6 @@ export default function HomePage() {
             <p className="text-text-secondary mb-2">
               Inbox triage, prioritization, longitudinal tracking.
             </p>
-            <Link href="#roadmap" className="text-primary hover:underline font-medium">
-              → Read the vision
-            </Link>
           </div>
         </div>
       </section>
@@ -147,18 +145,36 @@ export default function HomePage() {
       {/* Trust / Credibility - ClinicPro as a whole */}
       <section className="py-16 md:py-24 bg-surface">
         <Container size="md">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 text-center">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-2 mb-12 text-center">
+            {/* Column 1 */}
+            <div className="flex justify-center md:col-start-1 md:row-start-1">
+              <Stethoscope className="size-8 text-primary" aria-hidden />
+            </div>
+            <div className="min-h-[6rem] flex flex-col justify-center md:col-start-1 md:row-start-2">
               <p className="text-4xl md:text-5xl font-bold text-primary">GP-built</p>
+            </div>
+            <div className="md:col-start-1 md:row-start-3">
               <p className="mt-1 text-text-secondary">By someone in the room</p>
             </div>
-            <div>
+            {/* Column 2 */}
+            <div className="flex justify-center md:col-start-2 md:row-start-1">
+              <MapPin className="size-8 text-primary" aria-hidden />
+            </div>
+            <div className="min-h-[6rem] flex flex-col justify-center md:col-start-2 md:row-start-2">
               <p className="text-4xl md:text-5xl font-bold text-primary">NZ-focused</p>
+            </div>
+            <div className="md:col-start-2 md:row-start-3">
               <p className="mt-1 text-text-secondary">For general practice here</p>
             </div>
-            <div>
-              <p className="text-4xl md:text-5xl font-bold text-primary">No bloat</p>
-              <p className="mt-1 text-text-secondary">Practical tools, no upselling</p>
+            {/* Column 3 */}
+            <div className="flex justify-center md:col-start-3 md:row-start-1">
+              <Sparkles className="size-8 text-primary" aria-hidden />
+            </div>
+            <div className="min-h-[6rem] flex flex-col justify-center md:col-start-3 md:row-start-2">
+              <p className="text-4xl md:text-5xl font-bold text-primary">No fluff</p>
+            </div>
+            <div className="md:col-start-3 md:row-start-3">
+              <p className="mt-1 text-text-secondary">Only what you need, nothing more</p>
             </div>
           </div>
           <blockquote className="text-center text-lg md:text-xl text-text-primary italic max-w-2xl mx-auto">
@@ -187,7 +203,7 @@ export default function HomePage() {
                 safety. Limited availability.
               </p>
               <Link
-                href="/consulting"
+                href="/contact"
                 className="inline-block text-primary font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
               >
                 → Work with me
@@ -241,27 +257,12 @@ export default function HomePage() {
                 </p>
                 <div className="bg-surface border border-border rounded-lg p-4">
                   <p className="text-sm text-text-primary mb-3 font-medium">Want early access?</p>
-                  <form
-                    className="flex flex-col md:flex-row gap-2"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      window.location.href = `mailto:ryo@clinicpro.co.nz?subject=Inbox%20Intelligence%20waitlist&body=Email:%20${encodeURIComponent(waitlistEmail)}`;
-                    }}
+                  <Link
+                    href="/auth/register?redirect_url=%2Froadmap%2Fthank-you"
+                    className="inline-flex items-center gap-2 px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium"
                   >
-                    <input
-                      type="email"
-                      placeholder="your.email@clinic.co.nz"
-                      value={waitlistEmail}
-                      onChange={(e) => setWaitlistEmail(e.target.value)}
-                      className="flex-1 px-4 py-2 border border-border rounded-lg focus:border-primary focus:outline-none text-text-primary"
-                    />
-                    <button
-                      type="submit"
-                      className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium whitespace-nowrap"
-                    >
-                      Join waitlist →
-                    </button>
-                  </form>
+                    Sign up to join waitlist →
+                  </Link>
                 </div>
               </div>
             </div>
@@ -330,7 +331,7 @@ export default function HomePage() {
             ryo@clinicpro.co.nz
           </a>
           <div className="mt-6 text-text-secondary text-sm">
-            <Link href="/consulting" className="hover:text-text-primary transition-colors">
+            <Link href="/contact" className="hover:text-text-primary transition-colors">
               Work with me
             </Link>
             <span className="mx-2">|</span>

@@ -1,20 +1,16 @@
 'use client';
 
 import { useAuth, useUser } from '@clerk/nextjs';
-import { AlertCircle, CheckCircle, Mail } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-import { Footer } from '@/src/shared/components/Footer';
-import { Sidebar } from '@/src/shared/components/Sidebar';
+import { Container } from '@/src/shared/components/layout/Container';
 import { Button } from '@/src/shared/components/ui/button';
 
 export default function ContactPage() {
   const { isSignedIn } = useAuth();
   const { user } = useUser();
-
-  // Sidebar state
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -84,18 +80,20 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <Sidebar
-        isCollapsed={sidebarCollapsed}
-        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
-        isMobileOpen={mobileMenuOpen}
-        onMobileClose={() => setMobileMenuOpen(false)}
-        isDesktop
-      />
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className="sticky top-0 z-50 border-b border-border bg-white">
+        <Container size="md">
+          <div className="flex items-center justify-between py-4">
+            <Link href="/" className="text-xl font-bold text-text-primary">
+              ClinicPro
+            </Link>
+          </div>
+        </Container>
+      </header>
 
       {/* Main content */}
-      <div className={`flex flex-1 flex-col transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-64'}`}>
+      <div className="flex flex-1 flex-col">
         <div className="flex-1">
           <div className="container mx-auto px-4 py-8">
             <div className="mx-auto max-w-4xl">
@@ -113,19 +111,6 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-gray-900">Email</h3>
                       <p className="text-gray-600">ryo@clinicpro.co.nz</p>
-                    </div>
-
-                    <div className="mt-6 rounded-lg bg-blue-50 p-4">
-                      <div className="flex items-start gap-3">
-                        <Mail className="mt-1 size-5 text-blue-600" />
-                        <div>
-                          <h4 className="font-semibold text-blue-900">Built by a Practising NZ GP</h4>
-                          <p className="text-sm text-blue-700">
-                            ClinicPro is designed by someone who understands the daily challenges
-                            of general practice in New Zealand.
-                          </p>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -228,8 +213,36 @@ export default function ContactPage() {
           </div>
         </div>
 
-        {/* Footer */}
-        <Footer />
+      {/* Footer - matches homepage */}
+      <footer className="py-12 bg-background text-center">
+        <Container size="md">
+          <p className="mb-2 font-medium text-text-primary">Questions?</p>
+          <a
+            href="mailto:ryo@clinicpro.co.nz"
+            className="font-medium text-primary hover:underline focus:rounded focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          >
+            ryo@clinicpro.co.nz
+          </a>
+          <div className="mt-6 text-sm text-text-secondary">
+            <Link href="/contact" className="transition-colors hover:text-text-primary">
+              Work with me
+            </Link>
+            <span className="mx-2">|</span>
+            <Link href="/terms" className="transition-colors hover:text-text-primary">
+              Terms
+            </Link>
+            <span className="mx-2">|</span>
+            <Link href="/privacy" className="transition-colors hover:text-text-primary">
+              Privacy
+            </Link>
+          </div>
+          <p className="mt-4 text-sm text-text-secondary">
+            Built in Auckland, NZ
+            <br />
+            © 2026 ClinicPro
+          </p>
+        </Container>
+      </footer>
       </div>
     </div>
   );
