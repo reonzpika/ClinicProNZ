@@ -1,18 +1,128 @@
 'use client';
 
-import { useState } from 'react';
+import { useAuth } from '@clerk/nextjs';
+import { Camera, CheckCircle, Clock, FileImage, Shield } from 'lucide-react';
 import Image from 'next/image';
-import { Camera, Clock, Shield, FileImage, CheckCircle } from 'lucide-react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+function isMobileDevice(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+}
 
 export default function ReferralImagesLandingPage() {
+  const { userId, isLoaded } = useAuth();
+  const router = useRouter();
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [error, setError] = useState('');
-  const router = useRouter();
+  const [hasSetup, setHasSetup] = useState<boolean | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isSetupLoading, setIsSetupLoading] = useState(false);
+  const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+
+  const referralImagesFaqItems = [
+    {
+      question: 'How does this save me 30 minutes per referral?',
+      answer:
+        'The old workflow—email photos to yourself, download, resize, re-upload—often takes 30+ minutes when things go wrong. With Referral Images you capture on your phone and photos appear on your desktop in 30 seconds, already compressed and ready to attach. No manual resize, no "file too large" rejections.',
+    },
+    {
+      question: 'Does it work with HealthLink/Manawatū e-referral systems?',
+      answer:
+        'Yes. You get a JPEG file on your desktop (or download from the desktop page). You attach that file to your e-referral in HealthLink, Manawatū, or any system that accepts image attachments. We don\'t integrate directly into your PMS; you use the file where you need it.',
+    },
+    {
+      question: 'Is my patient data secure?',
+      answer:
+        'Images are stored securely and automatically deleted after 24 hours. We don\'t use your images for training or share them with third parties. The service is built with NZ healthcare data standards in mind. For full details see our Privacy policy.',
+    },
+    {
+      question: 'Why is it free?',
+      answer:
+        'Because GPs deserve better tools. I built this for myself and my colleagues. The goal is to make clinical work easier, not to extract value from doctors.',
+    },
+    {
+      question: 'How is this different from QuickShot/MedImage?',
+      answer:
+        'Referral Images is focused on one thing: getting referral photos from your phone to your desktop in seconds, always as JPEG and under 500KB. No PDFs, no extra steps. If you use Medtech Evolution we\'re building deeper integration; for other systems you use the download and attach workflow.',
+    },
+    {
+      question: 'Do I need to install anything?',
+      answer:
+        'No. You sign up, get a desktop link and a mobile link (save the mobile link to your home screen for one-tap access). Use your browser on desktop and your browser on phone. No app store install required.',
+    },
+  ];
+
+  // Smart redirect: when signed in, check setup; if has setup, redirect to desktop or capture by device
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!userId) {
+      setHasSetup(false);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/referral-images/check-setup?userId=${encodeURIComponent(userId)}`)
+      .then((res) => {
+        if (!res.ok) {
+          if (!cancelled) setHasSetup(false);
+          return null;
+        }
+        return res.json() as Promise<{ hasSetup?: boolean; referralUserId?: string | null }>;
+      })
+      .then((data) => {
+        if (cancelled || data == null) return;
+        const hasSetupVal = !!data.hasSetup;
+        const referralUserId = data.referralUserId ?? userId;
+        setHasSetup(hasSetupVal);
+        if (hasSetupVal) {
+          setIsRedirecting(true);
+          const isMobile = isMobileDevice();
+          router.push(
+            isMobile
+              ? `/referral-images/capture?u=${referralUserId}`
+              : `/referral-images/desktop?u=${referralUserId}`
+          );
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setHasSetup(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, isLoaded, router]);
+
+  const handleGetStarted = async () => {
+    if (!userId) return;
+    setIsSetupLoading(true);
+    try {
+      const response = await fetch('/api/referral-images/setup', { method: 'POST' });
+      if (!response.ok) throw new Error('Setup failed');
+      const data = await response.json();
+      if (typeof window !== 'undefined' && data.desktopLink != null && data.mobileLink != null) {
+        sessionStorage.setItem('referral-images-desktop-link', data.desktopLink);
+        sessionStorage.setItem('referral-images-mobile-link', data.mobileLink);
+      }
+      router.push(`/referral-images/setup-complete?u=${data.userId}`);
+    } catch (err) {
+      setError('Failed to get started. Please try again.');
+      console.error(err);
+    } finally {
+      setIsSetupLoading(false);
+    }
+  };
+
+  const showLoading =
+    !isLoaded || (userId && hasSetup === null) || isRedirecting;
+  const showLanding = isLoaded && (hasSetup === false || !userId);
+  const primaryCtaSignedInNoSetup = userId && hasSetup === false;
+  const loginRedirectUrl = '/auth/login?redirect_url=' + encodeURIComponent('/referral-images');
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +169,14 @@ export default function ReferralImagesLandingPage() {
     }
   };
 
+  if (showLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-text-secondary">Loading your images...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -67,16 +185,28 @@ export default function ReferralImagesLandingPage() {
           <div className="text-xl font-bold text-text-primary">
             ClinicPro
           </div>
-          <button
-            onClick={() => setShowSignupModal(true)}
-            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
-          >
-            Join 50+ NZ GPs Using This - Free
-          </button>
+          {primaryCtaSignedInNoSetup ? (
+            <button
+              onClick={handleGetStarted}
+              disabled={isSetupLoading}
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+            >
+              {isSetupLoading ? 'Setting up...' : 'Get Started'}
+            </button>
+          ) : (
+            <Link
+              href={loginRedirectUrl}
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
+            >
+              Join 50+ NZ GPs Using This - Free
+            </Link>
+          )}
         </div>
       </header>
 
       {/* Hero Section */}
+      {showLanding && (
+      <>
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-10">
@@ -93,18 +223,42 @@ export default function ReferralImagesLandingPage() {
               <br />
               I built this to fix that.
             </p>
-            <button
-              onClick={() => setShowSignupModal(true)}
-              className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
-            >
-              Join 50+ NZ GPs Using This - Free
-            </button>
-            <div className="mt-4 flex justify-center">
-              <p className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-5 py-3 text-amber-900 text-base">
-                <span aria-hidden>💡</span>
-                Why free? I&apos;m a GP who hated this workflow. Built this to fix it. No catch.
-              </p>
-            </div>
+            {primaryCtaSignedInNoSetup ? (
+              <button
+                onClick={handleGetStarted}
+                disabled={isSetupLoading}
+                className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+              >
+                {isSetupLoading ? 'Setting up...' : 'Get Started'}
+              </button>
+            ) : (
+              <>
+                <Link
+                  href={loginRedirectUrl}
+                  className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
+                >
+                  Join 50+ NZ GPs Using This - Free
+                </Link>
+                <p className="mt-3 text-sm text-text-tertiary">
+                  Prefer to sign up with email?{' '}
+                  <button
+                    type="button"
+                    onClick={() => setShowSignupModal(true)}
+                    className="text-primary hover:underline"
+                  >
+                    Use email instead
+                  </button>
+                </p>
+              </>
+            )}
+            {!userId && (
+              <div className="mt-4 flex justify-center">
+                <p className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-5 py-3 text-amber-900 text-base">
+                  <span aria-hidden>💡</span>
+                  Why free? I&apos;m a GP who hated this workflow. Built this to fix it. No catch.
+                </p>
+              </div>
+            )}
           </div>
           <div className="relative w-full max-w-4xl mx-auto rounded-xl overflow-hidden shadow-lg">
             <Image
@@ -310,12 +464,22 @@ export default function ReferralImagesLandingPage() {
             Built by a GP who had the same frustrations.
           </p>
 
-          <button
-            onClick={() => setShowSignupModal(true)}
-            className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
-          >
-            Join 50+ NZ GPs Using This - Free
-          </button>
+          {primaryCtaSignedInNoSetup ? (
+            <button
+              onClick={handleGetStarted}
+              disabled={isSetupLoading}
+              className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+            >
+              {isSetupLoading ? 'Setting up...' : 'Get Started'}
+            </button>
+          ) : (
+            <Link
+              href={loginRedirectUrl}
+              className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
+            >
+              Join 50+ NZ GPs Using This - Free
+            </Link>
+          )}
         </div>
       </section>
 
@@ -328,15 +492,62 @@ export default function ReferralImagesLandingPage() {
           <p className="text-xl mb-8 opacity-90">
             Join GPs who&apos;ve already saved hours of admin time.
           </p>
-          <button
-            onClick={() => setShowSignupModal(true)}
-            className="px-8 py-4 text-lg bg-white text-primary rounded-lg hover:bg-gray-100 transition-colors font-semibold"
-          >
-            Join 50+ NZ GPs Using This - Free
-          </button>
+          {primaryCtaSignedInNoSetup ? (
+            <button
+              onClick={handleGetStarted}
+              disabled={isSetupLoading}
+              className="px-8 py-4 text-lg bg-white text-primary rounded-lg hover:bg-gray-100 transition-colors font-semibold disabled:opacity-50"
+            >
+              {isSetupLoading ? 'Setting up...' : 'Get Started'}
+            </button>
+          ) : (
+            <Link
+              href={loginRedirectUrl}
+              className="px-8 py-4 text-lg bg-white text-primary rounded-lg hover:bg-gray-100 transition-colors font-semibold inline-block"
+            >
+              Join 50+ NZ GPs Using This - Free
+            </Link>
+          )}
           <p className="mt-4 text-sm opacity-75">
             No credit card required • Free to use
           </p>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-16 px-4 bg-surface">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-3xl font-bold text-text-primary mb-12 text-center">
+            Common Questions
+          </h2>
+          <div className="space-y-4">
+            {referralImagesFaqItems.map((item, index) => (
+              <details
+                key={index}
+                className="group bg-white border border-border rounded-lg overflow-hidden"
+                open={expandedFaq === index}
+              >
+                <summary
+                  className="px-6 py-4 cursor-pointer flex justify-between items-center hover:bg-black/5 transition list-none [&::-webkit-details-marker]:hidden"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setExpandedFaq(expandedFaq === index ? null : index);
+                  }}
+                >
+                  <span className="font-medium text-text-primary pr-4">{item.question}</span>
+                  <span
+                    className={`shrink-0 text-text-tertiary transition-transform ${expandedFaq === index ? 'rotate-90' : ''}`}
+                    aria-hidden
+                  >
+                    →
+                  </span>
+                </summary>
+                <div className="px-6 py-4 border-t border-border text-text-secondary bg-white">
+                  {item.answer}
+                </div>
+              </details>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -351,6 +562,8 @@ export default function ReferralImagesLandingPage() {
           </div>
         </div>
       </footer>
+      </>
+      )}
 
       {/* Signup Modal */}
       {showSignupModal && (
