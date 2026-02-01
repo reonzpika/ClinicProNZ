@@ -1,5 +1,18 @@
 # Project Log - ClinicPro SaaS
 
+## 2026-02-01 Sun
+### AI Scribe: /ai-scribe shows full landing page (feature not public)
+
+**Context**: User requested AI scribe feature not be public; only show the landing page. "Learn more" on the home page already links to `/ai-scribe`; that URL previously showed a minimal page with direct "Open AI Scribe" and "Clinical images" links.
+
+### Progress
+- Replaced `app/(marketing)/ai-scribe/page.tsx` with the same content as the existing full landing at `/landing-page`: same early-landing components (PageNavigation, EarlyHeroSection, PersonalStorySection, MissionSection, FeatureAiscribe, FeatureImage, FeatureChat, EarlyFooterCTA, PageFooter).
+- Set metadata for `/ai-scribe` to AI Scribe–focused title/description: "ClinicPro - AI Medical Scribing for NZ GPs".
+- Home page link unchanged (`href="/ai-scribe"`). Middleware unchanged; `/ai-scribe` remains public; `/ai-scribe/*` (consultation, image, templates) remains protected.
+
+### Decisions
+- No redirect; `/ai-scribe` and `/landing-page` both render the same layout (duplicated JSX/structure). Optional future refactor: extract shared component for single source of truth.
+
 ## 2026-01-31 Sat
 ### Referral Images: Filename (date+time, no ID) and desktop overlay
 
