@@ -6,7 +6,6 @@ import Link from 'next/link';
 const SIGNUP_URL = '/auth/register?redirect_url=%2Fai-scribe%2Fthank-you';
 
 const sections = [
-  { id: 'story', label: "Dr. Ryo's Story" },
   { id: 'ai-scribe', label: 'AI Scribe' },
   { id: 'feature-image', label: 'Clinical Image' },
   { id: 'feature-chat', label: 'Search/Chat' },
@@ -81,49 +80,6 @@ export default function AiScribeLandingPage() {
                 className="w-full h-auto object-contain"
                 priority
               />
-            </div>
-          </div>
-        </section>
-
-        {/* Story */}
-        <section id="story" className="py-16 px-4 bg-surface">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-              <div>
-                <h2 className="text-3xl font-bold text-text-primary mb-6">
-                  Thank You for Stopping By
-                </h2>
-                <div className="rounded-lg bg-white border border-border p-4 mb-6">
-                  <h3 className="text-xl font-semibold text-text-primary mb-1">
-                    A Message from Dr. Ryo Eguchi
-                  </h3>
-                  <p className="text-sm text-text-secondary">Practising GP & Founder</p>
-                </div>
-                <blockquote className="bg-white border-l-4 border-primary rounded-r-lg px-6 py-5 shadow-sm">
-                  <p className="text-text-secondary italic mb-4">
-                    &quot;Like many GPs, I felt increasingly disconnected from why I became a
-                    doctor. The constant rush, endless admin, and pressure were taking their toll
-                    — on me and my patients.
-                  </p>
-                  <p className="text-text-secondary italic">
-                    Then I discovered my ikigai: combining my medical expertise with my deep passion
-                    for AI and automation. ClinicPro was born from this vision — using smart
-                    technology to give GPs back their time, reduce burnout, and restore the joy in
-                    patient care.&quot;
-                  </p>
-                </blockquote>
-              </div>
-              <div className="relative flex justify-center lg:justify-end">
-                <div className="relative w-full max-w-md aspect-square overflow-hidden rounded-xl border border-border shadow-lg">
-                  <Image
-                    src="/images/landing-page/DrRyoEguchiProfilePicMain.jpg"
-                    alt="Dr. Ryo Eguchi - Founder of ClinicPro"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1024px) 100vw, 500px"
-                  />
-                </div>
-              </div>
             </div>
           </div>
         </section>

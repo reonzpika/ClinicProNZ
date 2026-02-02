@@ -53,7 +53,7 @@ export default function HomePage() {
               <Link href="#tools" className="text-text-secondary hover:text-text-primary transition-colors">
                 Tools
               </Link>
-              <Link href="#about" className="text-text-secondary hover:text-text-primary transition-colors">
+              <Link href="#story" className="text-text-secondary hover:text-text-primary transition-colors">
                 About
               </Link>
               <Link href="/contact" className="text-text-secondary hover:text-text-primary transition-colors">
@@ -98,8 +98,8 @@ export default function HomePage() {
       </section>
 
       {/* Product Cards - vertical stack */}
-      <section id="tools" className="scroll-mt-20 py-32 bg-white">
-        <div className="max-w-5xl mx-auto px-8 space-y-8">
+      <section id="tools" className="scroll-mt-20 py-32 bg-white px-4">
+        <div className="w-full md:max-w-2xl md:mx-auto space-y-8">
           <h2 className="text-3xl md:text-4xl font-bold mb-12 text-text-primary">
             Tools
           </h2>
@@ -142,9 +142,48 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Story - Dr. Ryo */}
+      <section id="story" className="py-16 px-4 bg-surface">
+        <div className="w-full md:max-w-2xl md:mx-auto">
+          <h2 className="text-3xl font-bold text-text-primary mb-6">
+            Thank You for Stopping By
+          </h2>
+          <div className="rounded-lg bg-white border border-border p-4 mb-6 flex items-center gap-4">
+            <div className="relative w-14 h-14 shrink-0 overflow-hidden rounded-full border border-border">
+              <Image
+                src="/images/landing-page/DrRyoEguchiProfilePicMain.jpg"
+                alt="Dr. Ryo Eguchi"
+                width={56}
+                height={56}
+                className="object-cover"
+              />
+            </div>
+            <div>
+              <h3 className="text-xl font-semibold text-text-primary mb-1">
+                A Message from Dr. Ryo Eguchi
+              </h3>
+              <p className="text-sm text-text-secondary">Practising GP & Founder</p>
+            </div>
+          </div>
+          <blockquote className="bg-white border-l-4 border-primary rounded-r-lg px-6 py-5 shadow-sm">
+            <p className="text-text-secondary italic mb-4">
+              &quot;Like many GPs, I felt increasingly disconnected from why I became a
+              doctor. The constant rush, endless admin, and pressure were taking their toll
+              — on me and my patients.
+            </p>
+            <p className="text-text-secondary italic">
+              Then I discovered my ikigai: combining my medical expertise with my deep passion
+              for AI and automation. ClinicPro was born from this vision — using smart
+              technology to give GPs back their time, reduce burnout, and restore the joy in
+              patient care.&quot;
+            </p>
+          </blockquote>
+        </div>
+      </section>
+
       {/* Trust / Credibility - ClinicPro as a whole */}
-      <section className="py-16 md:py-24 bg-surface">
-        <Container size="md">
+      <section className="py-16 md:py-24 bg-surface px-4">
+        <div className="w-full md:max-w-2xl md:mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-2 mb-12 text-center">
             {/* Column 1 */}
             <div className="flex justify-center md:col-start-1 md:row-start-1">
@@ -153,7 +192,7 @@ export default function HomePage() {
             <div className="min-h-[6rem] flex flex-col justify-center md:col-start-1 md:row-start-2">
               <p className="text-4xl md:text-5xl font-bold text-primary">GP-built</p>
             </div>
-            <div className="md:col-start-1 md:row-start-3">
+            <div className="md:col-start-1 md:row-start-3 mb-16 md:mb-0">
               <p className="mt-1 text-text-secondary">By someone in the room</p>
             </div>
             {/* Column 2 */}
@@ -163,7 +202,7 @@ export default function HomePage() {
             <div className="min-h-[6rem] flex flex-col justify-center md:col-start-2 md:row-start-2">
               <p className="text-4xl md:text-5xl font-bold text-primary">NZ-focused</p>
             </div>
-            <div className="md:col-start-2 md:row-start-3">
+            <div className="md:col-start-2 md:row-start-3 mb-16 md:mb-0">
               <p className="mt-1 text-text-secondary">For general practice here</p>
             </div>
             {/* Column 3 */}
@@ -173,7 +212,7 @@ export default function HomePage() {
             <div className="min-h-[6rem] flex flex-col justify-center md:col-start-3 md:row-start-2">
               <p className="text-4xl md:text-5xl font-bold text-primary">No fluff</p>
             </div>
-            <div className="md:col-start-3 md:row-start-3">
+            <div className="md:col-start-3 md:row-start-3 mb-16 md:mb-0">
               <p className="mt-1 text-text-secondary">Only what you need, nothing more</p>
             </div>
           </div>
@@ -183,39 +222,24 @@ export default function HomePage() {
               — ClinicPro
             </footer>
           </blockquote>
-        </Container>
-      </section>
-
-      {/* About */}
-      <section id="about" className="py-16 md:py-24 bg-white">
-        <Container size="md">
-          <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-text-primary">
-              About
-            </h2>
-            <p className="text-xl md:text-2xl text-center text-text-primary mb-8">
-              Full-time GP in Auckland who codes after hours. I built ClinicPro because GPs deserve
-              better tools. No VC funding, just solving real GP problems.
+          <div className="mt-10 bg-white border border-border rounded-xl p-6 text-center">
+            <p className="text-text-secondary mb-3">
+              I also consult with health tech companies on GP workflows, PMS integration, and clinical
+              safety. Limited availability.
             </p>
-            <div className="mt-12 bg-surface border border-border rounded-xl p-6 text-center">
-              <p className="text-text-secondary mb-3">
-                I also consult with health tech companies on GP workflows, PMS integration, and clinical
-                safety. Limited availability.
-              </p>
-              <Link
-                href="/contact"
-                className="inline-block text-primary font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
-              >
-                → Work with me
-              </Link>
-            </div>
+            <Link
+              href="/contact"
+              className="inline-block text-primary font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+            >
+              → Work with me
+            </Link>
           </div>
-        </Container>
+        </div>
       </section>
 
       {/* Roadmap */}
-      <section id="roadmap" className="py-16 md:py-24 bg-white">
-        <div className="max-w-3xl mx-auto px-8">
+      <section id="roadmap" className="py-16 md:py-24 bg-white px-4">
+        <div className="w-full md:max-w-2xl md:mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold mb-16 text-center text-text-primary">
             Where This Is Going
           </h2>
@@ -282,9 +306,8 @@ export default function HomePage() {
       </section>
 
       {/* FAQ */}
-      <section className="py-16 md:py-24 bg-surface">
-        <Container size="md">
-          <div className="max-w-3xl mx-auto">
+      <section className="py-16 md:py-24 bg-surface px-4">
+        <div className="w-full md:max-w-2xl md:mx-auto">
             <h2 className="text-3xl md:text-4xl font-bold mb-12 text-center text-text-primary">
               Common Questions
             </h2>
@@ -316,8 +339,7 @@ export default function HomePage() {
                 </details>
               ))}
             </div>
-          </div>
-        </Container>
+        </div>
       </section>
 
       {/* Footer - custom block */}
