@@ -136,7 +136,7 @@ export default function HomePage() {
               <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">Building</span>
             </div>
             <p className="text-text-secondary mb-2">
-              Inbox triage, prioritization, longitudinal tracking.
+              Inbox triage, prioritisation, longitudinal tracking.
             </p>
           </div>
         </div>
@@ -278,7 +278,7 @@ export default function HomePage() {
                 <h3 className="text-xl font-bold text-text-primary mb-1">Inbox Intelligence</h3>
                 <p className="text-sm text-text-secondary mb-2 font-medium">Building</p>
                 <p className="text-text-secondary mb-4">
-                  AI-powered triage, prioritization, longitudinal tracking.
+                  AI-powered triage, prioritisation, longitudinal tracking.
                 </p>
                 <div className="bg-surface border border-border rounded-lg p-4">
                   <p className="text-sm text-text-primary mb-3 font-medium">Want early access?</p>

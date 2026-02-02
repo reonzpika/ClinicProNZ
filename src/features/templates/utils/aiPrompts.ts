@@ -272,7 +272,7 @@ COMPLEX TEMPLATE (Mental Health Assessment):
       },
       {
         "heading": "Mental Health History",
-        "prompt": "Extract previous mental health episodes, treatments, hospitalizations, and family psychiatric history mentioned during the consultation.",
+        "prompt": "Extract previous mental health episodes, treatments, hospitalisations, and family psychiatric history mentioned during the consultation.",
         "subsections": [
           {
             "heading": "Previous Episodes",

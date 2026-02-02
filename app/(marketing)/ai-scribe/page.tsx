@@ -114,11 +114,6 @@ export default function AiScribeLandingPage() {
                 <p className="text-text-secondary mb-6">
                   Audio captures the conversation. Type in exam findings and your assessment as you go. You&apos;re in control; this just handles the cognitive load.
                 </p>
-                <ul className="space-y-2 text-text-secondary">
-                  <li>• Record on mobile or desktop</li>
-                  <li>• Mark problems as you go (multi‑problem ready)</li>
-                  <li>• Switch templates anytime</li>
-                </ul>
               </div>
               <div className="lg:col-span-7">
                 <div className="rounded-xl border border-border bg-white overflow-hidden shadow-md">
@@ -155,12 +150,17 @@ export default function AiScribeLandingPage() {
                 <ul className="space-y-2 text-text-secondary">
                   <li>• Default template handles most consults; multi‑problem ready</li>
                   <li>• Switch output style (template) when needed</li>
-                  <li>
-                    • Highly customisable templates: NZTA driver licence (NZTA‑aligned), ACC
-                    consult, 6‑week baby check
-                  </li>
                 </ul>
               </div>
+            </div>
+
+            <div className="rounded-xl border border-border bg-white p-6 mb-12">
+              <h3 className="text-2xl font-bold text-text-primary mb-4">
+                No desktop mic? Use your phone.
+              </h3>
+              <p className="text-text-secondary">
+                Not every GP has a desktop mic. Put your phone on the desk; record as usual. Audio syncs to the same session. No extra setup, no hassle.
+              </p>
             </div>
 
             <div className="rounded-xl border border-border bg-white p-6 mb-12">

@@ -1,0 +1,46 @@
+---
+description: Use NZ English spelling for all user-facing copy
+alwaysApply: true
+---
+
+# NZ English Spelling
+
+## Rule
+
+**Use NZ English (British-style) spelling for all user-facing copy.**
+
+Applies to:
+- UI text (labels, buttons, headings, descriptions)
+- Marketing and landing copy
+- Error messages and toast text
+- Documentation written in this repo
+- Email and notification copy
+- Strings in code that are shown to users
+
+## Common patterns (US → NZ)
+
+| US | NZ |
+|----|-----|
+| prioritization | prioritisation |
+| organization | organisation |
+| authorization | authorisation |
+| customization | customisation |
+| optimization | optimisation |
+| hospitalization | hospitalisation |
+| immunization | immunisation |
+| color | colour |
+| behavior | behaviour |
+| favor | favour |
+| recognize | recognise |
+| organize | organise |
+| summarize | summarise |
+| analyze | analyse |
+
+## Exceptions (do not change)
+
+- **Code identifiers**: Variable names, function names, CSS class names (e.g. `transition-colors`, `text-primary`)
+- **API property names**: JavaScript/Web APIs (e.g. `scrollIntoView({ behavior: 'smooth' })`)
+- **HTTP headers**: e.g. `Authorization: Bearer ...`
+- **Third-party strings**: Incoming content, external API responses, or copy you do not control
+
+When in doubt, if a string is displayed to the end user, use NZ spelling.

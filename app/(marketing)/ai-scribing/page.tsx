@@ -230,7 +230,7 @@ export default function AIScribingPage() {
                   <li>
                     <strong>Assists with Other Tasks:</strong>
                     {' '}
-                    Some tools can help draft referral letters, patient instructions, or summarise existing patient information. Transforming clinical notes into patient-friendly language is also seen as beneficial, especially with initiatives like open notes. AI can help draft templates for administrative processes like authorization letters.
+                    Some tools can help draft referral letters, patient instructions, or summarise existing patient information. Transforming clinical notes into patient-friendly language is also seen as beneficial, especially with initiatives like open notes. AI can help draft templates for administrative processes like authorisation letters.
                   </li>
                   <li>
                     <strong>Potential Medico-Legal Support:</strong>
