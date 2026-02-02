@@ -64,7 +64,7 @@ export default function SurveyThankYouPage() {
 
   return (
     <main className="mx-auto max-w-2xl p-6">
-      <h1 className="mb-2 text-2xl font-semibold">Thanks — that's a huge help.</h1>
+      <h1 className="mb-2 text-2xl font-semibold">Thanks; that's a huge help.</h1>
 
       {isSignedIn
 ? (

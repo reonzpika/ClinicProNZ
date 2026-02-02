@@ -18,7 +18,7 @@ export const HeroSection = () => {
           <div className="text-center">
             <p className="text-sm font-medium text-red-800 sm:text-base">
               <span className="font-bold text-red-900">⚠️ 79% of NZ GPs report burnout</span>
-              <span className="hidden text-red-700 xs:inline"> — </span>
+              <span className="hidden text-red-700 xs:inline">, </span>
               <a
                 href="https://www.rnzcgp.org.nz/our-voice/workforce-survey/"
                 target="_blank"
@@ -149,7 +149,7 @@ export const HeroSection = () => {
 
               <p className="mb-8 text-center text-sm text-gray-600 sm:text-base lg:text-left">
                 <span className="font-medium text-blue-600">Be among the first 30 NZ GPs</span>
-                <span className="block text-gray-500 sm:inline"> — Help shape the future of clinical documentation</span>
+                <span className="block text-gray-500 sm:inline">; help shape the future of clinical documentation</span>
               </p>
 
               {/* Mobile Benefits - shown before image */}

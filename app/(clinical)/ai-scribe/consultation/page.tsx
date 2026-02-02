@@ -1197,7 +1197,7 @@ export default function ConsultationPage() {
                                     <span>
                                       <span className="font-semibold">Tap Record</span>
                                       {' '}
-                                      to start your consultation. For a complete note, say your findings, assessment, and plan — or type below.
+                                      to start your consultation. For a complete note, say your findings, assessment, and plan, or type below.
                                     </span>
                                   </div>
                                 </div>

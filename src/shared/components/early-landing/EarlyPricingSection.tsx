@@ -23,7 +23,7 @@ export const EarlyPricingSection = () => {
     {
       icon: Award,
       title: 'Accurate Notes, No Guesswork',
-      description: 'Write precise consult notes automatically — no more relying on memory or scribbled post-it reminders.',
+      description: 'Write precise consult notes automatically; no more relying on memory or scribbled post-it reminders.',
       color: 'green',
       size: 'compact',
       highlight: 'Perfect documentation',
@@ -31,7 +31,7 @@ export const EarlyPricingSection = () => {
     {
       icon: User,
       title: 'Hidden Time-Stealers, Eliminated',
-      description: 'Those countless small tasks that pile up between patients — clicks, searches, and admin bits — all handled automatically.',
+      description: 'Those countless small tasks that pile up between patients (clicks, searches, and admin bits); all handled automatically.',
       color: 'blue',
       size: 'compact',
       highlight: 'Administrative freedom',

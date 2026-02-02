@@ -121,7 +121,7 @@ export const FounderSection = () => {
                   <blockquote className="space-y-6 text-base leading-relaxed text-gray-700">
                     <p>
                       <span className="font-semibold text-red-600">I used to spend up to two extra hours each evening catching up on notes</span>
-                      — especially in practices with older patient lists — juggling paperwork long after clinic doors closed.
+                      (especially in practices with older patient lists), juggling paperwork long after clinic doors closed.
                     </p>
 
                     <p>
@@ -130,7 +130,7 @@ export const FounderSection = () => {
                     </p>
 
                     <div className="rounded-lg border-l-4 border-red-300 bg-red-50/80 p-4">
-                      <p className="font-medium text-red-700">Those extra hours stole time from my patients — and from my family, my downtime, my life.</p>
+                      <p className="font-medium text-red-700">Those extra hours stole time from my patients, and from my family, my downtime, my life.</p>
                     </div>
 
                     <p>
@@ -139,7 +139,7 @@ export const FounderSection = () => {
 
                     <div className="border-l-4 border-blue-300 bg-blue-50/50 p-4 italic">
                       <p>
-                        "I tested every solution out there — overpriced, built for overseas systems, or too basic.
+                        "I tested every solution out there: overpriced, built for overseas systems, or too basic.
                         None matched the pace or needs of New Zealand general practice."
                       </p>
                     </div>
@@ -152,7 +152,7 @@ export const FounderSection = () => {
                   {/* Enhanced personal testimonial */}
                   <div className="mt-8 rounded-xl border-2 border-green-200/60 bg-gradient-to-r from-green-50/80 to-emerald-50/60 p-6 shadow-lg">
                     <p className="text-center text-lg font-medium italic text-green-800">
-                      "ClinicPro feels like the assistant I always needed — giving me back time and peace of mind."
+                      "ClinicPro feels like the assistant I always needed; giving me back time and peace of mind."
                     </p>
                   </div>
                 </div>

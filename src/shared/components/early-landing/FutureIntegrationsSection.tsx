@@ -62,7 +62,7 @@ export const FutureIntegrationsSection = () => {
       icon: Camera,
       title: '4. Secure Clinical Photos',
       items: [
-        'Capture via secure web interface — never on personal devices',
+        'Capture via secure web interface; never on personal devices',
         'Auto-resize, label, and attach directly to PMS',
         'Maintain privacy while saving time',
       ],

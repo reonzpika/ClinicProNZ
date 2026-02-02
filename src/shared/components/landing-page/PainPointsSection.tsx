@@ -183,7 +183,7 @@ export const PainPointsSection = () => {
                   {/* Quote Content */}
                   <div className="flex-1">
                     <blockquote className="text-lg font-medium italic text-red-800 sm:text-xl lg:text-2xl">
-                      "I used to spend up to two extra hours each evening catching up on notes — especially in practices with older patient lists — juggling paperwork long after clinic doors closed."
+                      "I used to spend up to two extra hours each evening catching up on notes (especially in practices with older patient lists), juggling paperwork long after clinic doors closed."
                     </blockquote>
                     <div className="mt-4 flex items-center justify-center space-x-3 lg:justify-start">
                       <div className="text-left">
@@ -214,7 +214,7 @@ export const PainPointsSection = () => {
 
             <div className="relative mx-auto max-w-4xl">
               <p className="text-lg leading-relaxed text-gray-600 sm:text-xl lg:text-2xl">
-                Built by a GP who lived it — this solution tackles the daily pressure you're under.
+                Built by a GP who lived it; this solution tackles the daily pressure you're under.
               </p>
               <p className="mt-3 text-base leading-relaxed text-gray-500 sm:text-lg lg:text-xl">
                 <span className="font-semibold text-blue-600">Every challenge you face was felt by the GP who built this solution.</span>
@@ -444,7 +444,7 @@ export const PainPointsSection = () => {
                   <span className="font-semibold text-green-600">ClinicPro was built by someone who understands exactly what you're going through.</span>
                 </p>
                 <p className="mb-8 text-base text-gray-600">
-                  Join the beta and experience how AI can transform your documentation workflow — built specifically for New Zealand general practice.
+                  Join the beta and experience how AI can transform your documentation workflow: built specifically for New Zealand general practice.
                 </p>
                 <Button
                   size="lg"
@@ -454,7 +454,7 @@ export const PainPointsSection = () => {
                   Join Beta Testing (Free)
                 </Button>
                 <p className="mt-4 text-sm text-gray-500">
-                  Free for the first 30 NZ GPs — No credit card required
+                  Free for the first 30 NZ GPs; no credit card required
                 </p>
               </div>
             </div>

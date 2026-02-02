@@ -1,0 +1,18 @@
+# No em dash (—)
+
+## Rule
+
+**Never use the em dash character (—) in this project.**
+
+Use instead:
+- **Semicolon (;)** for clause breaks: "You're in control; this handles the load."
+- **Colon (:)** for introductions or lists: "Mission: Help GPs leave on time."
+- **Comma (,)** where it reads naturally: "Get Started, free for GPs."
+- **Parentheses ()** for asides: "privacy (and yours) is our priority."
+
+Applies to:
+- All user-facing copy (UI, emails, marketing, error messages).
+- Code comments and strings.
+- Documentation written in this repo.
+
+The only exception: regex or parsing that must match **incoming** content that may contain em dashes (e.g. model output). Use Unicode escape `\u2014` in that case; do not put the literal character in source.

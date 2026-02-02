@@ -21,7 +21,7 @@ export const ProductSection = () => {
       icon: Smartphone,
       color: 'green' as const,
       unique: 'Unique to ClinicPro',
-      description: 'Desktop mic OR scan QR code to use your phone — zero hardware setup required. The only solution that gives you true recording flexibility.',
+      description: 'Desktop mic OR scan QR code to use your phone; zero hardware setup required. The only solution that gives you true recording flexibility.',
     },
     {
       id: 2,
@@ -45,7 +45,7 @@ export const ProductSection = () => {
       icon: CheckCircle,
       color: 'orange' as const,
       unique: null,
-      description: 'You\'re always in control. Review the comprehensive notes, add details, adjust clinical reasoning — it\'s your documentation.',
+      description: 'You\'re always in control. Review the comprehensive notes, add details, adjust clinical reasoning; it\'s your documentation.',
     },
     {
       id: 5,

@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   keywords: 'AI medical scribe, New Zealand GP, 15-minute consults, early access, medical automation, healthcare efficiency, general practice, work-life balance, GP burnout solution',
   openGraph: {
     title: 'ClinicPro - Get More Done in 15 Minutes and Leave on Time, Satisfied',
-    description: 'ClinicPro brings the latest smart tools to your practice — happier patients, smoother admin, and more time for what matters.',
+    description: 'ClinicPro brings the latest smart tools to your practice: happier patients, smoother admin, and more time for what matters.',
     type: 'website',
     locale: 'en_NZ',
   },

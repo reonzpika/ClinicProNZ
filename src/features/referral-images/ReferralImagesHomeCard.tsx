@@ -41,7 +41,7 @@ export function ReferralImagesHomeCard({ variant = 'default' }: ReferralImagesHo
         </div>
 
         <p className={`text-text-secondary mb-6 ${isPrimary ? 'text-lg' : 'text-sm'}`}>
-          Phone to desktop in 30 seconds. Free for GPs.
+          Photo to desktop in 30 seconds. Saves &gt;10 minutes per referral.
         </p>
 
         <Button

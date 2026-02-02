@@ -821,7 +821,7 @@ function ReferralImagesMobilePageContent() {
               </li>
               <li className="flex items-start gap-2">
                 <span>✓</span>
-                <span>Early access to Inbox AI</span>
+                <span>Early access to Inbox Intelligence</span>
               </li>
             </ul>
           </div>

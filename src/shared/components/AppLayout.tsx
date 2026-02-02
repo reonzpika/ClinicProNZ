@@ -19,7 +19,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const { isMobile, isTablet, isDesktop } = useResponsive();
   const mainRef = useRef<HTMLDivElement | null>(null);
   const lastScrollTopRef = useRef(0);
-  // Footer slot managed via grid row — no dynamic padding needed when using footer row
+  // Footer slot managed via grid row; no dynamic padding needed when using footer row
 
   const toggleSidebar = () => {
     if (isMobile || isTablet) {

@@ -23,7 +23,7 @@ export const ClinicProHeroSection = () => {
           <div className="text-center">
             <p className="text-sm font-medium text-red-800 sm:text-base">
               <span className="font-bold text-red-900">⚠️ 79% of NZ GPs report burnout</span>
-              <span className="hidden text-red-700 xs:inline"> — </span>
+              <span className="hidden text-red-700 xs:inline">, </span>
               <a
                 href="https://www.rnzcgp.org.nz/our-voice/workforce-survey/"
                 target="_blank"

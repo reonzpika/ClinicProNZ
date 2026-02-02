@@ -574,7 +574,7 @@ export function TranscriptionControls({
           <div className="space-y-2">
             {/* Status and Warnings */}
             {noInputWarning && !isWaitingForSpeech && (
-              <div className="text-xs text-red-500">No audio detected—check your mic</div>
+              <div className="text-xs text-red-500">No audio detected; check your mic</div>
             )}
 
             {/* Primary Recording Options */}

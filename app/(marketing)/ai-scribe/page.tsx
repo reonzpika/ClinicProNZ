@@ -8,7 +8,6 @@ const SIGNUP_URL = '/auth/register?redirect_url=%2Fai-scribe%2Fthank-you';
 const sections = [
   { id: 'ai-scribe', label: 'AI Scribe' },
   { id: 'feature-image', label: 'Clinical Image' },
-  { id: 'feature-chat', label: 'Search/Chat' },
   { id: 'start', label: 'Start Today' },
 ];
 
@@ -45,7 +44,7 @@ export default function AiScribeLandingPage() {
               href={SIGNUP_URL}
               className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block text-sm font-medium"
             >
-              Sign up to show interest
+              Get notified at launch
             </Link>
           </div>
         </div>
@@ -56,19 +55,19 @@ export default function AiScribeLandingPage() {
         <section id="hero" className="py-20 px-4">
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-10">
-              <p className="text-text-tertiary text-sm mb-4">Built by a practising NZ GP</p>
+              <p className="text-text-tertiary text-sm mb-4">From an Auckland GP</p>
               <h1 className="text-4xl md:text-5xl font-bold text-text-primary mb-6">
                 AI scribe for NZ GPs
               </h1>
-              <p className="text-xl font-semibold text-text-secondary mb-3">and more...</p>
+              <p className="text-xl font-semibold text-text-secondary mb-3">Actually reliable. I use it every day.</p>
               <p className="text-lg text-text-secondary mb-4 max-w-2xl mx-auto">
-                Handle complex, multi‑problem consults with ease:
+                I built this because I needed something that actually works:
               </p>
               <ul className="text-left list-disc space-y-2 max-w-md mx-auto mb-8 text-text-secondary">
-                <li>Capture by audio; add typed input when needed</li>
-                <li>Get structured notes in seconds — finish on time</li>
-                <li>Upload and resize clinical images during the consult</li>
-                <li>AI Chat: get answers fast from trusted resources</li>
+                <li>Record the consult; it remembers everything so you don&apos;t have to</li>
+                <li>Get clean notes with minimal edits (still need your review)</li>
+                <li>Capture referral photos during the consult</li>
+                <li>Validate medications against NZ Formulary instantly</li>
               </ul>
             </div>
             <div className="relative w-full max-w-4xl mx-auto rounded-xl overflow-hidden shadow-lg">
@@ -84,16 +83,14 @@ export default function AiScribeLandingPage() {
           </div>
         </section>
 
-        {/* Mission */}
+        {/* Why I built this */}
         <section id="mission" className="py-16 px-4 bg-white">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-text-primary mb-6">
-              Mission: Help GPs leave work on time
+              Why I built this
             </h2>
             <p className="text-lg text-text-secondary max-w-3xl mx-auto">
-              ClinicPro empowers New Zealand GPs to reclaim time and clinical focus by automating
-              notes, simplifying referrals and surfacing trusted NZ guidance — all while keeping
-              clinicians in control.
+              I was spending breaks trying to remember what each patient said, then staying late writing notes. Free AI scribes hallucinate too much; I needed something reliable for my own practice. Works for me, might work for you.
             </p>
           </div>
         </section>
@@ -109,17 +106,13 @@ export default function AiScribeLandingPage() {
             <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-16 mb-16">
               <div className="lg:col-span-5">
                 <h3 className="text-2xl font-bold text-text-primary mb-4">
-                  End the Speed vs Quality Dilemma
+                  Stop trying to remember everything
                 </h3>
                 <p className="text-text-secondary mb-4">
-                  Most GPs battle speed versus quality: detailed notes take longer; brief notes keep
-                  you on time but miss key information. ClinicPro ends this dilemma — clear,
-                  structured notes without after‑hours admin.
+                  You&apos;re seeing patients back-to-back. By your break, you&apos;re trying to remember what the 10am patient said about their chest pain. ClinicPro records everything; you focus on the patient, not note-taking during breaks.
                 </p>
                 <p className="text-text-secondary mb-6">
-                  ClinicPro&apos;s audio recording captures the subjective; spoken objectives are
-                  included. Type objective findings (exam, assessment/Dx, plan) as needed for more
-                  control and accuracy — you&apos;re in charge.
+                  Audio captures the conversation. Type in exam findings and your assessment as you go. You&apos;re in control; this just handles the cognitive load.
                 </p>
                 <ul className="space-y-2 text-text-secondary">
                   <li>• Record on mobile or desktop</li>
@@ -154,10 +147,10 @@ export default function AiScribeLandingPage() {
               </div>
               <div className="order-1 lg:order-2 lg:col-span-5">
                 <h3 className="text-2xl font-bold text-text-primary mb-4">
-                  Review and edit your note
+                  Quality output, minimal faffing
                 </h3>
                 <p className="text-text-secondary mb-6">
-                  Clean, structured note — you are in charge. Review and edit quickly.
+                  Notes come out clean. Quick review, minimal edits, done. Still need your clinical judgement; this isn&apos;t replacing that.
                 </p>
                 <ul className="space-y-2 text-text-secondary">
                   <li>• Default template handles most consults; multi‑problem ready</li>
@@ -196,7 +189,7 @@ export default function AiScribeLandingPage() {
                 href={SIGNUP_URL}
                 className="inline-block px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium"
               >
-                Sign up to show interest
+                Get notified at launch
               </Link>
             </div>
           </div>
@@ -212,10 +205,9 @@ export default function AiScribeLandingPage() {
 
             <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-16 mb-12">
               <div className="lg:col-span-8">
-                <h3 className="text-2xl font-bold text-text-primary mb-4">Why use this</h3>
+                <h3 className="text-2xl font-bold text-text-primary mb-4">Referrals sorted while you&apos;re consulting</h3>
                 <p className="text-text-secondary mb-6">
-                  Upload from your phone without saving to your personal gallery. Images are
-                  auto‑resized for referrals and ready on your desktop.
+                  Take the photo during consult. It&apos;s already on your desktop, auto-resized, ready to attach to your referral. Note&apos;s already written. Referral takes 2 minutes.
                 </p>
                 <ul className="space-y-2 text-text-secondary">
                   <li>• Upload from mobile via QR or link</li>
@@ -261,73 +253,12 @@ export default function AiScribeLandingPage() {
           </div>
         </section>
 
-        {/* Search & Chat */}
-        <section id="feature-chat" className="py-16 px-4 bg-surface">
-          <div className="max-w-6xl mx-auto">
-            <h2 className="text-3xl font-bold text-text-primary mb-2">Search & Chat</h2>
-            <p className="text-lg text-text-secondary mb-12">
-              Trusted NZ resources at your fingertips
-            </p>
-
-            <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-16 mb-12">
-              <div className="lg:col-span-5">
-                <h3 className="text-2xl font-bold text-text-primary mb-3">What you can ask</h3>
-                <p className="text-text-secondary mb-3">
-                  Search NZ resources in one place — like Google, but for GPs. Get trusted references
-                  fast, and ask follow‑up questions to refine.
-                </p>
-                <ul className="space-y-2 text-text-secondary mb-3">
-                  <li>• General health/disease questions</li>
-                  <li>• Referral info (where/when/how)</li>
-                  <li>• Patient info (Healthify)</li>
-                  <li>• Drug info (NZ Formulary)</li>
-                </ul>
-                <p className="text-sm text-text-tertiary">
-                  Not intended for clinical judgement or decision‑making. Verify with the cited
-                  sources.
-                </p>
-              </div>
-              <div className="lg:col-span-7">
-                <div className="rounded-xl border border-border bg-white overflow-hidden shadow-md">
-                  <img
-                    src="/images/landing-page/ClinicProChat.jpg"
-                    alt="Chat UI showing an answer with Healthify and NZ Formulary references"
-                    loading="lazy"
-                    decoding="async"
-                    className="block w-full h-auto object-contain"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-border bg-white p-6">
-              <h4 className="text-xl font-semibold text-text-primary text-center mb-6">
-                How it works
-              </h4>
-              <div className="grid gap-6 sm:grid-cols-3">
-                {[
-                  'Type keywords or a question',
-                  'Get a concise answer with NZ resource references',
-                  'Open sources in one click',
-                ].map((text, i) => (
-                  <div key={i} className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-lg">
-                      {i + 1}
-                    </div>
-                    <p className="text-text-secondary text-sm pt-2">{text}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Final CTA */}
         <section id="start" className="py-20 px-4 bg-primary text-white">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">AI scribe for NZ GPs</h2>
             <p className="text-xl mb-8 opacity-90">
-              Structured notes, referral‑ready images, and NZ‑referenced answers — fast
+              Less cognitive load. Quality notes. Referrals done during consult.
             </p>
             <div className="grid gap-3 sm:grid-cols-3 max-w-2xl mx-auto mb-8">
               <div className="rounded-lg bg-white/10 px-4 py-3 text-white/95 text-sm">
@@ -340,12 +271,12 @@ export default function AiScribeLandingPage() {
                 ✓ Trusted NZ sources, cited
               </div>
             </div>
-            <p className="text-sm opacity-90 mb-8">Built by a practising NZ GP</p>
+            <p className="text-sm opacity-90 mb-8">I use this daily in my Auckland practice</p>
             <Link
               href={SIGNUP_URL}
               className="inline-block px-8 py-4 text-lg bg-white text-primary rounded-lg hover:bg-gray-100 transition-colors font-semibold"
             >
-              Sign up to show interest
+              Get notified at launch
             </Link>
           </div>
         </section>
@@ -353,7 +284,7 @@ export default function AiScribeLandingPage() {
         {/* Footer */}
         <footer className="bg-white border-t border-border py-8 px-4">
           <div className="max-w-7xl mx-auto text-center text-text-tertiary text-sm">
-            <p>Built by a practicing GP for GPs</p>
+            <p>Built by a practising GP for GPs</p>
             <div className="mt-4 space-x-6">
               <a href="/terms" className="hover:text-text-primary">
                 Terms

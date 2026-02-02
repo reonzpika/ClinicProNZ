@@ -13,7 +13,7 @@ import {
 import { trackShare } from './trackShare';
 
 const SHARE_TEXT =
-  'Stop wasting >10 minutes on referral photos. Phone to desktop in 30 seconds. Free for GPs.';
+  'Photo to desktop in 30 seconds. Always JPEG, auto-resized. Saves >10 minutes per referral. Free for GPs.';
 
 export interface ShareModalProps {
   open: boolean;
@@ -54,9 +54,9 @@ export function ShareModal({
   };
 
   const handleEmail = () => {
-    const subject = encodeURIComponent('Tool for referral photos (saves 30 min)');
+    const subject = encodeURIComponent('Tool for referral photos (saves >10 min)');
     const body = encodeURIComponent(
-      `Hi,\n\nI just started using ClinicPro for referral photos and it's been a game-changer.\n\nInstead of emailing photos to myself, downloading, resizing, and uploading, I now:\n- Capture on phone\n- Photo appears on desktop instantly (30 seconds)\n- Download auto-sized JPEG\n- Done\n\nFree to use, built by a NZ GP.\n\nTry it: ${shareUrl}\n\nCheers`
+      `Hi,\n\nI just started using ClinicPro for referral photos - it's been a game-changer. No more emailing photos to myself, resizing, re-uploading. Photo to desktop in 30 seconds, always as JPEG. Saves me >10 minutes per referral. Free to use, built by a NZ GP.\n\nTry it: ${shareUrl}\n\nCheers`
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
     trackShare(userId, location, 'email');

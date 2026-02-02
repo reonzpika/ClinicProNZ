@@ -48,10 +48,10 @@ export const PersonalStorySection = () => {
 
                 <blockquote className="border-l-4 border-nz-green-500 bg-gray-50 p-6 italic">
                   <p className="mb-4 text-lg text-gray-800">
-                    "Like many GPs, I felt increasingly disconnected from why I became a doctor. The constant rush, endless admin, and pressure were taking their toll — on me and my patients.
+                    "Like many GPs, I felt increasingly disconnected from why I became a doctor. The constant rush, endless admin, and pressure were taking their toll on me and my patients.
                   </p>
                   <p className="text-lg text-gray-800">
-                    Then I discovered my ikigai: combining my medical expertise with my deep passion for AI and automation. ClinicPro was born from this vision — using smart technology to give GPs back their time, reduce burnout, and restore the joy in patient care."
+                    Then I discovered my ikigai: combining my medical expertise with my deep passion for AI and automation. ClinicPro was born from this vision: using smart technology to give GPs back their time, reduce burnout, and restore the joy in patient care."
                   </p>
                 </blockquote>
 

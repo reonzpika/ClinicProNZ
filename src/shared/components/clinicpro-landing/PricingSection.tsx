@@ -197,7 +197,7 @@ export const PricingSection = () => {
                 {clinicProLandingData.pricing.cta}
               </h3>
               <p className="mb-6 text-gray-600">
-                Don't wait—early access spots are filling up fast. Join the GPs who are already transforming their practice.
+                Don't wait; early access spots are filling up fast. Join the GPs who are already transforming their practice.
               </p>
               <Button
                 size="lg"

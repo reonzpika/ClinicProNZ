@@ -174,7 +174,8 @@ export async function POST(req: Request) {
       const raw = lines[i] ?? '';
       const trimmed = raw.trim();
       const isBullet = trimmed.startsWith('- ') || trimmed.startsWith('* ');
-      const isSourceLine = /\s—\shttps?:\/\//.test(raw) || trimmed.toUpperCase() === 'SOURCES:';
+      // Match source lines: space + dash (U+2014 or hyphen) + space + URL; model output may use em dash
+      const isSourceLine = /\s(\u2014|[-\u2013])\shttps?:\/\//.test(raw) || trimmed.toUpperCase() === 'SOURCES:';
       const isLabel = trimmed.toUpperCase().startsWith('SHORT ANSWER:') || trimmed.toUpperCase().startsWith('FOLLOW-UPS:');
       if (isSourceLine || isLabel) {
         continue;

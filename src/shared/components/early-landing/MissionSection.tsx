@@ -18,7 +18,7 @@ export const MissionSection = () => {
         </div>
 
         <p className="mx-auto max-w-3xl text-lg leading-relaxed text-gray-700 sm:text-xl">
-          ClinicPro empowers New Zealand GPs to reclaim time and clinical focus by automating notes, simplifying referrals and surfacing trusted NZ guidance — all while keeping clinicians in control.
+          ClinicPro empowers New Zealand GPs to reclaim time and clinical focus by automating notes, simplifying referrals and surfacing trusted NZ guidance; all while keeping clinicians in control.
         </p>
       </div>
     </section>

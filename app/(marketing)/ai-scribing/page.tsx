@@ -343,7 +343,7 @@ export default function AIScribingPage() {
                       Need for Human Oversight
                     </h3>
                     <p className="text-gray-700">
-                      There is a risk of automation bias — over-relying on or blindly trusting automated systems. You must critically review the output. AI should be viewed as a tool to support, not replace, clinical judgment. Using AI for diagnosis or treatment advice carries far greater risk than for summarisation and changes the nature of how clinicians think.
+                      There is a risk of automation bias: over-relying on or blindly trusting automated systems. You must critically review the output. AI should be viewed as a tool to support, not replace, clinical judgment. Using AI for diagnosis or treatment advice carries far greater risk than for summarisation and changes the nature of how clinicians think.
                     </p>
                   </div>
                 </div>

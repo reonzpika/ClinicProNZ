@@ -37,7 +37,7 @@ export const EarlyFooterCTA = () => {
           {/* Sub */}
           <AnimatedContent distance={30} direction="vertical" duration={0.3} ease="power3.out" threshold={0.1} delay={0.1}>
             <p className="mx-auto mb-8 max-w-3xl text-xl leading-relaxed text-white/90 sm:text-2xl">
-              Structured notes, referral‑ready images, and NZ‑referenced answers — fast
+              Structured notes, referral‑ready images, and NZ‑referenced answers; fast
             </p>
           </AnimatedContent>
 

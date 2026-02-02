@@ -8,7 +8,7 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM_EMAIL = 'ClinicPro <notifications@clinicpro.co.nz>';
+const FROM_EMAIL = 'ClinicPro <ryo@clinicpro.co.nz>';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
 
 export interface EmailData {
@@ -30,41 +30,41 @@ export async function sendWelcomeEmail(data: EmailData) {
   return await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: 'Your GP Referral Images links are ready 📸',
+    subject: 'Your Referral Images links - ready to use',
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
-        <p>Your referral photo tool is set up and ready.</p>
+        <p>You're all set. Here are your permanent links:</p>
         
         <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
         
-        <h3>🖥️ Desktop Link (bookmark this on your computer):</h3>
+        <h3>Desktop link (bookmark this):</h3>
         <p><a href="${desktopLink}" style="color: #0070e0;">${desktopLink}</a></p>
         
-        <h3>📱 Mobile Link (save to your phone's home screen):</h3>
+        <h3>Mobile link (save to home screen):</h3>
         <p><a href="${mobileLink}" style="color: #0070e0;">${mobileLink}</a></p>
         
         <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
         
-        <h3>💡 Quick Start:</h3>
+        <h3>How to use it:</h3>
         <ol>
           <li>Bookmark the desktop link on your computer</li>
           <li>Save the mobile link to your phone's home screen</li>
-          <li>Open the mobile page when you need referral photos</li>
-          <li>Photos appear on desktop instantly</li>
+          <li>Take photo on mobile during consult</li>
+          <li>Photo appears on desktop instantly - download JPEG and attach to referral</li>
         </ol>
         
         <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
         
-        <p>These are YOUR permanent links. Same links work every time.</p>
+        <p>These links are permanent. Bookmark them and you're done.</p>
         
         <p>No credit card required. Free to use.</p>
         
-        <p>Cheers,<br>ClinicPro Team</p>
+        <p>Cheers,<br>Dr. Ryo</p>
         
         <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
-        <p style="font-size: 12px; color: #888;">Need help? Reply to this email or visit clinicpro.app/support</p>
+        <p style="font-size: 12px; color: #888;">Questions? Just reply to this email. - Ryo</p>
       </div>
     `,
   });
@@ -79,26 +79,23 @@ export async function sendUsageTipEmail(data: EmailData) {
   return await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: 'Quick tip: Use GP Referral Images for these 3 things',
+    subject: 'What other GPs use Referral Images for',
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
-        <p>You've started using GP Referral Images - nice!</p>
+        <p>You've captured your first image. Here's what other GPs use it for:</p>
         
-        <h3>Here's what other GPs use it for:</h3>
+        <h4>Specialist referrals (dermatology, plastics, etc.)</h4>
+        <p>Always JPEG, auto-sized, under 500KB. Dermatologists won't reject them.</p>
         
-        <h4>1. 📋 Specialist Referral Photos</h4>
-        <p>→ Saves 10+ min per referral<br>
-        → Auto-sized for email (&lt;500KB, no rejections)</p>
+        <h4>Wound progress tracking</h4>
+        <p>Before/after photos for clinical notes</p>
         
-        <h4>2. 📸 Wound Progress Documentation</h4>
-        <p>→ Before/after tracking for clinical notes</p>
+        <h4>Insurance/ACC documentation</h4>
+        <p>Pre-procedure records, claims</p>
         
-        <h4>3. 🏥 Pre-Procedure Records</h4>
-        <p>→ Insurance claims documentation</p>
-        
-        <p>Keep capturing. It gets easier every time.</p>
+        <p>That's it. Keep using it - saves you &gt;10 minutes every time.</p>
       </div>
     `,
   });
@@ -109,32 +106,29 @@ export async function sendUsageTipEmail(data: EmailData) {
  */
 export async function sendValueReinforcementEmail(data: EmailData & { imageCount: number }) {
   const { email, name, imageCount } = data;
-  const timeSaved = imageCount * 5;
-  const hoursSaved = Math.floor(timeSaved / 60);
-  const minutesSaved = timeSaved % 60;
+  const timeSaved = imageCount * 10;
 
   return await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: `You've saved ${timeSaved} minutes with GP Referral Images`,
+    subject: `You've saved ${timeSaved} minutes this week`,
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
-        <p>You've captured ${imageCount} images with GP Referral Images.</p>
+        <p>You've captured ${imageCount} referral images so far.</p>
         
-        <h3>📊 Your Time Savings:</h3>
+        <h3>Time you've saved:</h3>
         <ul>
           <li>Images captured: ${imageCount}</li>
-          <li>Average time saved per image: 5 minutes</li>
+          <li>Average time saved per referral: 10 minutes</li>
           <li>Total time saved: ${timeSaved} minutes</li>
         </ul>
         
-        <p>That's ${hoursSaved > 0 ? `${hoursSaved} hours and ${minutesSaved} minutes` : `${minutesSaved} minutes`} back in your day. 💪</p>
+        <p>That's time you're not staying late or doing during breaks.</p>
         
-        <h3>Share the love:</h3>
-        <p>Know a colleague who emails referral photos to themselves?<br>
-        Send them this: <a href="${APP_URL}/referral-images" style="color: #0070e0;">${APP_URL}/referral-images</a></p>
+        <h3>Know a colleague still emailing photos to themselves?</h3>
+        <p>Send them this: <a href="${APP_URL}/referral-images" style="color: #0070e0;">${APP_URL}/referral-images</a></p>
       </div>
     `,
   });
@@ -149,27 +143,26 @@ export async function sendLimitHitEmail(data: EmailData) {
   return await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: 'Help keep GP Referral Images running?',
+    subject: "You've hit your 10 free images this month",
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
-        <p>You've used GP Referral Images 10 times this month - great!</p>
+        <p>You've captured 10 images this month. The tool's clearly helping you.</p>
         
-        <p><strong>Quick context:</strong><br>
-        I built this as a GP frustrated with existing tools. No venture capital, no corporate owners.</p>
+        <p><strong>A bit of context:</strong><br>
+        I'm a fellow GP who built this to fix our shared workflow pain. No VC funding, no corporate backing.</p>
         
-        <h3>Your support keeps this project alive:</h3>
+        <h3>$50 one-time gets you:</h3>
         <ul>
-          <li>✓ $50 one-time (not a subscription)</li>
-          <li>✓ Unlimited images forever</li>
-          <li>✓ All future updates included</li>
-          <li>✓ Early access to our upcoming Inbox AI tool</li>
+          <li>Unlimited images forever</li>
+          <li>All future features</li>
+          <li>Early access to Inbox Intelligence</li>
         </ul>
         
-        <p><a href="${APP_URL}/referral-images/upgrade" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px;">Support GP Referral Images - $50</a></p>
+        <p><a href="${APP_URL}/referral-images/upgrade" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px;">Support This Project - $50</a></p>
         
-        <p>Thanks for trying what I built.</p>
+        <p>No pressure. Thanks for trying it.</p>
         
         <p>Dr. Ryo, GP</p>
         
@@ -193,17 +186,16 @@ export async function sendFollowUpEmail(data: EmailData & { daysUntilReset: numb
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
-        <p>Quick reminder: You've used your 10 free images this month.</p>
+        <p>You've used your 10 free images. Two options:</p>
         
-        <h3>Options:</h3>
         <ol>
           <li>Wait ${daysUntilReset} days for 10 more free images</li>
-          <li>Upgrade to unlimited now ($50 one-time) → Never hit limits again</li>
+          <li>Upgrade to unlimited ($50 one-time, not a subscription)</li>
         </ol>
         
-        <p><a href="${APP_URL}/referral-images/upgrade" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px;">Upgrade Now - $50</a></p>
+        <p><a href="${APP_URL}/referral-images/upgrade" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px;">Support This Project - $50</a></p>
         
-        <p>No pressure - free tier resets next month.</p>
+        <p>No pressure. Free tier resets next month.</p>
       </div>
     `,
   });
@@ -218,22 +210,22 @@ export async function sendMonthResetEmail(data: EmailData) {
   return await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: 'Your 10 free images are back 🎉',
+    subject: 'Your 10 free images have reset',
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
-        <p>Good news - your monthly limit has reset.</p>
+        <p>Your monthly limit has reset.</p>
         
-        <p>You have 10 more free images this month.</p>
+        <p>You have 10 more free images.</p>
         
-        <p>Or upgrade to unlimited and never think about limits again:</p>
+        <p>Or upgrade to unlimited and stop thinking about limits:</p>
         <ul>
-          <li>✓ $50 one-time</li>
-          <li>✓ All future features included</li>
+          <li>$50 one-time (not a subscription)</li>
+          <li>All future features</li>
         </ul>
         
-        <p><a href="${APP_URL}/referral-images/upgrade" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px;">Upgrade to Unlimited - $50</a></p>
+        <p><a href="${APP_URL}/referral-images/upgrade" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px;">Support This Project - $50</a></p>
       </div>
     `,
   });
@@ -248,28 +240,27 @@ export async function sendPremiumConfirmationEmail(data: EmailData) {
   return await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: 'Thank you for supporting GP Referral Images! 🎉',
+    subject: 'Thank you for supporting this project',
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
-        <p>Your support means everything.</p>
+        <p>Thank you. Your support means everything.</p>
         
         <h3>You now have:</h3>
         <ul>
-          <li>✅ Unlimited referral images forever</li>
-          <li>✅ All future features automatically</li>
-          <li>✅ Priority early access to our upcoming Inbox AI tool</li>
-          <li>✅ Our deepest gratitude</li>
+          <li>Unlimited images forever</li>
+          <li>All future features</li>
+          <li>Early access to Inbox Intelligence</li>
         </ul>
         
-        <p>No more limits. No more prompts. Just capture as many images as you need.</p>
+        <p>No more limits. Just use it.</p>
         
-        <p>Thank you for supporting GP-built tools.</p>
+        <p>Thanks for supporting GP-built tools.</p>
         
-        <p>Dr. Ryo, GP</p>
+        <p>Cheers,<br>Dr. Ryo</p>
         
-        <p style="font-size: 14px; color: #666;">P.S. Keep an eye out for Inbox AI launch emails. You'll be among the first to get early access.</p>
+        <p style="font-size: 14px; color: #666;">P.S. I'll email you when Inbox Intelligence launches. You'll get early access.</p>
       </div>
     `,
   });

@@ -100,7 +100,7 @@ export const EarlyAdoptersSection = () => {
                 What's Coming in Q3 '25
               </h3>
               <p className="mx-auto max-w-2xl text-lg text-gray-600">
-                You're not just getting early access—you're helping shape the future of GP documentation in New Zealand
+                You're not just getting early access: you're helping shape the future of GP documentation in New Zealand
               </p>
             </div>
 

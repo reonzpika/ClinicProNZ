@@ -186,7 +186,7 @@ export async function POST(req: Request) {
       }
       // No hard delete policy; add a no-op by pointing to null is not supported.
       // Instead, we rely on precedence and time ordering; to clear, insert a sentinel rollout with invalid version? Avoid.
-      // Safer: client can activate oldest base by not having a self rollout — emulate by inserting self rollout to a special empty version? We'll skip clearing and let client choose another version.
+      // Safer: client can activate oldest base by not having a self rollout; emulate by inserting self rollout to a special empty version? We'll skip clearing and let client choose another version.
       return NextResponse.json({ error: 'Clearing self rollout not supported; activate another version instead' }, { status: 400 });
     }
 

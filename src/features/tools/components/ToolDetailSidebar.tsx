@@ -13,7 +13,7 @@ export function ToolDetailSidebar({ tool }: { tool: ToolDetail }) {
           <dl className="space-y-2">
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Country</dt>
-              <dd>{tool.country ?? '—'}</dd>
+              <dd>{tool.country ?? 'N/A'}</dd>
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Website</dt>
@@ -23,13 +23,13 @@ export function ToolDetailSidebar({ tool }: { tool: ToolDetail }) {
                   <a className="underline" href={tool.website} target="_blank" rel="noopener noreferrer">Visit</a>
                 )
 : (
-                  <span>—</span>
+                  <span>N/A</span>
                 )}
               </dd>
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Platforms</dt>
-              <dd>{tool.keyInfo?.platforms?.join(', ') ?? '—'}</dd>
+              <dd>{tool.keyInfo?.platforms?.join(', ') ?? 'N/A'}</dd>
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Account required</dt>
@@ -37,11 +37,11 @@ export function ToolDetailSidebar({ tool }: { tool: ToolDetail }) {
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">PHI/Privacy</dt>
-              <dd>{tool.privacyNote ?? '—'}</dd>
+              <dd>{tool.privacyNote ?? 'N/A'}</dd>
             </div>
             <div className="flex items-center justify-between gap-4">
               <dt className="text-muted-foreground">Citations</dt>
-              <dd>{tool.citations ? (tool.citations === 'inline' ? 'Inline links' : tool.citations === 'references' ? 'Reference list' : 'None') : '—'}</dd>
+              <dd>{tool.citations ? (tool.citations === 'inline' ? 'Inline links' : tool.citations === 'references' ? 'Reference list' : 'None') : 'N/A'}</dd>
             </div>
           </dl>
         </CardContent>

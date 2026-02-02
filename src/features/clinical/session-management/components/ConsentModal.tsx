@@ -18,7 +18,7 @@ type ConsentModalProps = {
   onCancel: () => void;
 };
 
-const CONSENT_SCRIPT = `"Just to let you know, I'll be using a digital assistant to help me take notes during our conversation today. It records and writes down what we discuss to make sure I don't miss anything important. Your information is kept secure and private, and you can ask me to pause or stop the recording at any time — no worries at all. Does that sound okay to you?"`;
+const CONSENT_SCRIPT = `"Just to let you know, I'll be using a digital assistant to help me take notes during our conversation today. It records and writes down what we discuss to make sure I don't miss anything important. Your information is kept secure and private, and you can ask me to pause or stop the recording at any time; no worries at all. Does that sound okay to you?"`;
 
 export function ConsentModal({ isOpen, onConfirm, onCancel }: ConsentModalProps) {
   const [isChecked, setIsChecked] = useState(false);

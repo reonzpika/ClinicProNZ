@@ -66,7 +66,7 @@ export const clinicProLandingData = {
   founder: {
     name: 'Dr Ryo Eguchi',
     title: 'Founder & Practising GP',
-    quote: 'I\'m Dr Ryo Eguchi—I\'ve been where you are. Spending hours after work just trying to catch up on notes, feeling like I wasn\'t fully present with my patients because I was thinking about documentation. ClinicPro is the solution I built for us.',
+    quote: 'I\'m Dr Ryo Eguchi; I\'ve been where you are. Spending hours after work just trying to catch up on notes, feeling like I wasn\'t fully present with my patients because I was thinking about documentation. ClinicPro is the solution I built for us.',
     image: '/images/landing-page/DrRyoEguchiProfilePicMain.jpg',
   },
 

@@ -10,13 +10,13 @@ export default function RoadmapThankYouPage() {
           Thanks for joining the waitlist
         </h1>
         <p className="text-text-secondary mb-8">
-          We&apos;ll notify you when Inbox Intelligence is available.
+          I&apos;ll email you when Inbox Intelligence launches. Applying for R&D funding now; fingers crossed.
         </p>
         <Link
           href="/"
           className="inline-block px-8 py-4 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium"
         >
-          Go back to home page
+          Back to homepage
         </Link>
       </div>
     </div>

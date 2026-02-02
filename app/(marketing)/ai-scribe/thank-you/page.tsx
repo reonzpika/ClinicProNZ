@@ -10,13 +10,13 @@ export default function AiScribeThankYouPage() {
           Thanks for signing up
         </h1>
         <p className="text-text-secondary mb-8">
-          We&apos;ll notify you when the AI scribe is available.
+          I&apos;ll email you when it&apos;s ready to launch. In the meantime, try Referral Images; it&apos;s live and free.
         </p>
         <Link
           href="/"
           className="inline-block px-8 py-4 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium"
         >
-          Go back to home page
+          Back to homepage
         </Link>
       </div>
     </div>

@@ -93,7 +93,7 @@ export function TemplatePerformanceMonitor() {
                 onClick={() => setIsVisible(false)}
                 className="size-6 p-0"
               >
-                Ã—
+                ×
               </Button>
             </div>
           </div>

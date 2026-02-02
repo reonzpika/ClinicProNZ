@@ -88,7 +88,7 @@ export const FinalCTASection = () => {
 
               <div className="relative z-10 text-center">
                 <blockquote className="mb-6 text-lg font-medium italic text-white sm:text-xl lg:text-2xl">
-                  "ClinicPro feels like the assistant I always needed — giving me back time and peace of mind. Let's prove that technology can give you back what matters most."
+                  "ClinicPro feels like the assistant I always needed; giving me back time and peace of mind. Let's prove that technology can give you back what matters most."
                 </blockquote>
                 <div className="flex items-center justify-center space-x-4">
                   <div className="sm:size-18 relative size-16 overflow-hidden rounded-full border-4 border-white/30 shadow-2xl">
@@ -177,7 +177,7 @@ export const FinalCTASection = () => {
           <div className="space-y-8">
             <p className="text-lg text-blue-100 sm:text-xl lg:text-2xl">
               <span className="font-semibold text-yellow-300">Free access for early feedback</span>
-              <span className="block sm:inline"> — No credit card required</span>
+              <span className="block sm:inline">; no credit card required</span>
             </p>
 
             {/* Enhanced trust indicators */}

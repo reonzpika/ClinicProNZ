@@ -67,7 +67,7 @@ export const ScreenshotGallery = () => {
             See ClinicPro in Action
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600 sm:text-xl">
-            From mobile recording to final notes—watch how simple GP documentation can be
+            From mobile recording to final notes: watch how simple GP documentation can be
           </p>
         </div>
 

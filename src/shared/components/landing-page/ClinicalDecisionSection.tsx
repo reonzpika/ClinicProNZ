@@ -11,7 +11,7 @@ export const ClinicalDecisionSection = () => {
       id: 1,
       icon: Eye,
       title: 'Clinical Judgment First',
-      summary: 'Never replaces your expertise — ClinicPro enhances your decision-making with contextual support.',
+      summary: 'Never replaces your expertise; ClinicPro enhances your decision-making with contextual support.',
       details: 'You remain in complete control of every clinical decision. ClinicPro provides intelligent support without ever overriding your professional judgment.',
       color: 'green' as const,
     },

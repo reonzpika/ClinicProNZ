@@ -28,9 +28,9 @@ export default function ReferralImagesLandingPage() {
 
   const referralImagesFaqItems = [
     {
-      question: 'How does this save me 30 minutes per referral?',
+      question: 'How does this save me >10 minutes per referral?',
       answer:
-        'The old workflow—email photos to yourself, download, resize, re-upload—often takes 30+ minutes when things go wrong. With Referral Images you capture on your phone and photos appear on your desktop in 30 seconds, already compressed and ready to attach. No manual resize, no "file too large" rejections.',
+        'The old workflow: email photo to yourself → check email on desktop → download → open in image editor → resize → save → attach → hope it\'s under 500KB. When things go wrong, this takes ages. With Referral Images: take photo → it\'s on your desktop in 30 seconds, auto-sized as JPEG, ready to attach. That\'s it.',
     },
     {
       question: 'Does it work with HealthLink/Manawatū e-referral systems?',
@@ -48,9 +48,9 @@ export default function ReferralImagesLandingPage() {
         'Because GPs deserve better tools. I built this for myself and my colleagues. The goal is to make clinical work easier, not to extract value from doctors.',
     },
     {
-      question: 'How is this different from QuickShot/MedImage?',
+      question: 'How is this different from MedImage?',
       answer:
-        'Referral Images is focused on one thing: getting referral photos from your phone to your desktop in seconds, always as JPEG and under 500KB. No PDFs, no extra steps. If you use Medtech Evolution we\'re building deeper integration; for other systems you use the download and attach workflow.',
+        'MedImage requires installing software on your PC and costs NZ$15 + $3/month. We\'re browser-only and free. More importantly: MedImage can create PDFs. We only create JPEGs, because dermatologists reject PDFs and ask for JPEGs instead. Simple, free, always the right format.',
     },
     {
       question: 'Do I need to install anything?',
@@ -198,7 +198,7 @@ export default function ReferralImagesLandingPage() {
               href={loginRedirectUrl}
               className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
             >
-              Join 50+ NZ GPs Using This - Free
+              Free for NZ GPs, Get Started
             </Link>
           )}
         </div>
@@ -214,14 +214,12 @@ export default function ReferralImagesLandingPage() {
               Referral photos from phone to desktop in 30 seconds
             </h1>
             <p className="text-xl text-text-secondary mb-4 max-w-2xl mx-auto">
-              Tired of the &quot;&gt;1/2 hr faffing around&quot;? No more email-to-self, manual resize, or &quot;file too large&quot; rejections. Instant transfer, auto-sized JPEG. Free to use.
+              Stop emailing photos to yourself. Take photo → instant desktop transfer → auto-sized JPEG → attach to referral. Done. Saves &gt;10 minutes per referral. Free.
             </p>
             <p className="text-text-secondary mb-8 max-w-2xl mx-auto">
-              Built by {process.env.NEXT_PUBLIC_REFERRAL_IMAGES_GP_NAME || 'Dr. Ryo'}, GP in {process.env.NEXT_PUBLIC_REFERRAL_IMAGES_PRACTICE || 'Auckland, New Zealand'}
+              Built by Dr. Ryo Eguchi, Auckland GP. I hated this workflow, so I fixed it.
               <br />
-              <em className="text-text-tertiary">&quot;It&apos;s intolerable how long it takes&quot; — Fellow NZ GP</em>
-              <br />
-              I built this to fix that.
+              <em className="text-text-tertiary">&quot;It&apos;s intolerable how long it takes&quot;, Fellow NZ GP</em>
             </p>
             {primaryCtaSignedInNoSetup ? (
               <button
@@ -237,7 +235,7 @@ export default function ReferralImagesLandingPage() {
                   href={loginRedirectUrl}
                   className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
                 >
-                  Join 50+ NZ GPs Using This - Free
+                  Get Started, free for GPs
                 </Link>
                 <p className="mt-3 text-sm text-text-tertiary">
                   Prefer to sign up with email?{' '}
@@ -280,10 +278,10 @@ export default function ReferralImagesLandingPage() {
             <div className="bg-white rounded-lg p-6 text-center">
               <Clock className="w-12 h-12 text-primary mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-text-primary mb-2">
-                Save 30 Minutes Per Referral
+                Save &gt;10 Minutes Per Referral
               </h3>
               <p className="text-text-secondary text-sm">
-                Stop the email-resize-upload workflow. Capture to desktop in 30 seconds.
+                No more email-to-self, download, resize, re-upload. Photo to desktop in 30 seconds, ready to attach.
               </p>
             </div>
 
@@ -364,7 +362,7 @@ export default function ReferralImagesLandingPage() {
                   Capture, label, sync
                 </h3>
                 <p className="text-text-secondary">
-                  Photos appear on desktop instantly. Download JPEG and attach to referral. Done.
+                  Photos appear on desktop instantly. Download JPEG, attach to e-referral. Done.
                 </p>
               </div>
             </div>
@@ -423,7 +421,7 @@ export default function ReferralImagesLandingPage() {
               <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
               <div>
                 <h4 className="font-semibold text-text-primary mb-1">Easy e-Referral Downloads</h4>
-                <p className="text-text-secondary text-sm">Auto-sized JPEG downloads instantly. Perfect for e-referral.</p>
+                <p className="text-text-secondary text-sm">Always JPEG (never PDF). Auto-sized for e-referrals. Specialists won&apos;t reject them.</p>
               </div>
             </div>
           </div>
@@ -442,21 +440,21 @@ export default function ReferralImagesLandingPage() {
               <p className="text-lg sm:text-xl text-text-secondary italic mb-2">
                 &quot;It&apos;s intolerable how long it takes&quot;
               </p>
-              <footer className="text-sm font-medium text-text-tertiary">— NZ GP</footer>
+              <footer className="text-sm font-medium text-text-tertiary">, NZ GP</footer>
             </blockquote>
 
             <blockquote className="bg-white border-l-4 border-primary rounded-r-lg px-5 py-4 sm:px-8 sm:py-6 text-left max-w-[700px] mx-auto shadow-sm">
               <p className="text-base sm:text-lg text-text-secondary italic mb-2">
                 &quot;I&apos;ve had to make referrals without photos after &gt;1/2 hr faffing around&quot;
               </p>
-              <footer className="text-sm font-medium text-text-tertiary">— NZ GP</footer>
+              <footer className="text-sm font-medium text-text-tertiary">, NZ GP</footer>
             </blockquote>
 
             <blockquote className="bg-white border-l-4 border-primary rounded-r-lg px-5 py-4 sm:px-8 sm:py-6 text-left max-w-[700px] mx-auto shadow-sm">
               <p className="text-base sm:text-lg text-text-secondary italic mb-2">
                 &quot;Whenever we attach [PDFs] to derm referrals we always get a request back &apos;can we please have jpeg&apos; so have given up using it&quot;
               </p>
-              <footer className="text-sm font-medium text-text-tertiary">— NZ GP on competing tools</footer>
+              <footer className="text-sm font-medium text-text-tertiary">, NZ GP on competing tools</footer>
             </blockquote>
           </div>
 
@@ -477,7 +475,7 @@ export default function ReferralImagesLandingPage() {
               href={loginRedirectUrl}
               className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
             >
-              Join 50+ NZ GPs Using This - Free
+              Get Started, free for GPs
             </Link>
           )}
         </div>
@@ -490,7 +488,7 @@ export default function ReferralImagesLandingPage() {
             Ready to stop wasting &gt;10 minutes per referral?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join GPs who&apos;ve already saved hours of admin time.
+            Join NZ GPs who&apos;ve stopped emailing photos to themselves.
           </p>
           {primaryCtaSignedInNoSetup ? (
             <button
@@ -505,7 +503,7 @@ export default function ReferralImagesLandingPage() {
               href={loginRedirectUrl}
               className="px-8 py-4 text-lg bg-white text-primary rounded-lg hover:bg-gray-100 transition-colors font-semibold inline-block"
             >
-              Join 50+ NZ GPs Using This - Free
+              Get Started, free for GPs
             </Link>
           )}
           <p className="mt-4 text-sm opacity-75">
@@ -554,7 +552,7 @@ export default function ReferralImagesLandingPage() {
       {/* Footer */}
       <footer className="bg-white border-t border-border py-8 px-4">
         <div className="max-w-7xl mx-auto text-center text-text-tertiary text-sm">
-          <p>Built by a practicing GP for GPs</p>
+          <p>Built by a practising GP for GPs</p>
           <div className="mt-4 space-x-6">
             <a href="/terms" className="hover:text-text-primary">Terms</a>
             <a href="/privacy" className="hover:text-text-primary">Privacy</a>

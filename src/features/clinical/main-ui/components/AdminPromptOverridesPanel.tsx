@@ -268,7 +268,7 @@ export function AdminPromptOverridesPanel() {
         <div>
           <div className="mb-1 flex items-center justify-between text-xs font-medium text-slate-600">
             <span>
-System override (replace) — must include
+System override (replace): must include
 {'{{TEMPLATE}}'}
             </span>
             <Button type="button" variant="secondary" className="h-7 px-2 text-[11px]" onClick={() => setSystemEditorOpen(true)}>Enlarge</Button>
@@ -284,7 +284,7 @@ tokens
         <div>
           <div className="mb-1 flex items-center justify-between text-xs font-medium text-slate-600">
             <span>
-User override (replace) — must include
+User override (replace): must include
 {'{{DATA}}'}
             </span>
             <Button type="button" variant="secondary" className="h-7 px-2 text-[11px]" onClick={() => setUserEditorOpen(true)}>Enlarge</Button>

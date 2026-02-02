@@ -41,7 +41,7 @@ function computeGoldLead(input: SurveyRequest): boolean {
     'Too wordy / poor structure',
     'Workflow friction',
     'Cost / pricing too high',
-    'Too wordy / poor structure — needs heavy editing',
+    'Too wordy / poor structure; needs heavy editing',
     'Workflow friction (integration / copying into PMS)',
   ]);
   const q3NotesSelected = input.q3.find(q => q.topic === 'notes')?.selected || [];
@@ -135,9 +135,9 @@ export async function POST(request: NextRequest) {
 
     // Queue welcome email (HTML + plain). If SES/SMTP not configured, leave TODO and store in queue.
     if (body.email) {
-      const subject = 'Welcome — early access to ClinicPro';
-      const textBody = 'Thanks — ClinicPro’s AI scribe is free to use now, and we’re rolling out more features shortly. Sign up keeps you updated.';
-      const htmlBody = '<p>Thanks — ClinicPro’s AI scribe is <strong>free to use now</strong>, and we’re rolling out more features shortly. Sign up keeps you updated.</p>';
+      const subject = 'Welcome: early access to ClinicPro';
+      const textBody = 'Thanks; ClinicPro’s AI scribe is free to use now, and we’re rolling out more features shortly. Sign up keeps you updated.';
+      const htmlBody = '<p>Thanks; ClinicPro’s AI scribe is <strong>free to use now</strong>, and we’re rolling out more features shortly. Sign up keeps you updated.</p>';
       await db.insert(mailQueue).values({
         id: nanoid(),
         toEmail: body.email.toLowerCase().trim(),

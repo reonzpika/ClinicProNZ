@@ -13,7 +13,7 @@ const FAQ_ITEMS = [
   {
     question: "What's ClinicPro?",
     answer:
-      'Practical tools for NZ general practice. Built by a GP for GPs. No corporate backing, no VC funding—just solving real workflow problems.',
+      'Practical tools for NZ general practice. Built by a GP for GPs. No corporate backing, no VC funding; just solving real workflow problems.',
   },
   {
     question: "Who's Ryo?",
@@ -28,12 +28,12 @@ const FAQ_ITEMS = [
   {
     question: 'Is this legit?',
     answer:
-      'Yes. Data secure, NZ healthcare compliant. Email me directly if you have concerns—I respond personally.',
+      'Yes. Data secure, NZ healthcare compliant. Email me directly if you have concerns; I respond personally.',
   },
   {
     question: 'Where is this going?',
     answer:
-      'Keep building tools GPs need. Referral images work great. AI scribe in beta. Inbox intelligence in progress. Growing sustainably.',
+      'Keep building what GPs actually need. Referral Images is live and working well. AI Scribe in beta. Inbox Intelligence coming. Growing sustainably, no VC pressure.',
   },
 ] as const;
 
@@ -74,7 +74,7 @@ export default function HomePage() {
                   Hi, I&apos;m Ryo.
                 </h1>
                 <p className="text-lg md:text-xl text-text-secondary leading-relaxed">
-                  Auckland GP building better tools for NZ general practice.
+                  Auckland GP fixing the annoying bits of general practice.
                 </p>
               </div>
               <div className="order-1 md:order-2 flex justify-center">
@@ -111,7 +111,7 @@ export default function HomePage() {
               <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">Beta</span>
             </div>
             <p className="text-text-secondary mb-2">
-              Daily driver in beta. Happy to release if there&apos;s demand.
+              I use this daily. Still in beta. Most GPs are happy with Heidi, but if you want something more reliable, let me know.
             </p>
             <Link href="/ai-scribe" className="text-primary hover:underline font-medium">
               → Learn more
@@ -132,7 +132,7 @@ export default function HomePage() {
 
           <div className="rounded-lg border border-border bg-white p-5 transition-shadow hover:shadow-md">
             <div className="flex items-center gap-2 mb-2">
-              <h3 className="text-2xl font-normal text-text-primary">Coming: AI Intelligence Engine</h3>
+              <h3 className="text-2xl font-normal text-text-primary">Coming: Inbox Intelligence</h3>
               <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">Building</span>
             </div>
             <p className="text-text-secondary mb-2">
@@ -169,20 +169,17 @@ export default function HomePage() {
             <p className="text-text-secondary italic mb-4">
               &quot;Like many GPs, I felt increasingly disconnected from why I became a
               doctor. The constant rush, endless admin, and pressure were taking their toll
-              — on me and my patients.
+              on me and my patients.
             </p>
             <p className="text-text-secondary italic">
-              Then I discovered my ikigai: combining my medical expertise with my deep passion
-              for AI and automation. ClinicPro was born from this vision — using smart
-              technology to give GPs back their time, reduce burnout, and restore the joy in
-              patient care.&quot;
+              So I started coding in my spare time. Little tools that fixed the annoying workflow problems: emailing photos to myself, staying late to write notes, hunting for ACC codes. ClinicPro is just me solving these problems for myself, and sharing what works.&quot;
             </p>
           </blockquote>
         </div>
       </section>
 
       {/* Trust / Credibility - ClinicPro as a whole */}
-      <section className="py-16 md:py-24 bg-surface px-4">
+      <section className="py-16 md:py-24 bg-white px-4">
         <div className="w-full md:max-w-2xl md:mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-2 mb-12 text-center">
             {/* Column 1 */}
@@ -219,10 +216,16 @@ export default function HomePage() {
           <blockquote className="text-center text-lg md:text-xl text-text-primary italic max-w-2xl mx-auto">
             &quot;Software should help GPs, not add friction.&quot;
             <footer className="text-base not-italic text-text-secondary mt-2">
-              — ClinicPro
+              , ClinicPro
             </footer>
           </blockquote>
-          <div className="mt-10 bg-white border border-border rounded-xl p-6 text-center">
+        </div>
+      </section>
+
+      {/* Consulting / Work with me */}
+      <section className="py-16 md:py-24 bg-surface px-4">
+        <div className="w-full md:max-w-2xl md:mx-auto">
+          <div className="bg-white border border-border rounded-xl p-6 text-center">
             <p className="text-text-secondary mb-3">
               I also consult with health tech companies on GP workflows, PMS integration, and clinical
               safety. Limited availability.
@@ -253,8 +256,7 @@ export default function HomePage() {
                 <h3 className="text-xl font-bold text-text-primary mb-1">Referral Images</h3>
                 <p className="text-sm text-text-secondary mb-2 font-medium">Live</p>
                 <p className="text-text-secondary">
-                  Phone to desktop in 30 seconds. No more email-to-self, manual resize, or file too large
-                  rejections.
+                  Photo to desktop in 30 seconds. Always JPEG (never PDF), auto-resized, ready for e-referrals. Saves &gt;10 minutes per referral.
                 </p>
               </div>
             </div>
@@ -265,8 +267,7 @@ export default function HomePage() {
                 <h3 className="text-xl font-bold text-text-primary mb-1">AI Scribe</h3>
                 <p className="text-sm text-text-secondary mb-2 font-medium">Beta</p>
                 <p className="text-text-secondary">
-                  Working; I use it daily but it&apos;s in beta. Built mainly for myself. Happy to release if
-                  there&apos;s demand—most people use Heidi which is also good.
+                  I use it daily; it handles the cognitive load and outputs quality notes. Still in beta. Most GPs are happy with Heidi, but if you want something more reliable with NZ data sovereignty, let me know.
                 </p>
               </div>
             </div>
@@ -274,7 +275,7 @@ export default function HomePage() {
             <div className="flex gap-6 relative">
               <div className="w-8 h-8 rounded-full bg-gradient-to-r from-amber-500 to-border border-4 border-white shrink-0 relative z-10" />
               <div className="flex-1">
-                <h3 className="text-xl font-bold text-text-primary mb-1">Inbox Intelligence Engine</h3>
+                <h3 className="text-xl font-bold text-text-primary mb-1">Inbox Intelligence</h3>
                 <p className="text-sm text-text-secondary mb-2 font-medium">Building</p>
                 <p className="text-text-secondary mb-4">
                   AI-powered triage, prioritization, longitudinal tracking.

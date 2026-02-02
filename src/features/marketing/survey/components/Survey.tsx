@@ -17,39 +17,39 @@ const Q1_OPTIONS = [
   'Writing referrals',
   'Looking up clinical resources (e.g. healthpathway, dermnet, bpac, nzformulary etc)',
   'Capturing & storing clinical images',
-  'Other — please specify:',
+  'Other:  please specify:',
 ];
 
 // Q2 removed from the flow
 
 const Q3A_OPTIONS = [
-  'Recall — hard to remember consult details',
-  'Time — too slow to type/finish notes',
-  'Other — please specify:',
+  'Recall:  hard to remember consult details',
+  'Time:  too slow to type/finish notes',
+  'Other:  please specify:',
 ];
 
 const Q3B_OPTIONS = [
-  'Info overload — key recommendations are buried',
-  'Navigation — slow/clunky under time pressure',
-  'Context switching — PMS/browsers/logins',
-  'Time pressure — patient waiting feels awkward',
-  'Other — please specify:',
+  'Info overload:  key recommendations are buried',
+  'Navigation:  slow/clunky under time pressure',
+  'Context switching:  PMS/browsers/logins',
+  'Time pressure:  patient waiting feels awkward',
+  'Other:  please specify:',
 ];
 
 const Q4A_OPTIONS = [
-  'Yes — AI scribe (e.g. Heidi, Nabla, Abridge — name it below)',
-  'Yes — Dictation only (Dragon or built-in typing)',
-  'No — never tried',
+  'Yes:  AI scribe (e.g. Heidi, Nabla, Abridge:  name it below)',
+  'Yes:  Dictation only (Dragon or built-in typing)',
+  'No:  never tried',
 ];
 
 const Q4B_OPTIONS = [
   'Misses clinical details / accuracy issues',
-  'Too wordy / poor structure — needs heavy editing',
+  'Too wordy / poor structure:  needs heavy editing',
   'Doesn’t match NZ practice style / abbreviations',
   'Workflow friction (integration / copying into PMS)',
   'Cost / pricing too high',
-  'No issues — works well',
-  'Other — please specify:',
+  'No issues:  works well',
+  'Other:  please specify:',
 ];
 
 const Q5_BANDS = ['<$25', '$25–$50', '$50–$100', '$100+', 'Prefer not to say'];
@@ -89,28 +89,28 @@ export function Survey() {
 }
           if (v.includes('ACC')) {
  return { topic: 'acc', label: 'ACC', options: [
-            'Duplication — re-entering notes',
-            'Employer details — finding/typing addresses',
-            'Read codes — hard to find',
-            'Occupation codes — hard to find',
-            'ACC bounce-backs — more detail needed',
-            'Other — please specify:',
+            'Duplication:  re-entering notes',
+            'Employer details:  finding/typing addresses',
+            'Read codes:  hard to find',
+            'Occupation codes:  hard to find',
+            'ACC bounce-backs:  more detail needed',
+            'Other:  please specify:',
           ] as const };
 }
           if (v.toLowerCase().includes('referral')) {
  return { topic: 'referrals', label: 'Referrals', options: [
-            'Criteria hunting — DHB/specialty rules vary',
-            'Duplication — re-enter notes into referral',
-            'Over-documenting — extra detail to avoid rejection',
-            'Other — please specify:',
+            'Criteria hunting:  DHB/specialty rules vary',
+            'Duplication:  re-enter notes into referral',
+            'Over-documenting:  extra detail to avoid rejection',
+            'Other:  please specify:',
           ] as const };
 }
           if (v.toLowerCase().includes('image')) {
  return { topic: 'images', label: 'Clinical images', options: [
-            'Personal device — feels insecure/unprofessional',
-            'Admin handoff — staff must upload',
-            'File size — photos too large to attach',
-            'Other — please specify:',
+            'Personal device:  feels insecure/unprofessional',
+            'Admin handoff:  staff must upload',
+            'File size:  photos too large to attach',
+            'Other:  please specify:',
           ] as const };
 }
           return null;
@@ -152,14 +152,14 @@ export function Survey() {
         free_text: q3ByTopic[topic]?.free?.trim() || undefined,
       })),
       q4: {
-        type: q4A === 'Yes — AI scribe (e.g. Heidi, Nabla, Abridge — name it below)'
+        type: q4A === 'Yes:  AI scribe (e.g. Heidi, Nabla, Abridge:  name it below)'
           ? 'ai_scribe'
-          : q4A === 'Yes — Dictation only (Dragon or built-in typing)'
+          : q4A === 'Yes:  Dictation only (Dragon or built-in typing)'
             ? 'dictation'
             : 'none',
         issues: q4BIssues.length > 0 ? q4BIssues : undefined,
         vendor: q4Vendor.trim() || undefined,
-        no_try_reason: q4A === 'No — never tried' ? [...q4NoReasons, ...(q4NoOther.trim() ? [q4NoOther.trim()] : [])] : undefined,
+        no_try_reason: q4A === 'No:  never tried' ? [...q4NoReasons, ...(q4NoOther.trim() ? [q4NoOther.trim()] : [])] : undefined,
       },
       q5: q5 || 1,
       q5_price_band: q5 && q5 >= 4 ? (q5Band || null) : null,
@@ -198,7 +198,7 @@ export function Survey() {
  return q1Topics.every(({ topic }) => Array.isArray(q3ByTopic[topic]?.selected) ? (q3ByTopic[topic]?.selected as string[]).length > 0 : !!q3ByTopic[topic]?.selected);
 }
          if (step === 3) {
-  return !!q4A && (q4A.startsWith('Yes — AI scribe') ? q4BIssues.length > 0 : true);
+  return !!q4A && (q4A.startsWith('Yes:  AI scribe') ? q4BIssues.length > 0 : true);
  }
     if (step === 4) {
  return typeof q5 === 'number' && q5 >= 1 && q5 <= 5 && (q5 >= 4 ? !!q5Band : true);
@@ -217,7 +217,7 @@ of 5
       {step === 0 && (
         <div>
           <p className="mb-6 text-lg">
-            Hi — quick 2–3 minute survey from Dr Ryo. Your answers will shape features for busy GPs. Ready?
+            Hi:  quick 2–3 minute survey from Dr Ryo. Your answers will shape features for busy GPs. Ready?
           </p>
           <div className="flex gap-3">
             <Button onClick={next}>Yes, start</Button>
@@ -244,8 +244,8 @@ of 5
 ? (
                   <>
                     <Checkbox id="q1-other" checked={!!q1Other} onCheckedChange={v => setQ1Other(v ? q1Other : '')} />
-                    <Label htmlFor="q1-other" className="sr-only">Other — please specify</Label>
-                    <Input value={q1Other} onChange={e => setQ1Other(e.target.value)} placeholder="Other — please specify" />
+                    <Label htmlFor="q1-other" className="sr-only">Other:  please specify</Label>
+                    <Input value={q1Other} onChange={e => setQ1Other(e.target.value)} placeholder="Other:  please specify" />
                   </>
                 )
 : (
@@ -281,12 +281,12 @@ of 5
                       opt.startsWith('Other')
 ? (
                         <div key={`${topic}-other`} className="flex items-center gap-2">
-                          <Label htmlFor={`q3-${topic}-other`} className="sr-only">Other — please specify</Label>
+                          <Label htmlFor={`q3-${topic}-other`} className="sr-only">Other:  please specify</Label>
                           <Input
                             id={`q3-${topic}-other`}
                             value={q3ByTopic[topic]?.free || ''}
                             onChange={e => setQ3ByTopic(prev => ({ ...prev, [topic]: { selected: Array.isArray(prev[topic]?.selected) ? (prev[topic]?.selected as string[]) : [], free: e.target.value } }))}
-                            placeholder="Other — please specify"
+                            placeholder="Other:  please specify"
                           />
                         </div>
                       )
@@ -346,7 +346,7 @@ of 5
               </div>
             ))}
           </div>
-          {q4A?.startsWith('Yes — AI scribe') && (
+          {q4A?.startsWith('Yes:  AI scribe') && (
             <div className="mt-4">
               <Label className="mb-2 block">Do you have any issues with this tool?</Label>
               <div className="space-y-2">
@@ -376,11 +376,11 @@ of 5
               </div>
             </div>
           )}
-          {q4A === 'No — never tried' && (
+          {q4A === 'No:  never tried' && (
             <div className="mt-4">
               <Label className="mb-2 block">Why haven’t you tried an AI scribe or dictation tool?</Label>
               <div className="space-y-2">
-                {['Privacy concerns', 'Doesn’t need it', 'Too technical', 'Too hard to set up', 'Cost concerns', 'Other — please specify:'].map(opt => (
+                {['Privacy concerns', 'Doesn’t need it', 'Too technical', 'Too hard to set up', 'Cost concerns', 'Other:  please specify:'].map(opt => (
                   <div key={opt} className="flex items-center gap-2">
                     <input
                       id={`q4n-${opt}`}
@@ -427,10 +427,10 @@ of 5
                   className="size-4"
                 />
                 <Label htmlFor={`q5-${n}`}>
-                  {n === 1 && '1 — Definitely not pay'}
-                  {n === 2 && '2 — Unlikely to pay'}
-                  {n === 4 && '4 — Likely to pay'}
-                  {n === 5 && '5 — Would pay immediately (please contact me)'}
+                  {n === 1 && '1:  Definitely not pay'}
+                  {n === 2 && '2:  Unlikely to pay'}
+                  {n === 4 && '4:  Likely to pay'}
+                  {n === 5 && '5:  Would pay immediately (please contact me)'}
                 </Label>
               </div>
             ))}

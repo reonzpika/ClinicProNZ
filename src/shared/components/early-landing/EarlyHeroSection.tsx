@@ -50,7 +50,7 @@ export const EarlyHeroSection = () => {
               <p className="mb-3">Handle complex, multi‑problem consults with ease:</p>
               <ul className="ml-5 list-disc space-y-2">
                 <li>Capture by audio; add typed input when needed</li>
-                <li>Get structured notes in seconds — finish on time</li>
+                <li>Get structured notes in seconds; finish on time</li>
                 <li>Upload and resize clinical images during the consult</li>
                 <li>AI Chat: get answers fast from trusted resources</li>
               </ul>

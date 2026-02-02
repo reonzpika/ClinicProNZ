@@ -28,7 +28,7 @@ export const FeatureChat = () => {
         <div className="mb-12 grid items-center gap-10 lg:mb-16 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-5">
             <h3 className="mb-3 text-2xl font-bold text-gray-900 sm:text-3xl">What you can ask</h3>
-            <p className="mb-3 text-gray-700">Search NZ resources in one place — like Google, but for GPs. Get trusted references fast, and ask follow‑up questions to refine.</p>
+            <p className="mb-3 text-gray-700">Search NZ resources in one place: like Google, but for GPs. Get trusted references fast, and ask follow‑up questions to refine.</p>
             <ul className="space-y-2 text-gray-700">
               <li>• General health/disease questions</li>
               <li>• Referral info (where/when/how)</li>
