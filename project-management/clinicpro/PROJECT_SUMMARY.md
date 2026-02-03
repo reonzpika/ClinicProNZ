@@ -2,7 +2,7 @@
 project_name: ClinicPro SaaS
 project_stage: Operational
 owner: Development Team
-last_updated: "2026-02-01"
+last_updated: "2026-02-03"
 version: "1.0.4"
 tags:
   - saas
@@ -25,7 +25,9 @@ summary: "Full-stack Next.js SaaS application providing AI-assisted medical scri
 
 ## Next Session: Pick Up Here
 
-Maintenance only. If you touch ClinicPro this week, keep it to stability fixes; prioritise Medtech Phase 1D validation and customer work.
+- Run migration `database/migrations/0040_add_ai_suggestions.sql` against Neon (SQL Editor or psql) if not yet applied.
+- Manually test AI Clinical Review: empty notes, all four modules, error cases, feedback.
+- Otherwise: maintenance only; prioritise Medtech Phase 1D validation and customer work.
 
 ---
 
@@ -38,6 +40,7 @@ Maintenance only. If you touch ClinicPro this week, keep it to stability fixes; 
 - ✅ **Features**: Core features in production use
 
 ### Recent Updates
+- **2026-02-03**: AI Clinical Review — Button in consultation left sidebar (ClinicalToolsTabs); four modules (Red Flags, DDx, Investigations, Management); Claude 3.5 Sonnet; feedback and logging in `ai_suggestions`. Migration `0040_add_ai_suggestions.sql` to be run manually.
 - **2026-02-01**: AI Scribe landing — `/ai-scribe` now shows the full ClinicPro landing (same as `/landing-page`); minimal "Open AI Scribe" page removed; feature not public from that URL.
 - **2026-01-31**: Referral Images filename and overlay — Filenames now use date+time (no random ID); desktop card label shows side + description and full filename on hover.
 - **2026-01-31**: GP Referral Images — Standalone referral photo workflow (freemium: Month 1 unlimited, then 10 images/month, 2 grace unlocks; $50 one-time premium). E2E testing complete; all phases passed.
@@ -53,6 +56,7 @@ Maintenance only. If you touch ClinicPro this week, keep it to stability fixes; 
 - **AI Clinical Notes**: OpenAI‑powered templated note generation (`app/api/(clinical)/consultation/notes`)
 - **Recording Systems**: Desktop and mobile audio capture with Deepgram STT (nova‑3‑medical) and Ably signalling
 - **Clinical Image Analysis**: Anthropic Claude Vision inference over images stored in S3
+- **AI Clinical Review**: Claude 3.5 Sonnet clinical decision support on consultation notes (red flags, DDx, investigations, management); button in left sidebar; feedback and audit in `ai_suggestions`
 - **Photo Tool (Freemium)**: Standalone medical photo capture with mobile-first UX, 20 images/month free tier, premium upgrade ($50) for unlimited images + PDF export + annotations
 - **Referral Images (Freemium)**: Standalone referral photo workflow (phone to desktop). Landing at `/referral-images`; desktop and mobile capture pages; freemium limits and Stripe upgrade; E2E passed.
 - **RAG (Pilot)**: LlamaIndex/Weaviate plan; current vector search via Postgres/pgvector
@@ -138,7 +142,7 @@ Medtech ALEX / External Services
   - Business: `(business)/billing`, `pricing`
   - Admin: `(admin)/admin`, `emergency-admin`
   - Integration: `(integration)/mobile`; Medtech: `(medtech)/medtech-images`
-- APIs (`app/api/`): grouped under `(clinical)`, `(user)`, `(business)`, `(admin)`, `(integration)`, `(marketing)`, plus `current-session`, `maintenance`, `search`, `image/*` (photo tool freemium), `referral-images/*` (signup, status, upload, unlock-grace, download, upgrade/checkout, upgrade/webhook).
+- APIs (`app/api/`): grouped under `(clinical)`, `(user)`, `(business)`, `(admin)`, `(integration)`, `(marketing)`, plus `current-session`, `maintenance`, `search`, `image/*` (photo tool freemium), `referral-images/*`, `consultation/ai-review` and `consultation/ai-review/feedback` (AI Clinical Review).
 
 ---
 

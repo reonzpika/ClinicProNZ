@@ -8,6 +8,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 
+import { AIReviewButton } from '@/src/features/clinical/ai-review/components/AIReviewButton';
 import { ClinicalImageTab } from './ClinicalImageTab';
 import { ReferralLetterTab } from './ReferralLetterTab';
 
@@ -60,8 +61,8 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
 
   return (
     <div className="flex flex-col">
-      {/* Icon-only tab strip */}
-      <div className="mb-2 flex items-center gap-2">
+      {/* Icon-only tab strip (wrap so AI Review panel can sit below) */}
+      <div className="mb-2 flex flex-wrap items-center gap-2">
         {tabs.map(({ id, icon: Icon, title }) => {
           const isActive = id === activeTab;
           const activeColor = isActive ? 'text-blue-600' : 'text-slate-600';
@@ -77,6 +78,7 @@ export const ClinicalToolsTabs: React.FC<ClinicalToolsTabsProps> = ({ fixedHeigh
             </button>
           );
         })}
+        <AIReviewButton />
       </div>
 
       {/* Content area (always mounted, visibility controlled) */}

@@ -1,5 +1,27 @@
 # Project Log - ClinicPro SaaS
 
+## 2026-02-03 Tue
+### AI Clinical Review feature implemented
+
+**Context**: Implemented AI Clinical Review from plan in `project-management/clinicpro/features/ai-review/`. Feature allows GPs to get clinical decision support (red flags, DDx, investigations, management) on consultation notes via Claude 3.5 Sonnet.
+
+**Progress**
+- **Schema**: Added `database/schema/ai_suggestions.ts` and export in `database/schema/index.ts`. Migration `database/migrations/0040_add_ai_suggestions.sql` created; user must run SQL directly (no drizzle-kit push per project rules).
+- **API**: `app/api/(clinical)/consultation/ai-review/route.ts` (POST, RBAC, empty-response validation, DB write logging); `app/api/(clinical)/consultation/ai-review/feedback/route.ts` (POST, feedback on most recent suggestion).
+- **UI**: `src/features/clinical/ai-review/components/AIReviewButton.tsx` (Sparkles button, module panel, re-trigger prevention); `src/features/clinical/ai-review/components/AIReviewModal.tsx` (left-column overlay, auth headers, better error messages).
+- **Integration**: AI Review button added to ClinicalToolsTabs icon strip (next to Clinical Images and Referral Letter) in `src/features/clinical/right-sidebar/components/ClinicalToolsTabs.tsx`.
+- **Safety**: User-facing error messages (API key, rate limit, timeout, default); empty AI response validation (&lt; 10 chars); `isGenerating` debounce; `[CRITICAL]` logging on DB insert failure.
+- Build passed; `project-management/**/*` excluded from tsconfig to avoid type-checking proposal reference files.
+
+**Decisions**
+- Modal overlays left column only (~600px, 85vh) so consultation note stays visible on right (per UI_UX_SPECIFICATION.md).
+- Auth: `createAuthHeaders(userId, userTier)` used in modal fetch for ai-review and feedback.
+- Migration: Use `0040_add_ai_suggestions.sql`; run manually (Neon SQL Editor or psql).
+
+**Next**
+- User runs `0040_add_ai_suggestions.sql` against Neon.
+- Manual test: empty notes (button disabled), all four modules, error cases, double-click guard, feedback persistence.
+
 ## 2026-02-01 Sun
 ### AI Scribe: /ai-scribe shows full landing page (feature not public)
 
