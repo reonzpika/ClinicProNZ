@@ -9,6 +9,8 @@ export const imageToolUsage = pgTable('image_tool_usage', {
   month: text('month').notNull(), // YYYY-MM
   imageCount: integer('image_count').default(0).notNull(),
   graceUnlocksUsed: integer('grace_unlocks_used').default(0).notNull(),
+  limitHitEmailSentAt: timestamp('limit_hit_email_sent_at'),
+  shareEncourageEmailSentAt: timestamp('share_encourage_email_sent_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (table) => {

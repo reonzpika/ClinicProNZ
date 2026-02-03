@@ -19,4 +19,6 @@ export const users = pgTable('users', {
   referralCode: text('referral_code'),
   referredBy: text('referred_by').references((): any => users.id),
   shareReminderSent: boolean('share_reminder_sent').default(false).notNull(),
+  // Referral Images: last month we sent "Month Reset" email (YYYY-MM)
+  lastMonthResetEmailFor: text('last_month_reset_email_for'),
 });

@@ -151,13 +151,12 @@ export async function sendLimitHitEmail(data: EmailData) {
         <p>You've captured 10 images this month. The tool's clearly helping you.</p>
         
         <p><strong>A bit of context:</strong><br>
-        I'm a fellow GP who built this to fix our shared workflow pain. No VC funding, no corporate backing.</p>
+        I'm a fellow GP who built this after hours because I was tired of emailing photos to myself. No investors, no big company. Just me. Your support keeps me going.</p>
         
         <h3>$50 one-time gets you:</h3>
         <ul>
           <li>Unlimited images forever</li>
-          <li>All future features</li>
-          <li>Early access to Inbox Intelligence</li>
+          <li>Early access to Inbox Intelligence and AI Scribe</li>
         </ul>
         
         <p><a href="${APP_URL}/referral-images/upgrade" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px;">Support This Project - $50</a></p>
@@ -173,29 +172,30 @@ export async function sendLimitHitEmail(data: EmailData) {
 }
 
 /**
- * Email 5: Follow-up (24h after limit, if no upgrade)
+ * Email 5: Share Encourage (5 days after limit hit, if user has NOT upgraded)
  */
-export async function sendFollowUpEmail(data: EmailData & { daysUntilReset: number }) {
-  const { email, name, daysUntilReset } = data;
+export async function sendShareEncourageEmail(data: EmailData) {
+  const { email, name } = data;
+  const shareUrl = 'https://clinicpro.co.nz/referral-images';
 
   return await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: 'Still need more images this month?',
+    subject: "Know someone who'd find this useful?",
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
-        <p>You've used your 10 free images. Two options:</p>
+        <p>Quick note - you've been using Referral Images for a bit now.</p>
         
-        <ol>
-          <li>Wait ${daysUntilReset} days for 10 more free images</li>
-          <li>Upgrade to unlimited ($50 one-time, not a subscription)</li>
-        </ol>
+        <p>If it's saving you time, chances are it'll help your colleagues too.</p>
         
-        <p><a href="${APP_URL}/referral-images/upgrade" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px;">Support This Project - $50</a></p>
+        <p>Share this link with GPs in your practice who still email photos to themselves:<br>
+        <a href="${shareUrl}" style="color: #0070e0;">${shareUrl}</a></p>
         
-        <p>No pressure. Free tier resets next month.</p>
+        <p>That's all. Thanks for using it.</p>
+        
+        <p>Cheers,<br>Dr. Ryo</p>
       </div>
     `,
   });
@@ -215,17 +215,17 @@ export async function sendMonthResetEmail(data: EmailData) {
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
-        <p>Your monthly limit has reset.</p>
-        
-        <p>You have 10 more free images.</p>
+        <p>Your monthly limit has reset. You have 10 more free images.</p>
         
         <p>Or upgrade to unlimited and stop thinking about limits:</p>
         <ul>
           <li>$50 one-time (not a subscription)</li>
-          <li>All future features</li>
+          <li>Never hit this wall again</li>
         </ul>
         
         <p><a href="${APP_URL}/referral-images/upgrade" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px;">Support This Project - $50</a></p>
+        
+        <p>Cheers,<br>Dr. Ryo</p>
       </div>
     `,
   });

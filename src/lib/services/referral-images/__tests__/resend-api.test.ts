@@ -221,6 +221,20 @@ describe('Resend API', () => {
       });
     });
 
+    it('sendShareEncourageEmail has no upgrade link and hard-coded share URL', async () => {
+      const { sendShareEncourageEmail } = await import('../email-service');
+      mockSend.mockClear();
+      await sendShareEncourageEmail({
+        email: 'delivered@resend.dev',
+        name: 'Test',
+      });
+      expect(mockSend).toHaveBeenCalledTimes(1);
+      const call = mockSend.mock.calls[0][0];
+      expect(call.html).not.toContain('/referral-images/upgrade');
+      expect(call.html).toContain('https://clinicpro.co.nz/referral-images');
+      expect(call.subject).toBe("Know someone who'd find this useful?");
+    });
+
     it('template variables {{firstName}}, {{clinicName}} are replaced and sanitised', () => {
       const template = 'Hi {{firstName}}, welcome to {{clinicName}}.';
       const out = renderEmailTemplate(template, {

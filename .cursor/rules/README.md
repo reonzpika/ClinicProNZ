@@ -35,6 +35,10 @@ Rules load in two ways:
   - Prefer libraries and proven patterns before building from scratch.
   - If “web search” is unavailable in the runtime, fall back to: `package.json`, existing code patterns, and GitHub (`gh`) lookup.
 
+- `drizzle-migrations.mdc`
+  - Never suggest `drizzle-kit migrate` or `drizzle-kit push`; these cause "relation already exists" and dangerous sequence drops.
+  - Create migration SQL, update schema, then run SQL directly (Neon, psql). See `database/DRIZZLE-MIGRATIONS-GUIDE.md`.
+
 ### Scoped (auto-activates by path)
 - `project-management.mdc` (scoped to `project-management/**`)
   - Canonical project docs and strict anti-duplication policy.

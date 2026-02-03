@@ -1,0 +1,33 @@
+---
+description: "Drizzle Kit: never use migrate or push; run migration SQL directly"
+alwaysApply: true
+globs:
+  - "database/**"
+  - "**/migrations/**"
+version: "1.0.0"
+priority: HIGH
+---
+
+# Drizzle Migrations – Do Not Use migrate/push
+
+## Rule
+
+**Never suggest `drizzle-kit migrate`, `drizzle-kit push`, or `db:push` for this project.**
+
+These commands cause recurring failures. See [database/DRIZZLE-MIGRATIONS-GUIDE.md](database/DRIZZLE-MIGRATIONS-GUIDE.md) for full details.
+
+## When adding schema changes
+
+1. Create a migration SQL file in `database/migrations/` (e.g. `0039_description.sql`)
+2. Update the corresponding schema in `database/schema/`
+3. Tell the user to **run the SQL file directly** (Neon SQL Editor, psql, or one-off script)
+
+## What goes wrong
+
+- **migrate:** Replays all migrations; fails with "relation already exists" because the DB was set up before the migration journal was in sync
+- **push:** Proposes dropping constraints, indexes, and the `transcription_chunks_id_seq1` sequence (never allow this)
+
+## Safe commands
+
+- `drizzle-kit generate` – safe (generates SQL only)
+- Running migration SQL directly – preferred way to apply changes

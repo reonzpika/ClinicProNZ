@@ -6,7 +6,8 @@ import { NextResponse } from 'next/server';
 import sharp from 'sharp';
 
 import { imageToolUploads, imageToolUsage, users } from '@/db/schema';
-import { calculateLimit, getCurrentMonth, getMonthFromDate, calculateExpiryDate } from '@/src/lib/services/referral-images/utils';
+import { calculateLimit, canUseGraceUnlock, getCurrentMonth, getMonthFromDate, calculateExpiryDate } from '@/src/lib/services/referral-images/utils';
+import { sendLimitHitEmail } from '@/src/lib/services/referral-images/email-service';
 import { buildImageToolS3Key, generateImageToolPresignedUpload } from '@/src/lib/image-tool/s3';
 import { getDb } from 'database/client';
 
@@ -74,6 +75,7 @@ export async function POST(req: NextRequest) {
         id: imageToolUsage.id,
         imageCount: imageToolUsage.imageCount,
         graceUnlocksUsed: imageToolUsage.graceUnlocksUsed,
+        limitHitEmailSentAt: imageToolUsage.limitHitEmailSentAt,
       })
       .from(imageToolUsage)
       .where(
@@ -86,6 +88,7 @@ export async function POST(req: NextRequest) {
 
     let imageCount = 0;
     let graceUnlocksUsed = 0;
+    let limitHitEmailSentAt: Date | null = null;
 
     if (usageRow.length === 0) {
       // Create new usage record
@@ -102,6 +105,7 @@ export async function POST(req: NextRequest) {
       if (usage) {
         imageCount = usage.imageCount;
         graceUnlocksUsed = usage.graceUnlocksUsed || 0;
+        limitHitEmailSentAt = usage.limitHitEmailSentAt ?? null;
       }
     }
 
@@ -189,12 +193,23 @@ export async function POST(req: NextRequest) {
       expiresAt: calculateExpiryDate(),
     });
 
-    // Increment usage count
+    // Increment usage count; optionally grant grace and send limit hit email
+    const newImageCount = imageCount + 1;
+    const shouldSendLimitHitEmail =
+      accountCreatedMonth !== currentMonth &&
+      newImageCount === 10 &&
+      !limitHitEmailSentAt &&
+      canUseGraceUnlock(graceUnlocksUsed);
+
     await db
       .update(imageToolUsage)
       .set({
-        imageCount: imageCount + 1,
+        imageCount: newImageCount,
         updatedAt: new Date(),
+        ...(shouldSendLimitHitEmail && {
+          graceUnlocksUsed: graceUnlocksUsed + 1,
+          limitHitEmailSentAt: new Date(),
+        }),
       })
       .where(
         and(
@@ -202,6 +217,40 @@ export async function POST(req: NextRequest) {
           eq(imageToolUsage.month, currentMonth)
         )
       );
+
+    // Send Email 4 (limit hit) when 10th image captured in month 2+
+    if (shouldSendLimitHitEmail) {
+      try {
+        const userForEmail = await db
+          .select({ email: users.email, name: users.name })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1);
+        const u = userForEmail[0];
+        const email = u?.email;
+        if (email) {
+          await sendLimitHitEmail({
+            email,
+            name: u?.name ?? email.split('@')[0],
+            userId,
+          });
+        } else {
+          const { clerkClient } = await import('@clerk/nextjs/server');
+          const clerk = await clerkClient();
+          const clerkUser = await clerk.users.getUser(userId);
+          const clerkEmail = clerkUser?.emailAddresses[0]?.emailAddress;
+          if (clerkEmail) {
+            await sendLimitHitEmail({
+              email: clerkEmail,
+              name: clerkUser?.firstName ?? clerkEmail.split('@')[0],
+              userId,
+            });
+          }
+        }
+      } catch (emailError) {
+        console.error('[referral-images/upload] Failed to send limit hit email:', emailError);
+      }
+    }
 
     // Publish Ably event for real-time desktop update
     try {
