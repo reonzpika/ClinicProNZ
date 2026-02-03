@@ -6,10 +6,22 @@
 
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Check if API key exists and log for debugging
+const apiKey = process.env.RESEND_API_KEY;
+console.log('[email-service] RESEND_API_KEY exists:', !!apiKey);
+console.log('[email-service] RESEND_API_KEY length:', apiKey?.length ?? 0);
+console.log('[email-service] RESEND_API_KEY prefix:', apiKey?.substring(0, 7) ?? 'none');
+
+const resend = new Resend(apiKey);
 
 const FROM_EMAIL = 'ClinicPro <ryo@clinicpro.co.nz>';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
+
+console.log('[email-service] Configuration:', {
+  FROM_EMAIL,
+  APP_URL,
+  hasApiKey: !!apiKey,
+});
 
 export interface EmailData {
   email: string;
@@ -24,14 +36,28 @@ export interface EmailData {
 export async function sendWelcomeEmail(data: EmailData) {
   const { email, name, userId } = data;
 
+  console.log('[sendWelcomeEmail] Starting email send:', {
+    to: email,
+    name,
+    userId,
+    timestamp: new Date().toISOString(),
+  });
+
   const desktopLink = `${APP_URL}/referral-images/desktop?u=${userId}`;
   const mobileLink = `${APP_URL}/referral-images/capture?u=${userId}`;
 
-  return await resend.emails.send({
-    from: FROM_EMAIL,
-    to: email,
-    subject: 'Your Referral Images links - ready to use',
-    html: `
+  console.log('[sendWelcomeEmail] Generated links:', {
+    desktopLink,
+    mobileLink,
+  });
+
+  try {
+    console.log('[sendWelcomeEmail] Calling Resend API...');
+    const result = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: 'Your Referral Images links - ready to use',
+      html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
@@ -67,7 +93,27 @@ export async function sendWelcomeEmail(data: EmailData) {
         <p style="font-size: 12px; color: #888;">Questions? Just reply to this email. - Ryo</p>
       </div>
     `,
-  });
+    });
+
+    console.log('[sendWelcomeEmail] Resend API response:', JSON.stringify(result, null, 2));
+    
+    if (result.error) {
+      console.error('[sendWelcomeEmail] Resend returned error:', result.error);
+      throw new Error(`Resend error: ${JSON.stringify(result.error)}`);
+    }
+
+    console.log('[sendWelcomeEmail] Email sent successfully:', result.data?.id);
+    return result;
+  } catch (error: any) {
+    console.error('[sendWelcomeEmail] Failed to send email:', {
+      error: error.message,
+      stack: error.stack,
+      name: error.name,
+      cause: error.cause,
+      fullError: JSON.stringify(error, null, 2),
+    });
+    throw error;
+  }
 }
 
 /**

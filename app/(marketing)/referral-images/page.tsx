@@ -122,7 +122,7 @@ export default function ReferralImagesLandingPage() {
     !isLoaded || (userId && hasSetup === null) || isRedirecting;
   const showLanding = isLoaded && (hasSetup === false || !userId);
   const primaryCtaSignedInNoSetup = userId && hasSetup === false;
-  const loginRedirectUrl = '/auth/login?redirect_url=' + encodeURIComponent('/referral-images');
+  const signupRedirectUrl = '/auth/register?redirect_url=' + encodeURIComponent('/referral-images');
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -195,7 +195,7 @@ export default function ReferralImagesLandingPage() {
             </button>
           ) : (
             <Link
-              href={loginRedirectUrl}
+              href={signupRedirectUrl}
               className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
             >
               Free for NZ GPs, Get Started
@@ -232,7 +232,7 @@ export default function ReferralImagesLandingPage() {
             ) : (
               <>
                 <Link
-                  href={loginRedirectUrl}
+                  href={signupRedirectUrl}
                   className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
                 >
                   Get Started, free for GPs
@@ -472,7 +472,7 @@ export default function ReferralImagesLandingPage() {
             </button>
           ) : (
             <Link
-              href={loginRedirectUrl}
+              href={signupRedirectUrl}
               className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
             >
               Get Started, free for GPs
@@ -500,7 +500,7 @@ export default function ReferralImagesLandingPage() {
             </button>
           ) : (
             <Link
-              href={loginRedirectUrl}
+              href={signupRedirectUrl}
               className="px-8 py-4 text-lg bg-white text-primary rounded-lg hover:bg-gray-100 transition-colors font-semibold inline-block"
             >
               Get Started, free for GPs
