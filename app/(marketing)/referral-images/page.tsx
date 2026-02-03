@@ -60,6 +60,7 @@ export default function ReferralImagesLandingPage() {
   ];
 
   // Smart redirect: when signed in, check setup; if has setup, redirect to desktop or capture by device
+  // If no setup, auto-trigger setup for seamless post-signup experience
   useEffect(() => {
     if (!isLoaded) return;
     if (!userId) {
@@ -75,12 +76,14 @@ export default function ReferralImagesLandingPage() {
         }
         return res.json() as Promise<{ hasSetup?: boolean; referralUserId?: string | null }>;
       })
-      .then((data) => {
+      .then(async (data) => {
         if (cancelled || data == null) return;
         const hasSetupVal = !!data.hasSetup;
         const referralUserId = data.referralUserId ?? userId;
         setHasSetup(hasSetupVal);
+        
         if (hasSetupVal) {
+          // User has setup - redirect to desktop/capture page
           setIsRedirecting(true);
           const isMobile = isMobileDevice();
           router.push(
@@ -88,6 +91,25 @@ export default function ReferralImagesLandingPage() {
               ? `/referral-images/capture?u=${referralUserId}`
               : `/referral-images/desktop?u=${referralUserId}`
           );
+        } else {
+          // User is signed in but no setup - auto-trigger setup for seamless experience
+          console.log('[referral-images] User signed in but no setup detected - auto-triggering setup');
+          setIsSetupLoading(true);
+          try {
+            const response = await fetch('/api/referral-images/setup', { method: 'POST' });
+            if (!response.ok) throw new Error('Setup failed');
+            const setupData = await response.json();
+            if (typeof window !== 'undefined' && setupData.desktopLink != null && setupData.mobileLink != null) {
+              sessionStorage.setItem('referral-images-desktop-link', setupData.desktopLink);
+              sessionStorage.setItem('referral-images-mobile-link', setupData.mobileLink);
+            }
+            router.push(`/referral-images/setup-complete?u=${setupData.userId}`);
+          } catch (err) {
+            console.error('[referral-images] Auto-setup failed:', err);
+            setError('Failed to complete setup. Please try again.');
+          } finally {
+            setIsSetupLoading(false);
+          }
         }
       })
       .catch(() => {
