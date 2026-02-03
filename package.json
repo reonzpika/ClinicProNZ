@@ -30,6 +30,7 @@
     "db:ingest-healthify-a": "tsx healthify/scripts/ingest-healthify-a.ts",
     "db:ingest-healthify-chunks": "tsx healthify/scripts/ingest-healthify-chunks.ts",
     "test": "vitest run",
+    "test:resend": "vitest run src/lib/services/referral-images/__tests__/resend-api.test.ts",
     "clean": "rimraf .next out coverage",
     "commit": "cz",
     "prepare": "husky"

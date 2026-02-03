@@ -12,6 +12,11 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
+  // Allow Resend webhook (handles its own verification)
+  if (req.nextUrl.pathname === '/api/webhooks/resend') {
+    return NextResponse.next();
+  }
+
   // Skip rate limiting for static assets, Next.js internals, auth routes, marketing pages, and admin reset
   if (
     req.nextUrl.pathname.startsWith('/_next')
