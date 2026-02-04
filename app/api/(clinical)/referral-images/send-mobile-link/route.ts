@@ -75,6 +75,14 @@ export async function POST(req: NextRequest) {
 
     console.log('[referral-images/send-mobile-link] User found:', { userId, email: user.email });
 
+    if (!user.email) {
+      console.log('[referral-images/send-mobile-link] User has no email address:', userId);
+      return NextResponse.json(
+        { error: 'User has no email address' },
+        { status: 400 }
+      );
+    }
+
     // Get mobile token
     const [mobileLink] = await db
       .select({ token: imageToolMobileLinks.token })
