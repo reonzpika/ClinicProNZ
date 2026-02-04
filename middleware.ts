@@ -239,16 +239,8 @@ export default clerkMiddleware(async (auth, req) => {
     }
   }
 
-  // Protect /api/referral-images/send-mobile-link - requires authentication
-  if (req.nextUrl.pathname === '/api/referral-images/send-mobile-link') {
-    const resolvedAuth = await auth();
-    if (!resolvedAuth.userId) {
-      return returnUnauthorized();
-    }
-  }
-
   // Allow other /api/referral-images routes - authentication handled per route
-  // (signup is public, upload/status/download/etc use token-based auth)
+  // (signup is public, send-mobile-link has its own auth check, upload/status/download use token-based auth)
   if (req.nextUrl.pathname.startsWith('/api/referral-images')) {
     return NextResponse.next();
   }

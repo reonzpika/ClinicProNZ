@@ -1,4 +1,3 @@
-import { auth } from '@clerk/nextjs/server';
 import { getDb } from 'database/client';
 import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
@@ -24,35 +23,16 @@ export async function POST(req: NextRequest) {
   console.log('[referral-images/send-mobile-link] POST request received at:', new Date().toISOString());
   
   try {
-    // Verify authentication
-    const { userId: authUserId } = await auth();
-    if (!authUserId) {
-      console.log('[referral-images/send-mobile-link] Unauthorized - no auth userId');
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await req.json();
     const { userId } = body;
 
-    console.log('[referral-images/send-mobile-link] Request body:', { userId, authUserId });
+    console.log('[referral-images/send-mobile-link] Request body:', { userId });
 
     if (!userId || typeof userId !== 'string') {
       console.log('[referral-images/send-mobile-link] Invalid userId provided');
       return NextResponse.json(
         { error: 'User ID is required' },
         { status: 400 }
-      );
-    }
-
-    // Security check: user can only send email to themselves
-    if (userId !== authUserId) {
-      console.log('[referral-images/send-mobile-link] Forbidden - userId mismatch:', {
-        requested: userId,
-        authenticated: authUserId,
-      });
-      return NextResponse.json(
-        { error: 'Forbidden - can only send to your own email' },
-        { status: 403 }
       );
     }
 
