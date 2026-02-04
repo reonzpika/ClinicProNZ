@@ -65,7 +65,7 @@ export async function sendWelcomeEmail(data: EmailData) {
         <ol style="line-height: 1.8;">
           <li><strong>Open the desktop link</strong> on your computer and bookmark it</li>
           <li><strong>Save the mobile link</strong> to your phone's home screen</li>
-          <li><strong>Take a photo</strong> during your next consult and watch it appear on your desktop in 30 seconds</li>
+          <li><strong>Take a photo</strong> during your next consult and watch it appear on your desktop instantly</li>
         </ol>
         
         <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
