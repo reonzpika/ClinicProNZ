@@ -67,9 +67,10 @@ function ReferralImagesMobilePageContent() {
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
+  // Share URL: Always use landing page for sharing to others
   const shareUrl =
-    typeof window !== 'undefined' && userId
-      ? `${window.location.origin}/referral-images/capture?u=${userId}`
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/referral-images`
       : '';
   const { handleShare, shareModalOpen, setShareModalOpen, shareLocation } = useShare(
     userId ?? null,
@@ -476,11 +477,18 @@ function ReferralImagesMobilePageContent() {
           </div>
         )}
 
-        <header className="py-4 px-4 text-center border-b border-border bg-white">
-          <a href="/" className="text-lg font-semibold text-primary hover:underline block">
-            ClinicPro
-          </a>
-          <p className="text-sm text-text-secondary mt-1">Referral Images</p>
+        <header className="bg-white border-b border-border">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-center">
+            <div className="flex items-center gap-2">
+              <a href="/" className="text-xl font-bold text-text-primary hover:text-primary transition-colors">
+                ClinicPro
+              </a>
+              <span className="text-text-tertiary">/</span>
+              <h1 className="text-xl font-bold text-text-primary">
+                Referral Images
+              </h1>
+            </div>
+          </div>
         </header>
 
         <ShareModal

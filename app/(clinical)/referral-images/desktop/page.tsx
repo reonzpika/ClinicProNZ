@@ -77,7 +77,7 @@ function ReferralImagesDesktopPageContent() {
   const [showDownloadSuccessModal, setShowDownloadSuccessModal] = useState(false);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [deleteConfirmImageId, setDeleteConfirmImageId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
   const [rotatingImageId, setRotatingImageId] = useState<string | null>(null);
   const [bookmarkBannerDismissed, setBookmarkBannerDismissed] = useState(true); // start true, set false in useEffect if not dismissed
   const [showBookmarkInstructions, setShowBookmarkInstructions] = useState(false);
@@ -410,19 +410,32 @@ function ReferralImagesDesktopPageContent() {
     }
   };
 
-  const handleDeleteImage = async (imageId: string) => {
+  const handleDeleteClick = async (imageId: string) => {
     if (!userId) return;
-    setIsDeleting(true);
+    
+    // First click: show confirmation (checkmark)
+    if (deleteConfirmImageId !== imageId) {
+      setDeleteConfirmImageId(imageId);
+      // Auto-reset after 3 seconds if not confirmed
+      setTimeout(() => {
+        setDeleteConfirmImageId(prev => prev === imageId ? null : prev);
+      }, 3000);
+      return;
+    }
+    
+    // Second click: actually delete
+    setDeletingImageId(imageId);
+    setDeleteConfirmImageId(null);
     try {
       const res = await fetch(`/api/referral-images/delete/${imageId}?u=${userId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Delete failed');
-      setDeleteConfirmImageId(null);
       await fetchStatus();
+      toast.show({ title: 'Image deleted', durationMs: 2000 });
     } catch (err) {
       console.error(err);
       toast.show({ title: 'Failed to delete image', variant: 'destructive' });
     } finally {
-      setIsDeleting(false);
+      setDeletingImageId(null);
     }
   };
 
@@ -615,33 +628,6 @@ function ReferralImagesDesktopPageContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirm dialog */}
-      <Dialog open={!!deleteConfirmImageId} onOpenChange={(open) => !open && setDeleteConfirmImageId(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Delete image?</DialogTitle>
-          </DialogHeader>
-          <p className="text-text-secondary">This cannot be undone.</p>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <button
-              type="button"
-              onClick={() => deleteConfirmImageId && handleDeleteImage(deleteConfirmImageId)}
-              disabled={isDeleting}
-              className="px-4 py-2 bg-destructive text-white rounded-lg hover:opacity-90 disabled:opacity-50"
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setDeleteConfirmImageId(null)}
-              disabled={isDeleting}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors"
-            >
-              Cancel
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* 10th image milestone modal */}
       <Dialog
@@ -993,14 +979,31 @@ function ReferralImagesDesktopPageContent() {
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        setDeleteConfirmImageId(image.imageId);
+                        handleDeleteClick(image.imageId);
                       }}
                       onKeyDown={(e) => e.stopPropagation()}
-                      className="p-2 rounded-lg bg-black/50 text-white hover:bg-black/70 transition-colors"
-                      title="Delete image"
-                      aria-label="Delete image"
+                      disabled={deletingImageId === image.imageId}
+                      className={`p-2 rounded-lg ${
+                        deleteConfirmImageId === image.imageId
+                          ? 'bg-red-600 hover:bg-red-700'
+                          : 'bg-black/50 hover:bg-black/70'
+                      } text-white transition-colors disabled:opacity-50`}
+                      title={
+                        deletingImageId === image.imageId
+                          ? 'Deleting...'
+                          : deleteConfirmImageId === image.imageId
+                          ? 'Click again to confirm delete'
+                          : 'Delete image'
+                      }
+                      aria-label={deleteConfirmImageId === image.imageId ? 'Confirm delete' : 'Delete image'}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      {deletingImageId === image.imageId ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : deleteConfirmImageId === image.imageId ? (
+                        <CheckCircle className="w-4 h-4" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                   {/* Metadata Overlay - single label: description (side) || side || filename */}
