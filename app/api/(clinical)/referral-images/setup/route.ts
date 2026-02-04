@@ -17,9 +17,14 @@ export const runtime = 'nodejs';
  * Response: { userId, desktopLink, mobileLink } (same shape as signup).
  */
 export async function POST() {
+  console.log('[referral-images/setup] POST request received at:', new Date().toISOString());
+  
   try {
     const { userId } = await auth();
+    console.log('[referral-images/setup] User ID from auth:', userId);
+    
     if (!userId) {
+      console.log('[referral-images/setup] No userId - unauthorized');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -30,13 +35,25 @@ export async function POST() {
       .where(eq(users.id, userId))
       .limit(1);
 
+    console.log('[referral-images/setup] Existing user check:', {
+      userId,
+      exists: !!existingUser,
+    });
+
     if (!existingUser) {
+      console.log('[referral-images/setup] New user - fetching from Clerk');
       const clerk = await clerkClient();
       const clerkUser = await clerk.users.getUser(userId);
       const email =
         clerkUser.emailAddresses[0]?.emailAddress ?? clerkUser.id + '@clinicpro.app';
       const name =
         [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || undefined;
+
+      console.log('[referral-images/setup] Creating user in database:', {
+        userId,
+        email,
+        name: name || '(none)',
+      });
 
       await db.insert(users).values({
         id: userId,
@@ -46,18 +63,31 @@ export async function POST() {
         updatedAt: new Date(),
       });
 
+      console.log('[referral-images/setup] User created, attempting to send welcome email');
       try {
         const { sendWelcomeEmail } = await import(
           '@/src/lib/services/referral-images/email-service'
         );
-        await sendWelcomeEmail({
+        console.log('[referral-images/setup] sendWelcomeEmail function imported');
+        
+        const emailResult = await sendWelcomeEmail({
           email,
           name: name || email.split('@')[0],
           userId,
         });
-      } catch (emailError) {
-        console.error('[referral-images/setup] Failed to send welcome email:', emailError);
+        
+        console.log('[referral-images/setup] Welcome email sent successfully:', {
+          emailId: emailResult?.data?.id,
+        });
+      } catch (emailError: any) {
+        console.error('[referral-images/setup] Failed to send welcome email:', {
+          error: emailError.message,
+          stack: emailError.stack,
+          fullError: JSON.stringify(emailError, null, 2),
+        });
       }
+    } else {
+      console.log('[referral-images/setup] User already exists, skipping email');
     }
 
     const [existingLink] = await db

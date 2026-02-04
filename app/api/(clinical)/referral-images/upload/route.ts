@@ -204,17 +204,46 @@ export async function POST(req: NextRequest) {
       );
 
     // Publish Ably event for real-time desktop update
+    console.log('[referral-images/upload] Publishing Ably event...', {
+      userId,
+      imageId,
+      channelName: `user:${userId}`,
+      hasAblyKey: !!process.env.ABLY_API_KEY,
+      ablyKeyPrefix: process.env.ABLY_API_KEY?.substring(0, 10),
+      timestamp: new Date().toISOString(),
+    });
+
     try {
       const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
+      console.log('[referral-images/upload] Ably Rest client created');
+      
       const channel = ably.channels.get(`user:${userId}`);
+      console.log('[referral-images/upload] Got channel:', channel.name);
 
-      await channel.publish('image-uploaded', {
+      const messageData = {
         imageId,
         s3Key,
         timestamp: Date.now(),
+      };
+      console.log('[referral-images/upload] Publishing message:', messageData);
+
+      const publishResult = await channel.publish('image-uploaded', messageData);
+      
+      console.log('[referral-images/upload] Ably publish successful!', {
+        result: publishResult,
+        channelName: channel.name,
+        eventName: 'image-uploaded',
+        timestamp: new Date().toISOString(),
       });
-    } catch (error) {
-      console.error('[referral-images/upload] Ably publish failed:', error);
+    } catch (error: any) {
+      console.error('[referral-images/upload] Ably publish failed:', {
+        error: error,
+        message: error?.message,
+        code: error?.code,
+        statusCode: error?.statusCode,
+        stack: error?.stack,
+        timestamp: new Date().toISOString(),
+      });
       // Don't fail the upload if Ably fails
     }
 

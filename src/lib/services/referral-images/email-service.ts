@@ -6,10 +6,22 @@
 
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Check if API key exists and log for debugging
+const apiKey = process.env.RESEND_API_KEY;
+console.log('[email-service] RESEND_API_KEY exists:', !!apiKey);
+console.log('[email-service] RESEND_API_KEY length:', apiKey?.length ?? 0);
+console.log('[email-service] RESEND_API_KEY prefix:', apiKey?.substring(0, 7) ?? 'none');
+
+const resend = new Resend(apiKey);
 
 const FROM_EMAIL = 'ClinicPro <ryo@clinicpro.co.nz>';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
+
+console.log('[email-service] Configuration:', {
+  FROM_EMAIL,
+  APP_URL,
+  hasApiKey: !!apiKey,
+});
 
 export interface EmailData {
   email: string;
@@ -24,14 +36,28 @@ export interface EmailData {
 export async function sendWelcomeEmail(data: EmailData) {
   const { email, name, userId } = data;
 
+  console.log('[sendWelcomeEmail] Starting email send:', {
+    to: email,
+    name,
+    userId,
+    timestamp: new Date().toISOString(),
+  });
+
   const desktopLink = `${APP_URL}/referral-images/desktop?u=${userId}`;
   const mobileLink = `${APP_URL}/referral-images/capture?u=${userId}`;
 
-  return await resend.emails.send({
-    from: FROM_EMAIL,
-    to: email,
-    subject: 'Your Referral Images links - ready to use',
-    html: `
+  console.log('[sendWelcomeEmail] Generated links:', {
+    desktopLink,
+    mobileLink,
+  });
+
+  try {
+    console.log('[sendWelcomeEmail] Calling Resend API...');
+    const result = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: 'Your Referral Images links - ready to use',
+      html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
@@ -67,7 +93,27 @@ export async function sendWelcomeEmail(data: EmailData) {
         <p style="font-size: 12px; color: #888;">Questions? Just reply to this email. - Ryo</p>
       </div>
     `,
-  });
+    });
+
+    console.log('[sendWelcomeEmail] Resend API response:', JSON.stringify(result, null, 2));
+    
+    if (result.error) {
+      console.error('[sendWelcomeEmail] Resend returned error:', result.error);
+      throw new Error(`Resend error: ${JSON.stringify(result.error)}`);
+    }
+
+    console.log('[sendWelcomeEmail] Email sent successfully:', result.data?.id);
+    return result;
+  } catch (error: any) {
+    console.error('[sendWelcomeEmail] Failed to send email:', {
+      error: error.message,
+      stack: error.stack,
+      name: error.name,
+      cause: error.cause,
+      fullError: JSON.stringify(error, null, 2),
+    });
+    throw error;
+  }
 }
 
 /**
@@ -264,4 +310,102 @@ export async function sendPremiumConfirmationEmail(data: EmailData) {
       </div>
     `,
   });
+}
+
+/**
+ * Email: Send Mobile and Desktop Links to Self
+ */
+export async function sendMobileLinkEmail(data: EmailData & { mobileLink: string; desktopLink: string }) {
+  const { email, mobileLink, desktopLink } = data;
+
+  console.log('[sendMobileLinkEmail] Starting email send:', {
+    to: email,
+    mobileLink,
+    desktopLink,
+    timestamp: new Date().toISOString(),
+  });
+
+  try {
+    console.log('[sendMobileLinkEmail] Calling Resend API...');
+    const result = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: 'Your Referral Images links',
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Your Referral Images Links</h2>
+          
+          <p>Here are your permanent links:</p>
+          
+          <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+          
+          <h3 style="margin-top: 24px; margin-bottom: 12px;">📱 Mobile Link</h3>
+          <p style="color: #666; font-size: 14px; margin-bottom: 12px;">Use on your phone to capture images</p>
+          
+          <p style="margin: 16px 0;">
+            <a href="${mobileLink}" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Open Mobile Page</a>
+          </p>
+          
+          <p style="background: #f5f5f5; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; word-break: break-all; color: #333;">
+            ${mobileLink}
+          </p>
+          
+          <h3 style="margin-top: 32px; margin-bottom: 12px;">🖥️ Desktop Link</h3>
+          <p style="color: #666; font-size: 14px; margin-bottom: 12px;">Use on your computer to view and download images</p>
+          
+          <p style="margin: 16px 0;">
+            <a href="${desktopLink}" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Open Desktop Page</a>
+          </p>
+          
+          <p style="background: #f5f5f5; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; word-break: break-all; color: #333;">
+            ${desktopLink}
+          </p>
+          
+          <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+          
+          <h3>💡 Save to Home Screen</h3>
+          <p>For quick access during consults:</p>
+          
+          <p><strong>iPhone:</strong></p>
+          <ol style="color: #666;">
+            <li>Open the link in Safari</li>
+            <li>Tap the Share button (□↑)</li>
+            <li>Scroll and tap "Add to Home Screen"</li>
+            <li>Tap "Add"</li>
+          </ol>
+          
+          <p><strong>Android:</strong></p>
+          <ol style="color: #666;">
+            <li>Open the link in Chrome</li>
+            <li>Tap the menu (⋮) in top-right</li>
+            <li>Tap "Add to Home screen"</li>
+            <li>Tap "Add"</li>
+          </ol>
+          
+          <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+          
+          <p>Cheers,<br>Dr. Ryo</p>
+        </div>
+      `,
+    });
+
+    console.log('[sendMobileLinkEmail] Resend API response:', JSON.stringify(result, null, 2));
+    
+    if (result.error) {
+      console.error('[sendMobileLinkEmail] Resend returned error:', result.error);
+      throw new Error(`Resend error: ${JSON.stringify(result.error)}`);
+    }
+
+    console.log('[sendMobileLinkEmail] Email sent successfully:', result.data?.id);
+    return result;
+  } catch (error: any) {
+    console.error('[sendMobileLinkEmail] Failed to send email:', {
+      error: error.message,
+      stack: error.stack,
+      name: error.name,
+      cause: error.cause,
+      fullError: JSON.stringify(error, null, 2),
+    });
+    throw error;
+  }
 }

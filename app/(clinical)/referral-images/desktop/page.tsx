@@ -77,22 +77,20 @@ function ReferralImagesDesktopPageContent() {
   const [showDownloadSuccessModal, setShowDownloadSuccessModal] = useState(false);
   const [showMilestoneModal, setShowMilestoneModal] = useState(false);
   const [deleteConfirmImageId, setDeleteConfirmImageId] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
   const [rotatingImageId, setRotatingImageId] = useState<string | null>(null);
   const [bookmarkBannerDismissed, setBookmarkBannerDismissed] = useState(true); // start true, set false in useEffect if not dismissed
   const [showBookmarkInstructions, setShowBookmarkInstructions] = useState(false);
   const [enlargedImage, setEnlargedImage] = useState<ImageData | null>(null);
   const [downloadingImageIds, setDownloadingImageIds] = useState<Set<string>>(new Set());
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
-  // Fallback to desktop page URL when referralCode not returned by API so Share is always clickable
+  // Share URL: Always use landing page for sharing to others (with optional referral tracking)
   const shareUrl =
     typeof window !== 'undefined'
-      ? (status?.referralCode
-          ? `${window.location.origin}/referral-images?ref=${status.referralCode}`
-          : userId
-            ? `${window.location.origin}/referral-images/desktop?u=${userId}`
-            : '')
+      ? `${window.location.origin}/referral-images${status?.referralCode ? `?ref=${status.referralCode}` : ''}`
       : '';
   const { handleShare, shareModalOpen, setShareModalOpen, shareLocation } = useShare(
     userId ?? null,
@@ -142,26 +140,152 @@ function ReferralImagesDesktopPageContent() {
     setBookmarkBannerDismissed(!!isDismissed);
   }, []);
 
-  // Ably real-time sync
+  // Ably real-time sync with comprehensive logging
   useEffect(() => {
-    if (!userId || !process.env.NEXT_PUBLIC_ABLY_API_KEY) return;
+    console.log('[Ably Setup] useEffect triggered', {
+      userId,
+      hasApiKey: !!process.env.NEXT_PUBLIC_ABLY_API_KEY,
+      apiKeyPrefix: process.env.NEXT_PUBLIC_ABLY_API_KEY?.substring(0, 10),
+      timestamp: new Date().toISOString(),
+    });
 
-    const ably = new Ably.Realtime({ key: process.env.NEXT_PUBLIC_ABLY_API_KEY });
+    if (!userId) {
+      console.log('[Ably Setup] No userId, skipping setup');
+      return;
+    }
+
+    if (!process.env.NEXT_PUBLIC_ABLY_API_KEY) {
+      console.log('[Ably Setup] No NEXT_PUBLIC_ABLY_API_KEY, skipping setup');
+      return;
+    }
+
+    console.log('[Ably Setup] Creating Ably Realtime instance...');
+    const ably = new Ably.Realtime({ 
+      key: process.env.NEXT_PUBLIC_ABLY_API_KEY,
+    });
+    
+    console.log('[Ably Setup] Getting channel for user:', userId);
     const channel = ably.channels.get(`user:${userId}`);
 
-    // Refetch when connection is ready so we don't miss uploads that happened during connect
+    // Log initial connection state
+    console.log('[Ably Setup] Initial connection state:', ably.connection.state);
+    console.log('[Ably Setup] Initial channel state:', channel.state);
+
+    // Monitor all connection state changes
+    ably.connection.on('connecting', () => {
+      console.log('[Ably Connection] State: CONNECTING');
+    });
+
     ably.connection.on('connected', () => {
+      console.log('[Ably Connection] State: CONNECTED', {
+        connectionId: ably.connection.id,
+        timestamp: new Date().toISOString(),
+      });
+      console.log('[Ably Connection] Fetching status after connection...');
       fetchStatus();
     });
 
-    channel.subscribe('image-uploaded', () => {
-      console.log('[Ably] Image uploaded event received');
+    ably.connection.on('disconnected', () => {
+      console.log('[Ably Connection] State: DISCONNECTED', {
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    ably.connection.on('suspended', () => {
+      console.log('[Ably Connection] State: SUSPENDED', {
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    ably.connection.on('closing', () => {
+      console.log('[Ably Connection] State: CLOSING', {
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    ably.connection.on('closed', () => {
+      console.log('[Ably Connection] State: CLOSED', {
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    ably.connection.on('failed', (stateChange) => {
+      console.error('[Ably Connection] State: FAILED', {
+        reason: stateChange.reason,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    // Monitor channel state changes
+    channel.on('attaching', () => {
+      console.log('[Ably Channel] State: ATTACHING', {
+        channelName: channel.name,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    channel.on('attached', () => {
+      console.log('[Ably Channel] State: ATTACHED', {
+        channelName: channel.name,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    channel.on('detaching', () => {
+      console.log('[Ably Channel] State: DETACHING', {
+        channelName: channel.name,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    channel.on('detached', () => {
+      console.log('[Ably Channel] State: DETACHED', {
+        channelName: channel.name,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    channel.on('failed', (stateChange) => {
+      console.error('[Ably Channel] State: FAILED', {
+        channelName: channel.name,
+        reason: stateChange.reason,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    // Subscribe to image-uploaded events
+    console.log('[Ably Subscribe] Subscribing to image-uploaded events...');
+    console.log('[Ably Subscribe] Channel state before subscribe:', channel.state);
+    
+    channel.subscribe('image-uploaded', (message) => {
+      console.log('[Ably Message] Image uploaded event received!', {
+        messageId: message.id,
+        timestamp: message.timestamp,
+        data: message.data,
+        receivedAt: new Date().toISOString(),
+      });
+      console.log('[Ably Message] Calling fetchStatus...');
       fetchStatus();
     });
 
+    console.log('[Ably Subscribe] Subscription call completed');
+    console.log('[Ably Subscribe] Channel state after subscribe:', channel.state);
+
+    // Cleanup function
     return () => {
+      console.log('[Ably Cleanup] Starting cleanup...', {
+        connectionState: ably.connection.state,
+        channelState: channel.state,
+        timestamp: new Date().toISOString(),
+      });
+      
+      console.log('[Ably Cleanup] Unsubscribing from channel...');
       channel.unsubscribe();
+      
+      console.log('[Ably Cleanup] Closing Ably connection...');
       ably.close();
+      
+      console.log('[Ably Cleanup] Cleanup completed');
     };
   }, [userId, fetchStatus]);
 
@@ -179,8 +303,41 @@ function ReferralImagesDesktopPageContent() {
     }
   };
 
-  const shareViaEmail = () => {
-    window.location.href = `mailto:?subject=GP Referral Images Mobile Link&body=Use this link to capture referral photos on your phone:%0A%0A${encodeURIComponent(mobileLink)}`;
+  const shareViaEmail = async () => {
+    if (!userId) return;
+    
+    setIsSendingEmail(true);
+    setEmailSent(false);
+    
+    try {
+      const response = await fetch('/api/referral-images/send-mobile-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send email');
+      }
+
+      setEmailSent(true);
+      toast.show({ 
+        title: 'Email sent! Check your inbox', 
+        durationMs: 3000 
+      });
+      
+      // Reset success message after 5 seconds
+      setTimeout(() => setEmailSent(false), 5000);
+    } catch (err) {
+      console.error('Failed to send email:', err);
+      toast.show({ 
+        title: 'Failed to send email. Please try again.', 
+        variant: 'destructive',
+        durationMs: 3000 
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const shareViaWhatsApp = () => {
@@ -253,19 +410,32 @@ function ReferralImagesDesktopPageContent() {
     }
   };
 
-  const handleDeleteImage = async (imageId: string) => {
+  const handleDeleteClick = async (imageId: string) => {
     if (!userId) return;
-    setIsDeleting(true);
+    
+    // First click: show confirmation (checkmark)
+    if (deleteConfirmImageId !== imageId) {
+      setDeleteConfirmImageId(imageId);
+      // Auto-reset after 3 seconds if not confirmed
+      setTimeout(() => {
+        setDeleteConfirmImageId(prev => prev === imageId ? null : prev);
+      }, 3000);
+      return;
+    }
+    
+    // Second click: actually delete
+    setDeletingImageId(imageId);
+    setDeleteConfirmImageId(null);
     try {
       const res = await fetch(`/api/referral-images/delete/${imageId}?u=${userId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Delete failed');
-      setDeleteConfirmImageId(null);
       await fetchStatus();
+      toast.show({ title: 'Image deleted', durationMs: 2000 });
     } catch (err) {
       console.error(err);
       toast.show({ title: 'Failed to delete image', variant: 'destructive' });
     } finally {
-      setIsDeleting(false);
+      setDeletingImageId(null);
     }
   };
 
@@ -458,33 +628,6 @@ function ReferralImagesDesktopPageContent() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirm dialog */}
-      <Dialog open={!!deleteConfirmImageId} onOpenChange={(open) => !open && setDeleteConfirmImageId(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Delete image?</DialogTitle>
-          </DialogHeader>
-          <p className="text-text-secondary">This cannot be undone.</p>
-          <DialogFooter className="gap-2 sm:gap-0">
-            <button
-              type="button"
-              onClick={() => deleteConfirmImageId && handleDeleteImage(deleteConfirmImageId)}
-              disabled={isDeleting}
-              className="px-4 py-2 bg-destructive text-white rounded-lg hover:opacity-90 disabled:opacity-50"
-            >
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
-            <button
-              type="button"
-              onClick={() => setDeleteConfirmImageId(null)}
-              disabled={isDeleting}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors"
-            >
-              Cancel
-            </button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* 10th image milestone modal */}
       <Dialog
@@ -638,10 +781,25 @@ function ReferralImagesDesktopPageContent() {
           <div className="flex flex-wrap gap-3">
             <button
               onClick={shareViaEmail}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors flex items-center gap-2"
+              disabled={isSendingEmail}
+              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Mail className="w-4 h-4" />
-              Email
+              {isSendingEmail ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Sending...
+                </>
+              ) : emailSent ? (
+                <>
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  Sent!
+                </>
+              ) : (
+                <>
+                  <Mail className="w-4 h-4" />
+                  Email Me
+                </>
+              )}
             </button>
             <button
               onClick={shareViaWhatsApp}
@@ -821,14 +979,31 @@ function ReferralImagesDesktopPageContent() {
                       onClick={(e) => {
                         e.stopPropagation();
                         e.preventDefault();
-                        setDeleteConfirmImageId(image.imageId);
+                        handleDeleteClick(image.imageId);
                       }}
                       onKeyDown={(e) => e.stopPropagation()}
-                      className="p-2 rounded-lg bg-black/50 text-white hover:bg-black/70 transition-colors"
-                      title="Delete image"
-                      aria-label="Delete image"
+                      disabled={deletingImageId === image.imageId}
+                      className={`p-2 rounded-lg ${
+                        deleteConfirmImageId === image.imageId
+                          ? 'bg-red-600 hover:bg-red-700'
+                          : 'bg-black/50 hover:bg-black/70'
+                      } text-white transition-colors disabled:opacity-50`}
+                      title={
+                        deletingImageId === image.imageId
+                          ? 'Deleting...'
+                          : deleteConfirmImageId === image.imageId
+                          ? 'Click again to confirm delete'
+                          : 'Delete image'
+                      }
+                      aria-label={deleteConfirmImageId === image.imageId ? 'Confirm delete' : 'Delete image'}
                     >
-                      <Trash2 className="w-4 h-4" />
+                      {deletingImageId === image.imageId ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : deleteConfirmImageId === image.imageId ? (
+                        <CheckCircle className="w-4 h-4" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
                   {/* Metadata Overlay - single label: description (side) || side || filename */}

@@ -24,11 +24,16 @@ export const runtime = 'nodejs';
  * - mobileLink: string
  */
 export async function POST(req: NextRequest) {
+  console.log('[referral-images/signup] POST request received at:', new Date().toISOString());
+  
   try {
     const body = await req.json();
     const { email, name } = body;
 
+    console.log('[referral-images/signup] Request body:', { email, name: name || '(not provided)' });
+
     if (!email || typeof email !== 'string') {
+      console.log('[referral-images/signup] Invalid email provided');
       return NextResponse.json(
         { error: 'Email is required' },
         { status: 400 }
@@ -169,15 +174,30 @@ export async function POST(req: NextRequest) {
     const mobileLink = `${baseUrl}/referral-images/capture?token=${token}`;
 
     // Send welcome email (don't block on email failure)
+    console.log('[referral-images/signup] Attempting to send welcome email to:', email);
     try {
       const { sendWelcomeEmail } = await import('@/src/lib/services/referral-images/email-service');
-      await sendWelcomeEmail({
+      console.log('[referral-images/signup] sendWelcomeEmail function imported successfully');
+      
+      const emailResult = await sendWelcomeEmail({
         email,
         name: name || email.split('@')[0],
         userId,
       });
-    } catch (emailError) {
-      console.error('[referral-images/signup] Failed to send welcome email:', emailError);
+      
+      console.log('[referral-images/signup] Welcome email sent successfully:', {
+        emailId: emailResult?.data?.id,
+        to: email,
+      });
+    } catch (emailError: any) {
+      console.error('[referral-images/signup] Failed to send welcome email:', {
+        error: emailError.message,
+        stack: emailError.stack,
+        name: emailError.name,
+        email: email,
+        userId: userId,
+        fullError: JSON.stringify(emailError, null, 2),
+      });
       // Don't fail signup if email fails
     }
 
