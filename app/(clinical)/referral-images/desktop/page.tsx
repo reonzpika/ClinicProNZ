@@ -162,7 +162,6 @@ function ReferralImagesDesktopPageContent() {
     console.log('[Ably Setup] Creating Ably Realtime instance...');
     const ably = new Ably.Realtime({ 
       key: process.env.NEXT_PUBLIC_ABLY_API_KEY,
-      log: { level: 4 }, // Verbose logging
     });
     
     console.log('[Ably Setup] Getting channel for user:', userId);
