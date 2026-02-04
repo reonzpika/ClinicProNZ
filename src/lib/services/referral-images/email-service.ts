@@ -56,7 +56,7 @@ export async function sendWelcomeEmail(data: EmailData) {
     const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: email,
-      subject: 'Your Referral Images links - ready to use',
+      subject: 'Your Personal Referral Images links - ready to use',
       html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
@@ -80,10 +80,10 @@ export async function sendWelcomeEmail(data: EmailData) {
           <li>Take photo on mobile during consult</li>
           <li>Photo appears on desktop instantly - download JPEG and attach to referral</li>
         </ol>
+
+        <p>DO NOT share your personal links. If you want to share the tool, share this link: <a href="${APP_URL}/referral-images" style="color: #0070e0;">${APP_URL}/referral-images</a></p>
         
         <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
-        
-        <p>These links are permanent. Bookmark them and you're done.</p>
         
         <p>No credit card required. Free to use.</p>
         
@@ -296,8 +296,7 @@ export async function sendPremiumConfirmationEmail(data: EmailData) {
         <h3>You now have:</h3>
         <ul>
           <li>Unlimited images forever</li>
-          <li>All future features</li>
-          <li>Early access to Inbox Intelligence</li>
+          <li>Early access to Inbox Intelligence and AI Scribe</li>
         </ul>
         
         <p>No more limits. Just use it.</p>
