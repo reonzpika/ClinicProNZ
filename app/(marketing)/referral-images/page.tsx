@@ -247,7 +247,7 @@ export default function ReferralImagesLandingPage() {
               href={signupRedirectUrl}
               className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
             >
-              Free for NZ GPs, Get Started
+              Get Started
             </Link>
           )}
         </div>
@@ -284,7 +284,7 @@ export default function ReferralImagesLandingPage() {
                   href={signupRedirectUrl}
                   className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
                 >
-                  Get Started, free for GPs
+                  Get Started
                 </Link>
                 <p className="mt-3 text-sm text-text-tertiary">
                   Prefer to sign up with email?{' '}
@@ -524,7 +524,7 @@ export default function ReferralImagesLandingPage() {
               href={signupRedirectUrl}
               className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
             >
-              Get Started, free for GPs
+              Get Started
             </Link>
           )}
         </div>
@@ -552,7 +552,7 @@ export default function ReferralImagesLandingPage() {
               href={signupRedirectUrl}
               className="px-8 py-4 text-lg bg-white text-primary rounded-lg hover:bg-gray-100 transition-colors font-semibold inline-block"
             >
-              Get Started, free for GPs
+              Get Started
             </Link>
           )}
           <p className="mt-4 text-sm opacity-75">
