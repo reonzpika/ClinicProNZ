@@ -60,20 +60,14 @@ function ReferralImagesSetupCompleteContent() {
     }
   };
 
-  const emailDesktop = () => {
-    window.location.href = `mailto:?subject=GP Referral Images Desktop Link&body=Bookmark this on your computer:%0A%0A${encodeURIComponent(desktopLink)}`;
-  };
-
-  const emailMobileToPhone = () => {
-    window.location.href = `mailto:?subject=GP Referral Images Mobile Link&body=Save this to your phone's home screen:%0A%0A${encodeURIComponent(mobileLink)}`;
-  };
-
   const openDesktopPage = () => {
-    window.location.href = desktopLink;
+    const url = desktopLink || (typeof window !== 'undefined' ? `${window.location.origin}/referral-images/desktop?u=${userId}` : '');
+    if (url) window.location.href = url;
   };
 
   const openMobilePage = () => {
-    window.location.href = mobileLink;
+    const url = mobileLink || (typeof window !== 'undefined' ? `${window.location.origin}/referral-images/capture?u=${userId}` : '');
+    if (url) window.location.href = url;
   };
 
   if (!userId) {
@@ -109,7 +103,7 @@ function ReferralImagesSetupCompleteContent() {
           <ol className="list-decimal list-inside space-y-2 text-text-secondary">
             <li><strong className="text-text-primary">On your computer:</strong> Open the desktop link and leave the tab open</li>
             <li><strong className="text-text-primary">On your phone:</strong> Open the mobile page (or add it to your home screen)</li>
-            <li><strong className="text-text-primary">Take a photo</strong> and watch it appear on your desktop in 30 seconds</li>
+            <li><strong className="text-text-primary">Take a photo</strong> and watch it appear on your desktop instantly</li>
           </ol>
         </div>
 
@@ -123,21 +117,12 @@ function ReferralImagesSetupCompleteContent() {
               Start taking photos
             </button>
           ) : (
-            <div className="space-y-3">
-              <button
-                onClick={openDesktopPage}
-                className="w-full py-4 px-6 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-semibold text-lg"
-              >
-                Open desktop page
-              </button>
-              <button
-                onClick={emailMobileToPhone}
-                className="w-full py-3 px-6 border border-border rounded-lg hover:bg-surface transition-colors flex items-center justify-center gap-2"
-              >
-                <Mail className="w-4 h-4" />
-                Email mobile link to my phone
-              </button>
-            </div>
+            <button
+              onClick={openDesktopPage}
+              className="w-full py-4 px-6 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-semibold text-lg"
+            >
+              Open desktop page
+            </button>
           )}
         </div>
 
@@ -164,13 +149,6 @@ function ReferralImagesSetupCompleteContent() {
               {desktopCopied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {desktopCopied ? 'Copied' : 'Copy'}
             </button>
-            <button
-              onClick={emailDesktop}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors flex items-center gap-2 shrink-0"
-            >
-              <Mail className="w-4 h-4" />
-              Email me
-            </button>
           </div>
         </div>
 
@@ -193,13 +171,6 @@ function ReferralImagesSetupCompleteContent() {
             >
               {mobileCopied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {mobileCopied ? 'Copied' : 'Copy'}
-            </button>
-            <button
-              onClick={emailMobileToPhone}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors flex items-center gap-2 shrink-0"
-            >
-              <Mail className="w-4 h-4" />
-              Email me
             </button>
           </div>
         </div>

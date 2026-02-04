@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
       );
       
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
-      const mobileLinkUrl = `${baseUrl}/referral-images/capture?token=${mobileLink.token}`;
+      const mobileLinkUrl = `${baseUrl}/referral-images/capture?u=${userId}`;
       const desktopLinkUrl = `${baseUrl}/referral-images/desktop?u=${userId}`;
       
       const emailResult = await sendMobileLinkEmail({

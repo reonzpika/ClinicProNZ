@@ -129,7 +129,7 @@ export async function POST() {
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.app';
     const desktopLink = `${baseUrl}/referral-images/desktop?u=${effectiveUserId}`;
-    const mobileLink = `${baseUrl}/referral-images/capture?token=${token}`;
+    const mobileLink = `${baseUrl}/referral-images/capture?u=${effectiveUserId}`;
 
     return NextResponse.json({
       userId: effectiveUserId,

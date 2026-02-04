@@ -171,7 +171,7 @@ export async function POST(req: NextRequest) {
     // Generate permanent links
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.app';
     const desktopLink = `${baseUrl}/referral-images/desktop?u=${userId}`;
-    const mobileLink = `${baseUrl}/referral-images/capture?token=${token}`;
+    const mobileLink = `${baseUrl}/referral-images/capture?u=${userId}`;
 
     // Send welcome email (don't block on email failure)
     console.log('[referral-images/signup] Attempting to send welcome email to:', email);
