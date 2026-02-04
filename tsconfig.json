@@ -69,7 +69,8 @@
     "./node_modules/**/*",
     "**/*.spec.ts",
     "**/*.e2e.ts",
-    "commitlint.config.ts"
+    "commitlint.config.ts",
+    "project-management/**/*"
   ],
   "include": [
     "next-env.d.ts",

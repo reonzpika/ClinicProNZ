@@ -1,4 +1,3 @@
-// src/features/clinical/ai-review/components/AIReviewModal.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -71,8 +70,7 @@ export function AIReviewModal({ isOpen, onClose, reviewType, noteContent }: AIRe
 
       const data = await res.json();
       setResponse(data.response);
-      // Store review ID for feedback tracking (if you return it from API)
-      // setReviewId(data.reviewId);
+      if (data.reviewId != null) setReviewId(data.reviewId);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {

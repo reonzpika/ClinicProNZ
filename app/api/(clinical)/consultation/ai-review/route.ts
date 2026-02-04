@@ -37,7 +37,7 @@ OUTPUT REQUIREMENTS:
 - If red flags present: List each with specific supporting evidence from notes
 - If none: Clearly state "No urgent red flags identified based on documented information"
 - If unclear: "Insufficient information to assess for [specific red flag]"`,
-    
+
     user: (note: string) => `Review this GP consultation note for urgent red flags requiring immediate action.
 
 CONSULTATION NOTE:
@@ -241,7 +241,7 @@ Provide assessment:
 First-line options:
 - [Treatment]: [Evidence base] - PHARMAC: [funded/unfunded/special authority]
   Contraindications to check: [list]
-  
+
 Non-pharmacological:
 - [Intervention]: [Reasoning]
 
@@ -286,13 +286,13 @@ export async function POST(req: Request) {
   try {
     // Parse request body
     const body = await req.json();
-    const { 
-      reviewType, 
-      problemsText, 
-      objectiveText, 
-      assessmentText, 
+    const {
+      reviewType,
+      problemsText,
+      objectiveText,
+      assessmentText,
       planText,
-      sessionId 
+      sessionId
     } = body;
 
     // Validate review type
@@ -320,6 +320,11 @@ export async function POST(req: Request) {
         { error: permissionCheck.reason || 'Access denied' },
         { status: 403 }
       );
+    }
+
+    const userId = context.userId;
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Construct full note
@@ -357,12 +362,13 @@ ${planText || 'Not documented'}
     });
 
     const responseTime = Date.now() - startTime;
-    const aiResponse = message.content[0].type === 'text' ? message.content[0].text : '';
+    const firstBlock = message.content[0];
+    const aiResponse = firstBlock?.type === 'text' ? firstBlock.text : '';
 
     // Log to database (fire and forget to not slow down response)
     const db = getDb();
     db.insert(aiSuggestions).values({
-      userId: context.userId,
+      userId,
       sessionId: sessionId || null,
       reviewType,
       noteContent: fullNote,
@@ -388,7 +394,7 @@ ${planText || 'Not documented'}
     console.error('AI review error:', error);
 
     return NextResponse.json(
-      { 
+      {
         error: error instanceof Error ? error.message : 'Failed to generate AI review',
         code: 'AI_REVIEW_ERROR'
       },

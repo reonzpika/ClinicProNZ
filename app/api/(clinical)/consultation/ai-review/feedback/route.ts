@@ -1,10 +1,11 @@
 // app/api/(clinical)/consultation/ai-review/feedback/route.ts
 
 import { NextResponse } from 'next/server';
+import { and, desc, eq, isNull } from 'drizzle-orm';
+
 import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { getDb } from 'database/client';
 import { aiSuggestions } from '@/db/schema';
-import { eq, and, isNull, desc } from 'drizzle-orm';
 
 export async function POST(req: Request) {
   try {
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
 
     // Update the most recent AI suggestion for this user/session/reviewType
     const db = getDb();
-    
+
     // Find the most recent suggestion without feedback
     const recentSuggestion = await db
       .select()
@@ -45,7 +46,8 @@ export async function POST(req: Request) {
       .orderBy(desc(aiSuggestions.createdAt))
       .limit(1);
 
-    if (recentSuggestion.length === 0) {
+    const row = recentSuggestion[0];
+    if (!row) {
       return NextResponse.json(
         { error: 'No recent suggestion found' },
         { status: 404 }
@@ -56,7 +58,7 @@ export async function POST(req: Request) {
     await db
       .update(aiSuggestions)
       .set({ userFeedback: feedback })
-      .where(eq(aiSuggestions.id, recentSuggestion[0].id));
+      .where(eq(aiSuggestions.id, row.id));
 
     return NextResponse.json({ success: true });
 
