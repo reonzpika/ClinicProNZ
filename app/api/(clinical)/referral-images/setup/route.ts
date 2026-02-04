@@ -40,8 +40,13 @@ export async function POST() {
       exists: !!existingUser,
     });
 
-    if (!existingUser) {
-      console.log('[referral-images/setup] New user - fetching from Clerk');
+    let effectiveUserId: string;
+
+    if (existingUser) {
+      effectiveUserId = existingUser.id;
+      console.log('[referral-images/setup] User already exists, skipping email');
+    } else {
+      console.log('[referral-images/setup] No row by userId - fetching from Clerk');
       const clerk = await clerkClient();
       const clerkUser = await clerk.users.getUser(userId);
       const email =
@@ -49,51 +54,63 @@ export async function POST() {
       const name =
         [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || undefined;
 
-      console.log('[referral-images/setup] Creating user in database:', {
-        userId,
-        email,
-        name: name || '(none)',
-      });
+      const [existingByEmail] = await db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, email))
+        .limit(1);
 
-      await db.insert(users).values({
-        id: userId,
-        email,
-        imageTier: 'free',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      console.log('[referral-images/setup] User created, attempting to send welcome email');
-      try {
-        const { sendWelcomeEmail } = await import(
-          '@/src/lib/services/referral-images/email-service'
-        );
-        console.log('[referral-images/setup] sendWelcomeEmail function imported');
-        
-        const emailResult = await sendWelcomeEmail({
+      if (existingByEmail) {
+        effectiveUserId = existingByEmail.id;
+        console.log('[referral-images/setup] User exists by email, reusing row:', {
           email,
-          name: name || email.split('@')[0],
+          effectiveUserId,
+        });
+      } else {
+        console.log('[referral-images/setup] Creating user in database:', {
           userId,
+          email,
+          name: name || '(none)',
         });
-        
-        console.log('[referral-images/setup] Welcome email sent successfully:', {
-          emailId: emailResult?.data?.id,
+        await db.insert(users).values({
+          id: userId,
+          email,
+          imageTier: 'free',
+          createdAt: new Date(),
+          updatedAt: new Date(),
         });
-      } catch (emailError: any) {
-        console.error('[referral-images/setup] Failed to send welcome email:', {
-          error: emailError.message,
-          stack: emailError.stack,
-          fullError: JSON.stringify(emailError, null, 2),
-        });
+        effectiveUserId = userId;
+
+        console.log('[referral-images/setup] User created, attempting to send welcome email');
+        try {
+          const { sendWelcomeEmail } = await import(
+            '@/src/lib/services/referral-images/email-service'
+          );
+          console.log('[referral-images/setup] sendWelcomeEmail function imported');
+
+          const emailResult = await sendWelcomeEmail({
+            email,
+            name: name || email.split('@')[0],
+            userId: effectiveUserId,
+          });
+
+          console.log('[referral-images/setup] Welcome email sent successfully:', {
+            emailId: emailResult?.data?.id,
+          });
+        } catch (emailError: unknown) {
+          console.error('[referral-images/setup] Failed to send welcome email:', {
+            error: emailError instanceof Error ? emailError.message : String(emailError),
+            stack: emailError instanceof Error ? emailError.stack : undefined,
+            fullError: JSON.stringify(emailError, null, 2),
+          });
+        }
       }
-    } else {
-      console.log('[referral-images/setup] User already exists, skipping email');
     }
 
     const [existingLink] = await db
       .select({ token: imageToolMobileLinks.token })
       .from(imageToolMobileLinks)
-      .where(eq(imageToolMobileLinks.userId, userId))
+      .where(eq(imageToolMobileLinks.userId, effectiveUserId))
       .limit(1);
 
     let token: string;
@@ -102,7 +119,7 @@ export async function POST() {
     } else {
       token = nanoid(12);
       await db.insert(imageToolMobileLinks).values({
-        userId,
+        userId: effectiveUserId,
         token,
         isActive: true,
         createdAt: new Date(),
@@ -111,11 +128,11 @@ export async function POST() {
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.app';
-    const desktopLink = `${baseUrl}/referral-images/desktop?u=${userId}`;
+    const desktopLink = `${baseUrl}/referral-images/desktop?u=${effectiveUserId}`;
     const mobileLink = `${baseUrl}/referral-images/capture?token=${token}`;
 
     return NextResponse.json({
-      userId,
+      userId: effectiveUserId,
       desktopLink,
       mobileLink,
     });
