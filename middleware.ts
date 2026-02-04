@@ -231,6 +231,20 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
+  // Protect /api/referral-images/setup - requires authentication
+  if (req.nextUrl.pathname === '/api/referral-images/setup') {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+  }
+
+  // Allow other /api/referral-images routes - authentication handled per route
+  // (signup is public, upload/status/download/etc use token-based auth)
+  if (req.nextUrl.pathname.startsWith('/api/referral-images')) {
+    return NextResponse.next();
+  }
+
   // Protect /billing page - require sign-in only
   if (req.nextUrl.pathname.startsWith('/billing')) {
     const resolvedAuth = await auth();
@@ -302,6 +316,7 @@ export const config = {
     '/api/tools/:path*',
     '/api/search/:path*',
     '/api/image/:path*', // Image tool API routes
+    '/api/referral-images/:path*', // Referral images API routes
     '/ai-scribe/:path*',
     '/billing/:path*',
     '/admin/:path*',
