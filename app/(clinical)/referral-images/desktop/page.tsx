@@ -140,26 +140,156 @@ function ReferralImagesDesktopPageContent() {
     setBookmarkBannerDismissed(!!isDismissed);
   }, []);
 
-  // Ably real-time sync
+  // Ably real-time sync with comprehensive logging
   useEffect(() => {
-    if (!userId || !process.env.NEXT_PUBLIC_ABLY_API_KEY) return;
+    console.log('[Ably Setup] useEffect triggered', {
+      userId,
+      hasApiKey: !!process.env.NEXT_PUBLIC_ABLY_API_KEY,
+      apiKeyPrefix: process.env.NEXT_PUBLIC_ABLY_API_KEY?.substring(0, 10),
+      timestamp: new Date().toISOString(),
+    });
 
-    const ably = new Ably.Realtime({ key: process.env.NEXT_PUBLIC_ABLY_API_KEY });
+    if (!userId) {
+      console.log('[Ably Setup] No userId, skipping setup');
+      return;
+    }
+
+    if (!process.env.NEXT_PUBLIC_ABLY_API_KEY) {
+      console.log('[Ably Setup] No NEXT_PUBLIC_ABLY_API_KEY, skipping setup');
+      return;
+    }
+
+    console.log('[Ably Setup] Creating Ably Realtime instance...');
+    const ably = new Ably.Realtime({ 
+      key: process.env.NEXT_PUBLIC_ABLY_API_KEY,
+      log: { level: 4 }, // Verbose logging
+    });
+    
+    console.log('[Ably Setup] Getting channel for user:', userId);
     const channel = ably.channels.get(`user:${userId}`);
 
-    // Refetch when connection is ready so we don't miss uploads that happened during connect
+    // Log initial connection state
+    console.log('[Ably Setup] Initial connection state:', ably.connection.state);
+    console.log('[Ably Setup] Initial channel state:', channel.state);
+
+    // Monitor all connection state changes
+    ably.connection.on('connecting', () => {
+      console.log('[Ably Connection] State: CONNECTING');
+    });
+
     ably.connection.on('connected', () => {
+      console.log('[Ably Connection] State: CONNECTED', {
+        connectionId: ably.connection.id,
+        timestamp: new Date().toISOString(),
+      });
+      console.log('[Ably Connection] Fetching status after connection...');
       fetchStatus();
     });
 
-    channel.subscribe('image-uploaded', () => {
-      console.log('[Ably] Image uploaded event received');
+    ably.connection.on('disconnected', () => {
+      console.log('[Ably Connection] State: DISCONNECTED', {
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    ably.connection.on('suspended', () => {
+      console.log('[Ably Connection] State: SUSPENDED', {
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    ably.connection.on('closing', () => {
+      console.log('[Ably Connection] State: CLOSING', {
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    ably.connection.on('closed', () => {
+      console.log('[Ably Connection] State: CLOSED', {
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    ably.connection.on('failed', (error) => {
+      console.error('[Ably Connection] State: FAILED', {
+        error: error,
+        message: error?.message,
+        code: error?.code,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    // Monitor channel state changes
+    channel.on('attaching', () => {
+      console.log('[Ably Channel] State: ATTACHING', {
+        channelName: channel.name,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    channel.on('attached', () => {
+      console.log('[Ably Channel] State: ATTACHED', {
+        channelName: channel.name,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    channel.on('detaching', () => {
+      console.log('[Ably Channel] State: DETACHING', {
+        channelName: channel.name,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    channel.on('detached', () => {
+      console.log('[Ably Channel] State: DETACHED', {
+        channelName: channel.name,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    channel.on('failed', (error) => {
+      console.error('[Ably Channel] State: FAILED', {
+        channelName: channel.name,
+        error: error,
+        message: error?.message,
+        timestamp: new Date().toISOString(),
+      });
+    });
+
+    // Subscribe to image-uploaded events
+    console.log('[Ably Subscribe] Subscribing to image-uploaded events...');
+    console.log('[Ably Subscribe] Channel state before subscribe:', channel.state);
+    
+    channel.subscribe('image-uploaded', (message) => {
+      console.log('[Ably Message] Image uploaded event received!', {
+        messageId: message.id,
+        timestamp: message.timestamp,
+        data: message.data,
+        receivedAt: new Date().toISOString(),
+      });
+      console.log('[Ably Message] Calling fetchStatus...');
       fetchStatus();
     });
 
+    console.log('[Ably Subscribe] Subscription call completed');
+    console.log('[Ably Subscribe] Channel state after subscribe:', channel.state);
+
+    // Cleanup function
     return () => {
+      console.log('[Ably Cleanup] Starting cleanup...', {
+        connectionState: ably.connection.state,
+        channelState: channel.state,
+        timestamp: new Date().toISOString(),
+      });
+      
+      console.log('[Ably Cleanup] Unsubscribing from channel...');
       channel.unsubscribe();
+      
+      console.log('[Ably Cleanup] Closing Ably connection...');
       ably.close();
+      
+      console.log('[Ably Cleanup] Cleanup completed');
     };
   }, [userId, fetchStatus]);
 
