@@ -64,6 +64,10 @@ function ReferralImagesSetupCompleteContent() {
     window.location.href = `mailto:?subject=GP Referral Images Desktop Link&body=Bookmark this on your computer:%0A%0A${encodeURIComponent(desktopLink)}`;
   };
 
+  const emailMobileToPhone = () => {
+    window.location.href = `mailto:?subject=GP Referral Images Mobile Link&body=Save this to your phone's home screen:%0A%0A${encodeURIComponent(mobileLink)}`;
+  };
+
   const openDesktopPage = () => {
     window.location.href = desktopLink;
   };
@@ -87,28 +91,71 @@ function ReferralImagesSetupCompleteContent() {
   return (
     <div className="min-h-screen bg-background p-4 pb-12">
       <div className="max-w-lg mx-auto">
-        <div className="text-center mb-8">
+        {/* 1. Reassurance first */}
+        <div className="text-center mb-6">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-4xl">✅</span>
           </div>
-          <h1 className="text-2xl font-bold text-text-primary mb-2">Setup Complete!</h1>
-          <p className="text-text-secondary">Your referral images links are ready:</p>
+          <p className="text-text-secondary mb-2 flex items-center justify-center gap-2">
+            <Mail className="w-5 h-5 shrink-0" />
+            We&apos;ve emailed your links to you
+          </p>
+          <h1 className="text-2xl font-bold text-text-primary">Setup complete. You&apos;re all set.</h1>
         </div>
 
-        {/* Desktop Link */}
+        {/* 2. How it works */}
         <div className="bg-white rounded-lg border border-border p-6 mb-6">
+          <h2 className="text-lg font-semibold text-text-primary mb-3">How it works</h2>
+          <ol className="list-decimal list-inside space-y-2 text-text-secondary">
+            <li><strong className="text-text-primary">On your computer:</strong> Open the desktop link and leave the tab open</li>
+            <li><strong className="text-text-primary">On your phone:</strong> Open the mobile page (or add it to your home screen)</li>
+            <li><strong className="text-text-primary">Take a photo</strong> and watch it appear on your desktop in 30 seconds</li>
+          </ol>
+        </div>
+
+        {/* 3. Primary CTA */}
+        <div className="mb-8">
+          {mobile ? (
+            <button
+              onClick={openMobilePage}
+              className="w-full py-4 px-6 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-semibold text-lg"
+            >
+              Start taking photos
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <button
+                onClick={openDesktopPage}
+                className="w-full py-4 px-6 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-semibold text-lg"
+              >
+                Open desktop page
+              </button>
+              <button
+                onClick={emailMobileToPhone}
+                className="w-full py-3 px-6 border border-border rounded-lg hover:bg-surface transition-colors flex items-center justify-center gap-2"
+              >
+                <Mail className="w-4 h-4" />
+                Email mobile link to my phone
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* 4. Links (reference / bookmarking) */}
+        <p className="text-text-tertiary text-sm mb-3">Your links (for reference or bookmarking)</p>
+
+        <div className="bg-white rounded-lg border border-border p-4 mb-4">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">🖥️</span>
-            <h3 className="text-lg font-semibold text-text-primary">Desktop Link</h3>
+            <span className="text-xl">🖥️</span>
+            <h3 className="text-base font-semibold text-text-primary">Desktop link</h3>
           </div>
-          <p className="text-sm text-text-secondary mb-3">Use this on your computer to view images</p>
-          <div className="flex gap-2 mb-2">
+          <div className="flex gap-2 mb-2 flex-wrap">
             <input
               type="text"
               readOnly
               value={desktopLink}
               onClick={(e) => (e.target as HTMLInputElement).select()}
-              className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg font-mono text-sm text-text-primary"
+              className="flex-1 min-w-0 px-3 py-2 bg-surface border border-border rounded-lg font-mono text-sm text-text-primary"
             />
             <button
               onClick={copyDesktop}
@@ -122,25 +169,23 @@ function ReferralImagesSetupCompleteContent() {
               className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors flex items-center gap-2 shrink-0"
             >
               <Mail className="w-4 h-4" />
-              Email Me
+              Email me
             </button>
           </div>
         </div>
 
-        {/* Mobile Link */}
-        <div className="bg-white rounded-lg border border-border p-6 mb-6">
+        <div className="bg-white rounded-lg border border-border p-4 mb-6">
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-2xl">📱</span>
-            <h3 className="text-lg font-semibold text-text-primary">Mobile Link</h3>
+            <span className="text-xl">📱</span>
+            <h3 className="text-base font-semibold text-text-primary">Mobile link</h3>
           </div>
-          <p className="text-sm text-text-secondary mb-3">Save this to your phone&apos;s home screen</p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <input
               type="text"
               readOnly
               value={mobileLink}
               onClick={(e) => (e.target as HTMLInputElement).select()}
-              className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg font-mono text-sm text-text-primary"
+              className="flex-1 min-w-0 px-3 py-2 bg-surface border border-border rounded-lg font-mono text-sm text-text-primary"
             />
             <button
               onClick={copyMobile}
@@ -149,34 +194,18 @@ function ReferralImagesSetupCompleteContent() {
               {mobileCopied ? <CheckCircle className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {mobileCopied ? 'Copied' : 'Copy'}
             </button>
+            <button
+              onClick={emailMobileToPhone}
+              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors flex items-center gap-2 shrink-0"
+            >
+              <Mail className="w-4 h-4" />
+              Email me
+            </button>
           </div>
         </div>
 
-        <div className="text-center text-text-tertiary text-sm mb-6">
-          ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        </div>
-        <p className="text-center text-text-secondary text-sm mb-6">
-          📧 We&apos;ve also emailed these links to you
-        </p>
-
-        {mobile ? (
-          <button
-            onClick={openMobilePage}
-            className="w-full py-4 px-6 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-semibold text-lg"
-          >
-            Open Mobile Page
-          </button>
-        ) : (
-          <button
-            onClick={openDesktopPage}
-            className="w-full py-4 px-6 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-semibold text-lg"
-          >
-            Open Desktop Page
-          </button>
-        )}
-
-        <p className="text-center text-text-tertiary text-sm mt-4">
-          These links work forever - bookmark them!
+        <p className="text-center text-text-tertiary text-sm">
+          These links work forever. Bookmark them.
         </p>
       </div>
     </div>

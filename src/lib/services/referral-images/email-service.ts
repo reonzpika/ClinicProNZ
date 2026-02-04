@@ -56,36 +56,31 @@ export async function sendWelcomeEmail(data: EmailData) {
     const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: email,
-      subject: 'Your Personal Referral Images links - ready to use',
+      subject: 'Your Referral Images links - 3 steps to get started',
       html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
-        <p>You're all set. Here are your permanent links:</p>
+        <p><strong>3 steps to get started:</strong></p>
+        <ol style="line-height: 1.8;">
+          <li><strong>Open the desktop link</strong> on your computer and bookmark it</li>
+          <li><strong>Save the mobile link</strong> to your phone's home screen</li>
+          <li><strong>Take a photo</strong> during your next consult and watch it appear on your desktop in 30 seconds</li>
+        </ol>
         
         <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
         
-        <h3>Desktop link (bookmark this):</h3>
+        <h3>Desktop link:</h3>
         <p><a href="${desktopLink}" style="color: #0070e0;">${desktopLink}</a></p>
         
-        <h3>Mobile link (save to home screen):</h3>
+        <h3>Mobile link:</h3>
         <p><a href="${mobileLink}" style="color: #0070e0;">${mobileLink}</a></p>
         
         <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
         
-        <h3>How to use it:</h3>
-        <ol>
-          <li>Bookmark the desktop link on your computer</li>
-          <li>Save the mobile link to your phone's home screen</li>
-          <li>Take photo on mobile during consult</li>
-          <li>Photo appears on desktop instantly - download JPEG and attach to referral</li>
-        </ol>
-
-        <p>DO NOT share your personal links. If you want to share the tool, share this link: <a href="${APP_URL}/referral-images" style="color: #0070e0;">${APP_URL}/referral-images</a></p>
+        <p>Don't share your personal links. To share the tool with colleagues, use: <a href="${APP_URL}/referral-images" style="color: #0070e0;">${APP_URL}/referral-images</a></p>
         
-        <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
-        
-        <p>No credit card required. Free to use.</p>
+        <p>Free to use. No credit card required.</p>
         
         <p>Cheers,<br>Dr. Ryo</p>
         

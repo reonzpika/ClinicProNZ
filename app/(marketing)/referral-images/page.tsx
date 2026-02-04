@@ -1,11 +1,17 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { Camera, CheckCircle, Clock, FileImage, Shield } from 'lucide-react';
+import { Camera, CheckCircle, Clock, FileImage, Loader2, Shield } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+
+const LOADING_MESSAGES = [
+  'Creating your account...',
+  'Generating your links...',
+  'Almost there.',
+] as const;
 
 function isMobileDevice(): boolean {
   if (typeof navigator === 'undefined') return false;
@@ -24,6 +30,7 @@ export default function ReferralImagesLandingPage() {
   const [hasSetup, setHasSetup] = useState<boolean | null>(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [isSetupLoading, setIsSetupLoading] = useState(false);
+  const [loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   const referralImagesFaqItems = [
@@ -141,8 +148,25 @@ export default function ReferralImagesLandingPage() {
   };
 
   const showLoading =
-    !isLoaded || (userId && hasSetup === null) || isRedirecting;
+    !isLoaded ||
+    (userId && hasSetup === null) ||
+    isRedirecting ||
+    isSetupLoading ||
+    isLoading;
   const showLanding = isLoaded && (hasSetup === false || !userId);
+
+  useEffect(() => {
+    if (!showLoading) {
+      setLoadingMessageIndex(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setLoadingMessageIndex((prev) =>
+        prev < LOADING_MESSAGES.length - 1 ? prev + 1 : prev
+      );
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [showLoading]);
   const primaryCtaSignedInNoSetup = userId && hasSetup === false;
   const signupRedirectUrl = '/auth/register?redirect_url=' + encodeURIComponent('/referral-images');
 
@@ -193,8 +217,11 @@ export default function ReferralImagesLandingPage() {
 
   if (showLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-text-secondary">Loading your images...</p>
+      <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95">
+        <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
+        <p className="text-text-primary text-lg">
+          {LOADING_MESSAGES[loadingMessageIndex]}
+        </p>
       </div>
     );
   }
