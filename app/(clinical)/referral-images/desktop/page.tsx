@@ -209,11 +209,9 @@ function ReferralImagesDesktopPageContent() {
       });
     });
 
-    ably.connection.on('failed', (error) => {
+    ably.connection.on('failed', (stateChange) => {
       console.error('[Ably Connection] State: FAILED', {
-        error: error,
-        message: error?.message,
-        code: error?.code,
+        reason: stateChange.reason,
         timestamp: new Date().toISOString(),
       });
     });
@@ -247,11 +245,10 @@ function ReferralImagesDesktopPageContent() {
       });
     });
 
-    channel.on('failed', (error) => {
+    channel.on('failed', (stateChange) => {
       console.error('[Ably Channel] State: FAILED', {
         channelName: channel.name,
-        error: error,
-        message: error?.message,
+        reason: stateChange.reason,
         timestamp: new Date().toISOString(),
       });
     });
