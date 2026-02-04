@@ -313,14 +313,15 @@ export async function sendPremiumConfirmationEmail(data: EmailData) {
 }
 
 /**
- * Email: Send Mobile Link to Self
+ * Email: Send Mobile and Desktop Links to Self
  */
-export async function sendMobileLinkEmail(data: EmailData & { mobileLink: string }) {
-  const { email, mobileLink } = data;
+export async function sendMobileLinkEmail(data: EmailData & { mobileLink: string; desktopLink: string }) {
+  const { email, mobileLink, desktopLink } = data;
 
   console.log('[sendMobileLinkEmail] Starting email send:', {
     to: email,
     mobileLink,
+    desktopLink,
     timestamp: new Date().toISOString(),
   });
 
@@ -329,22 +330,35 @@ export async function sendMobileLinkEmail(data: EmailData & { mobileLink: string
     const result = await resend.emails.send({
       from: FROM_EMAIL,
       to: email,
-      subject: 'Your Referral Images mobile link',
+      subject: 'Your Referral Images links',
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Your Mobile Link</h2>
+          <h2>Your Referral Images Links</h2>
           
-          <p>Here's your mobile link for Referral Images:</p>
+          <p>Here are your permanent links:</p>
           
           <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
           
-          <p style="margin: 24px 0;">
+          <h3 style="margin-top: 24px; margin-bottom: 12px;">📱 Mobile Link</h3>
+          <p style="color: #666; font-size: 14px; margin-bottom: 12px;">Use on your phone to capture images</p>
+          
+          <p style="margin: 16px 0;">
             <a href="${mobileLink}" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Open Mobile Page</a>
           </p>
           
-          <p style="font-size: 14px; color: #666;">Or copy this link:</p>
-          <p style="background: #f5f5f5; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; word-break: break-all;">
+          <p style="background: #f5f5f5; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; word-break: break-all; color: #333;">
             ${mobileLink}
+          </p>
+          
+          <h3 style="margin-top: 32px; margin-bottom: 12px;">🖥️ Desktop Link</h3>
+          <p style="color: #666; font-size: 14px; margin-bottom: 12px;">Use on your computer to view and download images</p>
+          
+          <p style="margin: 16px 0;">
+            <a href="${desktopLink}" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Open Desktop Page</a>
+          </p>
+          
+          <p style="background: #f5f5f5; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; word-break: break-all; color: #333;">
+            ${desktopLink}
           </p>
           
           <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>

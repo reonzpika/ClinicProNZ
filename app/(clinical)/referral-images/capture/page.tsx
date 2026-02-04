@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Camera, Image, Upload, X, ChevronLeft, ChevronRight, Loader2, Share2 } from 'lucide-react';
+import { Camera, Image, Upload, X, ChevronLeft, ChevronRight, Loader2, Share2, Mail, CheckCircle } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 
 import { ShareModal } from '../components/ShareModal';
@@ -64,6 +64,8 @@ function ReferralImagesMobilePageContent() {
   const [showSharePromptAfterUpload, setShowSharePromptAfterUpload] = useState(false);
   const [lastAddSource, setLastAddSource] = useState<'camera' | 'gallery'>('gallery');
   const [isProcessingFiles, setIsProcessingFiles] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
   const shareUrl =
     typeof window !== 'undefined' && userId
@@ -87,6 +89,43 @@ function ReferralImagesMobilePageContent() {
 
   const handleRemindLater = () => {
     setShowSavePrompt(false);
+  };
+
+  const sendEmailToSelf = async () => {
+    if (!userId) return;
+    
+    setIsSendingEmail(true);
+    setEmailSent(false);
+    
+    try {
+      const response = await fetch('/api/referral-images/send-mobile-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send email');
+      }
+
+      setEmailSent(true);
+      toast.show({ 
+        title: 'Email sent! Check your inbox', 
+        durationMs: 3000 
+      });
+      
+      // Reset success message after 5 seconds
+      setTimeout(() => setEmailSent(false), 5000);
+    } catch (err) {
+      console.error('Failed to send email:', err);
+      toast.show({ 
+        title: 'Failed to send email. Please try again.', 
+        variant: 'destructive',
+        durationMs: 3000 
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   // Check usage status on load
@@ -454,16 +493,42 @@ function ReferralImagesMobilePageContent() {
         />
 
         <div className="flex-1 flex items-center justify-center p-4 relative">
-          <button
-            type="button"
-            onClick={() => onShareClick('capture_content')}
-            disabled={!userId || !shareUrl}
-            className="absolute top-4 right-4 shrink-0 inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-text-primary bg-white"
-            title={shareUrl ? 'Share with colleagues' : 'Share'}
-          >
-            <Share2 className="w-4 h-4" />
-            Share
-          </button>
+          <div className="absolute top-4 right-4 flex gap-2">
+            <button
+              type="button"
+              onClick={sendEmailToSelf}
+              disabled={isSendingEmail || !userId}
+              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-text-primary bg-white"
+              title="Email me my links"
+            >
+              {isSendingEmail ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Sending...
+                </>
+              ) : emailSent ? (
+                <>
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  Sent!
+                </>
+              ) : (
+                <>
+                  <Mail className="w-4 h-4" />
+                  Email Me
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => onShareClick('capture_content')}
+              disabled={!userId || !shareUrl}
+              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-text-primary bg-white"
+              title={shareUrl ? 'Share with colleagues' : 'Share'}
+            >
+              <Share2 className="w-4 h-4" />
+              Share
+            </button>
+          </div>
           <div className="text-center">
             <div className="flex gap-8 justify-center items-start">
               <button
