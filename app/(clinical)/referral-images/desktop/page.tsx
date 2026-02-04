@@ -84,15 +84,13 @@ function ReferralImagesDesktopPageContent() {
   const [enlargedImage, setEnlargedImage] = useState<ImageData | null>(null);
   const [downloadingImageIds, setDownloadingImageIds] = useState<Set<string>>(new Set());
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
 
-  // Fallback to desktop page URL when referralCode not returned by API so Share is always clickable
+  // Share URL: Always use landing page for sharing to others (with optional referral tracking)
   const shareUrl =
     typeof window !== 'undefined'
-      ? (status?.referralCode
-          ? `${window.location.origin}/referral-images?ref=${status.referralCode}`
-          : userId
-            ? `${window.location.origin}/referral-images/desktop?u=${userId}`
-            : '')
+      ? `${window.location.origin}/referral-images${status?.referralCode ? `?ref=${status.referralCode}` : ''}`
       : '';
   const { handleShare, shareModalOpen, setShareModalOpen, shareLocation } = useShare(
     userId ?? null,
@@ -179,8 +177,41 @@ function ReferralImagesDesktopPageContent() {
     }
   };
 
-  const shareViaEmail = () => {
-    window.location.href = `mailto:?subject=GP Referral Images Mobile Link&body=Use this link to capture referral photos on your phone:%0A%0A${encodeURIComponent(mobileLink)}`;
+  const shareViaEmail = async () => {
+    if (!userId) return;
+    
+    setIsSendingEmail(true);
+    setEmailSent(false);
+    
+    try {
+      const response = await fetch('/api/referral-images/send-mobile-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send email');
+      }
+
+      setEmailSent(true);
+      toast.show({ 
+        title: 'Email sent! Check your inbox', 
+        durationMs: 3000 
+      });
+      
+      // Reset success message after 5 seconds
+      setTimeout(() => setEmailSent(false), 5000);
+    } catch (err) {
+      console.error('Failed to send email:', err);
+      toast.show({ 
+        title: 'Failed to send email. Please try again.', 
+        variant: 'destructive',
+        durationMs: 3000 
+      });
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const shareViaWhatsApp = () => {
@@ -638,10 +669,25 @@ function ReferralImagesDesktopPageContent() {
           <div className="flex flex-wrap gap-3">
             <button
               onClick={shareViaEmail}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors flex items-center gap-2"
+              disabled={isSendingEmail}
+              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Mail className="w-4 h-4" />
-              Email
+              {isSendingEmail ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Sending...
+                </>
+              ) : emailSent ? (
+                <>
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  Sent!
+                </>
+              ) : (
+                <>
+                  <Mail className="w-4 h-4" />
+                  Email Me
+                </>
+              )}
             </button>
             <button
               onClick={shareViaWhatsApp}

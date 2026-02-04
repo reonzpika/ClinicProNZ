@@ -311,3 +311,87 @@ export async function sendPremiumConfirmationEmail(data: EmailData) {
     `,
   });
 }
+
+/**
+ * Email: Send Mobile Link to Self
+ */
+export async function sendMobileLinkEmail(data: EmailData & { mobileLink: string }) {
+  const { email, mobileLink } = data;
+
+  console.log('[sendMobileLinkEmail] Starting email send:', {
+    to: email,
+    mobileLink,
+    timestamp: new Date().toISOString(),
+  });
+
+  try {
+    console.log('[sendMobileLinkEmail] Calling Resend API...');
+    const result = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: 'Your Referral Images mobile link',
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2>Your Mobile Link</h2>
+          
+          <p>Here's your mobile link for Referral Images:</p>
+          
+          <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+          
+          <p style="margin: 24px 0;">
+            <a href="${mobileLink}" style="display: inline-block; padding: 12px 24px; background: #0070e0; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">Open Mobile Page</a>
+          </p>
+          
+          <p style="font-size: 14px; color: #666;">Or copy this link:</p>
+          <p style="background: #f5f5f5; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 13px; word-break: break-all;">
+            ${mobileLink}
+          </p>
+          
+          <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+          
+          <h3>💡 Save to Home Screen</h3>
+          <p>For quick access during consults:</p>
+          
+          <p><strong>iPhone:</strong></p>
+          <ol style="color: #666;">
+            <li>Open the link in Safari</li>
+            <li>Tap the Share button (□↑)</li>
+            <li>Scroll and tap "Add to Home Screen"</li>
+            <li>Tap "Add"</li>
+          </ol>
+          
+          <p><strong>Android:</strong></p>
+          <ol style="color: #666;">
+            <li>Open the link in Chrome</li>
+            <li>Tap the menu (⋮) in top-right</li>
+            <li>Tap "Add to Home screen"</li>
+            <li>Tap "Add"</li>
+          </ol>
+          
+          <p style="color: #666; font-size: 14px;">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</p>
+          
+          <p>Cheers,<br>Dr. Ryo</p>
+        </div>
+      `,
+    });
+
+    console.log('[sendMobileLinkEmail] Resend API response:', JSON.stringify(result, null, 2));
+    
+    if (result.error) {
+      console.error('[sendMobileLinkEmail] Resend returned error:', result.error);
+      throw new Error(`Resend error: ${JSON.stringify(result.error)}`);
+    }
+
+    console.log('[sendMobileLinkEmail] Email sent successfully:', result.data?.id);
+    return result;
+  } catch (error: any) {
+    console.error('[sendMobileLinkEmail] Failed to send email:', {
+      error: error.message,
+      stack: error.stack,
+      name: error.name,
+      cause: error.cause,
+      fullError: JSON.stringify(error, null, 2),
+    });
+    throw error;
+  }
+}
