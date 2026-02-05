@@ -1,7 +1,28 @@
-import { clerkMiddleware } from '@clerk/nextjs/server';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 
+// Define public routes that should never be protected
+const isPublicRoute = createRouteMatcher([
+  '/_next/(.*)',
+  '/favicon(.*)',
+  '/api/webhooks/(.*)',
+  '/auth/login(.*)',
+  '/auth/register(.*)',
+  '/about(.*)',
+  '/ai-scribing(.*)',
+  '/clinicpro(.*)',
+  '/contact(.*)',
+  '/early(.*)',
+  '/landing-page(.*)',
+  '/roadmap(.*)',
+  '/thank-you(.*)',
+]);
+
 export default clerkMiddleware(async (auth, req) => {
+  // Allow public routes to bypass all protection
+  if (isPublicRoute(req)) {
+    return NextResponse.next();
+  }
   // Allow Stripe webhook (handles its own verification)
   if (req.nextUrl.pathname === '/api/webhooks/stripe') {
     return NextResponse.next();
