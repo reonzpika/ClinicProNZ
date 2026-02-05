@@ -925,7 +925,7 @@ export default function ConsultationPage() {
         flex h-full min-h-dvh flex-col transition-all duration-300 ease-in-out
       `}
       >
-        <Container size="fluid" className="h-full min-h-0 overflow-y-auto">
+        <Container size="fluid" className="h-full min-h-0">
           <div className={`flex h-full min-h-0 flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}>
             {/* Mobile Tools Button removed; tools embedded below settings */}
 
@@ -970,7 +970,7 @@ export default function ConsultationPage() {
                 ? (
                     <div className="flex h-full gap-6">
                       {/* Left Column - Supporting Information (30-35%) */}
-                      <div className="h-full w-1/3 space-y-4">
+                      <div className="h-full w-1/3 space-y-4 overflow-y-auto">
                       {/* Patient Session Manager - V2 Feature */}
                         <PatientSessionManager />
 
@@ -1056,7 +1056,7 @@ export default function ConsultationPage() {
                       <div className="w-px bg-slate-200" />
 
                       {/* Right Column - Main Workflow (65-70%) */}
-                      <div className="h-full flex-1 space-y-4">
+                      <div className="h-full flex-1 space-y-4 overflow-y-auto">
                         {/* Conditional Layout Based on Documentation Mode */}
                         {isDocumentationMode
                           ? (
@@ -1129,7 +1129,7 @@ export default function ConsultationPage() {
                   isMobile
                     ? (
                       // Phone-only reduced UI
-                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full">
+                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full overflow-y-auto">
                         {/* Conditional Layout Based on Documentation Mode (mobile) */}
                         {isDocumentationMode
                           ? (
@@ -1237,7 +1237,7 @@ export default function ConsultationPage() {
                     )
                     : (
                       // Tablet/Small desktop: keep existing full UI
-                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full">
+                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full overflow-y-auto">
                         {/* Patient Session Manager - V2 Feature */}
                         <PatientSessionManager />
 
