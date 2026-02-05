@@ -17,6 +17,7 @@ import { useClerkMetadata } from '@/src/shared/hooks/useClerkMetadata';
 import { useRBAC } from '@/src/shared/hooks/useRBAC';
 import { useResponsive } from '@/src/shared/hooks/useResponsive';
 import { createAuthHeaders } from '@/src/shared/utils';
+import { useUserSettingsStore } from '@/src/stores/userSettingsStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,7 @@ export default function TemplatesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { setUserDefaultTemplateId, userDefaultTemplateId } = useConsultationStores();
+  const { settings, updateSettings } = useUserSettingsStore();
   const { isSignedIn, isLoaded, userId } = useAuth();
   const { getUserTier } = useClerkMetadata();
   const userTier = getUserTier();
@@ -181,6 +183,13 @@ export default function TemplatesPage() {
     }
   };
 
+  const handleSetDefault = async (templateId: string) => {
+    // Update both localStorage (for backward compatibility) and database
+    setUserDefaultTemplateId(templateId);
+    // Persist to database via user settings
+    await updateSettings({ favouriteTemplateId: templateId }, userId, userTier);
+  };
+
   const renderEmptyState = () => (
     <div className="flex h-full min-h-[400px] items-center justify-center">
       <div className="space-y-4 text-center">
@@ -281,15 +290,15 @@ export default function TemplatesPage() {
                                 setSelectedTemplate(template);
                                 setIsEditing(true);
                               }}
-                              onDelete={handleDelete}
-                              onCopy={handleCopy}
-                              userDefaultTemplateId={userDefaultTemplateId}
-                              onSetDefault={setUserDefaultTemplateId}
-                              onReorder={handleReorder}
-                              onCreateNew={() => {
-                                setSelectedTemplate(null);
-                                setIsEditing(true);
-                              }}
+                            onDelete={handleDelete}
+                            onCopy={handleCopy}
+                            userDefaultTemplateId={settings?.favouriteTemplateId || userDefaultTemplateId}
+                            onSetDefault={handleSetDefault}
+                            onReorder={handleReorder}
+                            onCreateNew={() => {
+                              setSelectedTemplate(null);
+                              setIsEditing(true);
+                            }}
                             />
                           )}
                         </div>
@@ -362,8 +371,8 @@ export default function TemplatesPage() {
                             }}
                             onDelete={handleDelete}
                             onCopy={handleCopy}
-                            userDefaultTemplateId={userDefaultTemplateId}
-                            onSetDefault={setUserDefaultTemplateId}
+                            userDefaultTemplateId={settings?.favouriteTemplateId || userDefaultTemplateId}
+                            onSetDefault={handleSetDefault}
                             onReorder={handleReorder}
                             onCreateNew={() => {
                               setSelectedTemplate(null);
