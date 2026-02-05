@@ -46,6 +46,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const effectiveExpanded = forceExpanded ? true : isExpanded;
 
   // Refs for keyboard focus management
+  const contextRef = useRef<HTMLTextAreaElement | null>(null);
   const problemsRef = useRef<HTMLTextAreaElement | null>(null);
   const objectiveRef = useRef<HTMLTextAreaElement | null>(null);
   const assessmentRef = useRef<HTMLTextAreaElement | null>(null);
@@ -54,7 +55,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
   // Keydown handler to cycle focus within SOAP textareas only
   const handleTextareaKeyDown = (
-    section: 'problems' | 'objective' | 'assessment' | 'plan',
+    section: 'context' | 'problems' | 'objective' | 'assessment' | 'plan',
     e: React.KeyboardEvent<HTMLTextAreaElement>,
   ) => {
     if (e.key !== 'Tab') {
@@ -64,18 +65,22 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     const forward = !e.shiftKey;
     let next: HTMLTextAreaElement | null | undefined;
     if (forward) {
-      if (section === 'problems') {
+      if (section === 'context') {
+ next = problemsRef.current;
+} else if (section === 'problems') {
  next = objectiveRef.current;
 } else if (section === 'objective') {
  next = assessmentRef.current;
 } else if (section === 'assessment') {
  next = planRef.current;
 } else {
- next = problemsRef.current;
+ next = contextRef.current;
 }
     } else {
-      if (section === 'problems') {
+      if (section === 'context') {
  next = planRef.current;
+} else if (section === 'problems') {
+ next = contextRef.current;
 } else if (section === 'objective') {
  next = problemsRef.current;
 } else if (section === 'assessment') {
@@ -89,11 +94,11 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
     } catch {}
   };
 
-  // Auto-focus Problems when expanding the section (configurable)
+  // Auto-focus Context when expanding the section (configurable)
   useEffect(() => {
-    if (isExpanded && autoFocusOnExpand && problemsRef.current) {
+    if (isExpanded && autoFocusOnExpand && contextRef.current) {
       try {
-        problemsRef.current.focus();
+        contextRef.current.focus();
       } catch {}
     }
   }, [isExpanded, autoFocusOnExpand]);
@@ -121,10 +126,9 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             || (container.querySelector('#additional-notes-minimized-plan') as HTMLTextAreaElement | null)
           )?.focus();
         } else {
-          (problemsRef.current
-            || (container.querySelector('#additional-notes') as HTMLTextAreaElement | null)
-            || (container.querySelector('#additional-notes-problems') as HTMLTextAreaElement | null)
-            || (container.querySelector('#additional-notes-minimized-problems') as HTMLTextAreaElement | null)
+          (contextRef.current
+            || (container.querySelector('#additional-notes-context') as HTMLTextAreaElement | null)
+            || (container.querySelector('#additional-notes-minimized-context') as HTMLTextAreaElement | null)
           )?.focus();
         }
       } catch {}
@@ -135,19 +139,23 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
   // Section state is maintained in the store now
   const {
+    contextText,
     problemsText,
     objectiveText,
     assessmentText,
     planText,
     // Dirty flags (used to skip unnecessary saves)
+    contextDirty,
     problemsDirty,
     objectiveDirty,
     assessmentDirty,
     planDirty,
+    setContextText,
     setProblemsText,
     setObjectiveText,
     setAssessmentText,
     setPlanText,
+    saveContextToCurrentSession,
     saveProblemsToCurrentSession,
     saveObjectiveToCurrentSession,
     saveAssessmentToCurrentSession,
@@ -156,6 +164,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
   // Tiny per-section save status (mirrors TypedInput UX)
   type SaveStatus = 'saved' | 'editing' | 'saving';
+  const [contextStatus, setContextStatus] = useState<SaveStatus>('saved');
   const [problemsStatus, setProblemsStatus] = useState<SaveStatus>('saved');
   const [objectiveStatus, setObjectiveStatus] = useState<SaveStatus>('saved');
   const [assessmentStatus, setAssessmentStatus] = useState<SaveStatus>('saved');
@@ -169,10 +178,17 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   }, [defaultExpanded, isMinimized]);
 
   // Save individual section on blur (skip if no changes via dirty flags)
-  const handleSectionBlur = async (section: 'problems' | 'objective' | 'assessment' | 'plan') => {
+  const handleSectionBlur = async (section: 'context' | 'problems' | 'objective' | 'assessment' | 'plan') => {
     let ok = true;
     try {
       switch (section) {
+        case 'context':
+          if (!contextDirty) {
+ break;
+}
+          setContextStatus('saving');
+          ok = await saveContextToCurrentSession(contextText || '');
+          break;
         case 'problems':
           if (!problemsDirty) {
  break;
@@ -212,6 +228,9 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
       }
     } catch {}
     // Update badges
+    if (section === 'context') {
+ setContextStatus(ok ? 'saved' : 'editing');
+}
     if (section === 'problems') {
  setProblemsStatus(ok ? 'saved' : 'editing');
 }
@@ -229,7 +248,11 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   // Note: auto-append from consultation items has been removed by design (user preference)
 
   // Handle text changes per section
-  const handleSectionChange = (section: 'problems' | 'objective' | 'assessment' | 'plan', newText: string) => {
+  const handleSectionChange = (section: 'context' | 'problems' | 'objective' | 'assessment' | 'plan', newText: string) => {
+    if (section === 'context') {
+ setContextText(newText);
+      setContextStatus('editing');
+}
     if (section === 'problems') {
  setProblemsText(newText);
       setProblemsStatus('editing');
@@ -252,14 +275,14 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
   // Character count display helper
   const renderCharacterCount = () => {
-    const anyContent = [problemsText, objectiveText, assessmentText, planText].some(s => s && s.trim());
+    const anyContent = [contextText, problemsText, objectiveText, assessmentText, planText].some(s => s && s.trim());
     if (!anyContent) {
       return null;
     }
     return (
       <span className="text-xs text-slate-500">
         (
-        {(problemsText + objectiveText + assessmentText + planText).trim().length}
+        {(contextText + problemsText + objectiveText + assessmentText + planText).trim().length}
         {' '}
         chars)
       </span>
@@ -268,10 +291,10 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
 
   // Minimized view (in documentation mode)
   if (isMinimized) {
-    const hasNotes = [problemsText, objectiveText, assessmentText, planText].some(s => s && s.trim().length > 0);
+    const hasNotes = [contextText, problemsText, objectiveText, assessmentText, planText].some(s => s && s.trim().length > 0);
     const hasItems = items && items.length > 0;
     const itemsPreview = hasItems ? items.map(item => item.title).join(', ') : '';
-    const combined = [problemsText, objectiveText, assessmentText, planText].filter(Boolean).join(' ').trim();
+    const combined = [contextText, problemsText, objectiveText, assessmentText, planText].filter(Boolean).join(' ').trim();
     const notesPreview = hasNotes ? combined.substring(0, 100) : '';
     const needsNotesTruncation = hasNotes && combined.length > 100;
     const needsItemsTruncation = itemsPreview.length > 60;
@@ -352,7 +375,23 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
           <div className="space-y-3" ref={containerRef} role="group" aria-label="Additional notes editor">
             <div className="space-y-3">
               <div>
-                <label htmlFor="additional-notes-minimized-problems" className="mb-1 block text-xs font-medium text-slate-500">Problems</label>
+                <label htmlFor="additional-notes-minimized-context" className="mb-1 block text-xs font-medium text-slate-500">Context</label>
+                {(contextStatus === 'saving' || contextStatus === 'saved') && (
+                  <span className="ml-2 text-[10px] text-slate-500">{contextStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+                )}
+                <Textarea
+                  id="additional-notes-minimized-context"
+                  value={contextText}
+                  onChange={e => handleSectionChange('context', e.target.value)}
+                  onBlur={() => handleSectionBlur('context')}
+                  onKeyDown={e => handleTextareaKeyDown('context', e)}
+                  className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  rows={2}
+                  ref={contextRef}
+                />
+              </div>
+              <div>
+                <label htmlFor="additional-notes-minimized-problems" className="mb-1 block text-xs font-medium text-slate-500">Main Problems Discussed</label>
                 {(problemsStatus === 'saving' || problemsStatus === 'saved') && (
                   <span className="ml-2 text-[10px] text-slate-500">{problemsStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
                 )}
@@ -445,7 +484,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               <span className="text-sm font-medium text-slate-700">Additional Notes (optional)</span>
             </div>
             {!hideTips && (
-              <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
+              <span className="text-xs text-slate-500">Tip: Tab cycles Context → Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
             )}
             {renderCharacterCount()}
             </div>
@@ -479,7 +518,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               </label>
             </div>
             {!hideTips && (
-              <span className="text-xs text-slate-500">Tip: Tab moves Problems → Objective → Assessment → Plan; Shift+Tab goes back</span>
+              <span className="text-xs text-slate-500">Tip: Tab moves Context → Problems → Objective → Assessment → Plan; Shift+Tab goes back</span>
             )}
           </div>
           <div className="flex items-center gap-1">
@@ -496,6 +535,23 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
         </div>
         <div className="flex flex-1 flex-col space-y-2" ref={containerRef} role="group" aria-label="Additional notes editor">
           <div className="grid grid-cols-1 gap-3">
+            <div>
+              <div className="mb-1 flex items-center gap-2">
+                <label htmlFor="additional-notes-context" className="block text-xs font-medium text-slate-500">Context</label>
+                {(contextStatus === 'saving' || contextStatus === 'saved') && (
+                  <span className="text-[10px] text-slate-500">{contextStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+                )}
+              </div>
+              <Textarea
+                id="additional-notes-context"
+                value={contextText}
+                onChange={e => handleSectionChange('context', e.target.value)}
+                onBlur={() => handleSectionBlur('context')}
+                onKeyDown={e => handleTextareaKeyDown('context', e)}
+                className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                ref={contextRef}
+              />
+            </div>
             <div>
               <div className="mb-1 flex items-center gap-2">
                 <label htmlFor="additional-notes-problems" className="block text-xs font-medium text-slate-500">Main Problems Discussed</label>
@@ -587,7 +643,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
               </label>
             </div>
           {!hideTips && (
-            <span className="text-xs text-slate-500">Tip: Tab cycles Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
+            <span className="text-xs text-slate-500">Tip: Tab cycles Context → Problems → Objective → Assessment → Plan; Shift+Tab reverses. Alt+C checklist, Alt+P safety-net.</span>
           )}
           </div>
         <div className="flex items-center gap-1">
@@ -605,7 +661,25 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
       <div className="grid grid-cols-1 gap-2" ref={containerRef} role="group" aria-label="Additional notes editor" style={{ scrollMarginBottom: 'var(--footer-h, 64px)' } as React.CSSProperties}>
         <div>
           <div className="mb-1 flex items-center gap-2">
-            <label htmlFor="additional-notes" className="block text-xs font-medium text-slate-500">Problems</label>
+            <label htmlFor="additional-notes-context" className="block text-xs font-medium text-slate-500">Context</label>
+            {(contextStatus === 'saving' || contextStatus === 'saved') && (
+              <span className="text-[10px] text-slate-500">{contextStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
+            )}
+          </div>
+          <Textarea
+            id="additional-notes-context"
+            value={contextText}
+            onChange={e => handleSectionChange('context', e.target.value)}
+            onBlur={() => handleSectionBlur('context')}
+            onKeyDown={e => handleTextareaKeyDown('context', e)}
+            className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            rows={4}
+            ref={contextRef}
+          />
+        </div>
+        <div>
+          <div className="mb-1 flex items-center gap-2">
+            <label htmlFor="additional-notes" className="block text-xs font-medium text-slate-500">Main Problems Discussed</label>
             {(problemsStatus === 'saving' || problemsStatus === 'saved') && (
               <span className="text-[10px] text-slate-500">{problemsStatus === 'saving' ? 'Saving…' : '✓ Saved'}</span>
             )}

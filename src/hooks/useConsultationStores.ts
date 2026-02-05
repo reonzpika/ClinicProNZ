@@ -275,6 +275,7 @@ export function useConsultationStores(): any {
     const hasRemoteTextFields = !!(session.typedInput && String(session.typedInput).trim())
       || !!(session.notes && String(session.notes).trim())
       || !!(session.consultationNotes && String(session.consultationNotes).trim())
+      || !!(session.contextText && String(session.contextText).trim())
       || !!(session.problemsText && String(session.problemsText).trim())
       || !!(session.objectiveText && String(session.objectiveText).trim())
       || !!(session.assessmentText && String(session.assessmentText).trim())
@@ -308,16 +309,21 @@ export function useConsultationStores(): any {
       consultationStore.setConsultationNotes(session.consultationNotes);
     }
     // Hydrate per-section fields with dirty/time guards
+    const nextContext = session.contextText || '';
     const nextProblems = session.problemsText || '';
     const nextObjective = session.objectiveText || '';
     const nextAssessment = session.assessmentText || '';
     const nextPlan = session.planText || '';
     const now = Date.now();
     const recentMs = 3000;
+    const contextRecentlyEdited = !!(consultationStore.contextEditedAt && (now - consultationStore.contextEditedAt) < recentMs);
     const problemsRecentlyEdited = !!(consultationStore.problemsEditedAt && (now - consultationStore.problemsEditedAt) < recentMs);
     const objectiveRecentlyEdited = !!(consultationStore.objectiveEditedAt && (now - consultationStore.objectiveEditedAt) < recentMs);
     const assessmentRecentlyEdited = !!(consultationStore.assessmentEditedAt && (now - consultationStore.assessmentEditedAt) < recentMs);
     const planRecentlyEdited = !!(consultationStore.planEditedAt && (now - consultationStore.planEditedAt) < recentMs);
+    if (!consultationStore.contextDirty && !contextRecentlyEdited && nextContext !== consultationStore.contextText) {
+      (consultationStore as any).hydrateContextText(nextContext);
+    }
     if (!consultationStore.problemsDirty && !problemsRecentlyEdited && nextProblems !== consultationStore.problemsText) {
       (consultationStore as any).hydrateProblemsText(nextProblems);
     }
@@ -361,10 +367,10 @@ export function useConsultationStores(): any {
       // Autosave current per-section fields before creating a new session
       const currentId = consultationStore.currentPatientSessionId;
       if (currentId) {
-        const { problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
+        const { contextText, problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
         const { typedInput } = transcriptionStore as any;
         try {
-          await updatePatientSession(currentId, { problemsText, objectiveText, assessmentText, planText, typedInput } as any);
+          await updatePatientSession(currentId, { contextText, problemsText, objectiveText, assessmentText, planText, typedInput } as any);
         } catch {}
       }
 
@@ -406,9 +412,9 @@ export function useConsultationStores(): any {
       pauseMutations();
       // Save current fields before finishing
       try {
-        const { problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
+        const { contextText, problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
         const { typedInput } = transcriptionStore as any;
-        await updatePatientSession(currentId, { problemsText, objectiveText, assessmentText, planText, typedInput } as any);
+        await updatePatientSession(currentId, { contextText, problemsText, objectiveText, assessmentText, planText, typedInput } as any);
       } catch {}
       // Soft delete current
       await deleteSessionMutation.mutateAsync(currentId);
@@ -444,9 +450,9 @@ export function useConsultationStores(): any {
       try {
         const currentId = consultationStore.currentPatientSessionId;
         if (currentId) {
-          const { problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
+          const { contextText, problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
           const { typedInput } = transcriptionStore as any;
-          await updatePatientSession(currentId, { problemsText, objectiveText, assessmentText, planText, typedInput } as any);
+          await updatePatientSession(currentId, { contextText, problemsText, objectiveText, assessmentText, planText, typedInput } as any);
         }
       } catch {}
       const res = await deleteSessionMutation.mutateAsync(sessionId);
@@ -495,6 +501,18 @@ export function useConsultationStores(): any {
   }, [consultationStore.currentPatientSessionId, enqueueUpdate]);
 
   // New per-section save helpers
+  const saveContextToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
+    const id = consultationStore.currentPatientSessionId;
+    if (!id) {
+      return false;
+    }
+    enqueueUpdate({ contextText: text } as any);
+    try {
+      consultationStore.clearContextDirty?.();
+    } catch {}
+    return true;
+  }, [enqueueUpdate, consultationStore]);
+
   const saveProblemsToCurrentSession = useCallback(async (text: string): Promise<boolean> => {
     const id = consultationStore.currentPatientSessionId;
     if (!id) {
@@ -652,25 +670,30 @@ export function useConsultationStores(): any {
     setConsultationNotes: consultationStore.setConsultationNotes,
     getCompiledConsultationText: consultationStore.getCompiledConsultationText,
     // Per-section fields and setters
+    contextText: consultationStore.contextText,
     problemsText: consultationStore.problemsText,
     objectiveText: consultationStore.objectiveText,
     assessmentText: consultationStore.assessmentText,
     planText: consultationStore.planText,
     // Per-section dirty flags (exposed for UI gating and autosave logic)
+    contextDirty: (consultationStore as any).contextDirty,
     problemsDirty: (consultationStore as any).problemsDirty,
     objectiveDirty: (consultationStore as any).objectiveDirty,
     assessmentDirty: (consultationStore as any).assessmentDirty,
     planDirty: (consultationStore as any).planDirty,
     // Per-section last edited timestamps (ms since epoch)
+    contextEditedAt: (consultationStore as any).contextEditedAt,
     problemsEditedAt: (consultationStore as any).problemsEditedAt,
     objectiveEditedAt: (consultationStore as any).objectiveEditedAt,
     assessmentEditedAt: (consultationStore as any).assessmentEditedAt,
     planEditedAt: (consultationStore as any).planEditedAt,
+    setContextText: consultationStore.setContextText,
     setProblemsText: consultationStore.setProblemsText,
     setObjectiveText: consultationStore.setObjectiveText,
     setAssessmentText: consultationStore.setAssessmentText,
     setPlanText: consultationStore.setPlanText,
     // Hydration setters for programmatic updates (do not mark dirty)
+    hydrateContextText: (consultationStore as any).hydrateContextText,
     hydrateProblemsText: (consultationStore as any).hydrateProblemsText,
     hydrateObjectiveText: (consultationStore as any).hydrateObjectiveText,
     hydrateAssessmentText: (consultationStore as any).hydrateAssessmentText,
@@ -695,6 +718,7 @@ export function useConsultationStores(): any {
     deleteSessionAndMaybeSwitch,
     saveNotesToCurrentSession,
     saveTypedInputToCurrentSession,
+    saveContextToCurrentSession,
     saveProblemsToCurrentSession,
     saveObjectiveToCurrentSession,
     saveAssessmentToCurrentSession,
@@ -735,8 +759,8 @@ export function useConsultationStores(): any {
       try {
         const currentId = consultationStore.currentPatientSessionId;
         if (currentId) {
-          const { problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
-          await updatePatientSession(currentId, { problemsText, objectiveText, assessmentText, planText } as any);
+          const { contextText, problemsText, objectiveText, assessmentText, planText } = consultationStore as any;
+          await updatePatientSession(currentId, { contextText, problemsText, objectiveText, assessmentText, planText } as any);
         }
       } catch {}
 
@@ -805,10 +829,12 @@ export function useConsultationStores(): any {
 
         // Load per-section fields from DB (authoritative)
         try {
+          (consultationStore as any).hydrateContextText?.(session.contextText || '');
           (consultationStore as any).hydrateProblemsText?.(session.problemsText || '');
           (consultationStore as any).hydrateObjectiveText?.(session.objectiveText || '');
           (consultationStore as any).hydrateAssessmentText?.(session.assessmentText || '');
           (consultationStore as any).hydratePlanText?.(session.planText || '');
+          consultationStore.clearContextDirty?.();
           consultationStore.clearProblemsDirty?.();
           consultationStore.clearObjectiveDirty?.();
           consultationStore.clearAssessmentDirty?.();

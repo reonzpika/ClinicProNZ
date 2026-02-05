@@ -33,15 +33,18 @@ type ConsultationState = {
   consultationItems: ConsultationItem[];
   consultationNotes: string;
   // New per-section fields (persisted in DB columns)
+  contextText: string;
   problemsText: string;
   objectiveText: string;
   assessmentText: string;
   planText: string;
   // Dirty flags and edit timestamps for per-section fields
+  contextDirty?: boolean;
   problemsDirty?: boolean;
   objectiveDirty?: boolean;
   assessmentDirty?: boolean;
   planDirty?: boolean;
+  contextEditedAt?: number | null;
   problemsEditedAt?: number | null;
   objectiveEditedAt?: number | null;
   assessmentEditedAt?: number | null;
@@ -86,16 +89,19 @@ type ConsultationActions = {
   setConsultationNotes: (notes: string) => void;
   getCompiledConsultationText: () => string;
   // New per-section setters
+  setContextText: (text: string) => void;
   setProblemsText: (text: string) => void;
   setObjectiveText: (text: string) => void;
   setAssessmentText: (text: string) => void;
   setPlanText: (text: string) => void;
   // Hydration setters (do not mark dirty)
+  hydrateContextText: (text: string) => void;
   hydrateProblemsText: (text: string) => void;
   hydrateObjectiveText: (text: string) => void;
   hydrateAssessmentText: (text: string) => void;
   hydratePlanText: (text: string) => void;
   // Clear dirty flags after successful save
+  clearContextDirty: () => void;
   clearProblemsDirty: () => void;
   clearObjectiveDirty: () => void;
   clearAssessmentDirty: () => void;
@@ -162,14 +168,17 @@ const initialState: ConsultationState = {
   isChatLoading: false,
   consultationItems: [],
   consultationNotes: '',
+  contextText: '',
   problemsText: '',
   objectiveText: '',
   assessmentText: '',
   planText: '',
+  contextDirty: false,
   problemsDirty: false,
   objectiveDirty: false,
   assessmentDirty: false,
   planDirty: false,
+  contextEditedAt: null,
   problemsEditedAt: null,
   objectiveEditedAt: null,
   assessmentEditedAt: null,
@@ -237,22 +246,25 @@ export const useConsultationStore = create<ConsultationStore>()(
       })),
     setConsultationNotes: notes => set({ consultationNotes: notes }),
     // New per-section setters (mark dirty for user edits)
+    setContextText: (text: string) => set({ contextText: text, contextDirty: true, contextEditedAt: Date.now() }),
     setProblemsText: (text: string) => set({ problemsText: text, problemsDirty: true, problemsEditedAt: Date.now() }),
     setObjectiveText: (text: string) => set({ objectiveText: text, objectiveDirty: true, objectiveEditedAt: Date.now() }),
     setAssessmentText: (text: string) => set({ assessmentText: text, assessmentDirty: true, assessmentEditedAt: Date.now() }),
     setPlanText: (text: string) => set({ planText: text, planDirty: true, planEditedAt: Date.now() }),
     // Hydration setters (no dirty flags)
+    hydrateContextText: (text: string) => set({ contextText: text }),
     hydrateProblemsText: (text: string) => set({ problemsText: text }),
     hydrateObjectiveText: (text: string) => set({ objectiveText: text }),
     hydrateAssessmentText: (text: string) => set({ assessmentText: text }),
     hydratePlanText: (text: string) => set({ planText: text }),
     // Clear dirty flags (after save)
+    clearContextDirty: () => set({ contextDirty: false }),
     clearProblemsDirty: () => set({ problemsDirty: false }),
     clearObjectiveDirty: () => set({ objectiveDirty: false }),
     clearAssessmentDirty: () => set({ assessmentDirty: false }),
     clearPlanDirty: () => set({ planDirty: false }),
     getCompiledConsultationText: () => {
-      const { problemsText, objectiveText, assessmentText, planText } = get();
+      const { contextText, problemsText, objectiveText, assessmentText, planText } = get();
       const blocks: string[] = [];
       blocks.push('additional note:');
       const pushSection = (label: string, value: string) => {
@@ -263,6 +275,7 @@ export const useConsultationStore = create<ConsultationStore>()(
         blocks.push(`\n${label}:`);
         blocks.push(v);
       };
+      pushSection('Context', contextText);
       pushSection('Problems', problemsText);
       pushSection('Objective', objectiveText);
       pushSection('Assessment', assessmentText);
@@ -315,14 +328,17 @@ export const useConsultationStore = create<ConsultationStore>()(
         isChatLoading: false,
         consultationItems: [],
         consultationNotes: '',
+        contextText: '',
         problemsText: '',
         objectiveText: '',
         assessmentText: '',
         planText: '',
+        contextDirty: false,
         problemsDirty: false,
         objectiveDirty: false,
         assessmentDirty: false,
         planDirty: false,
+        contextEditedAt: null,
         problemsEditedAt: null,
         objectiveEditedAt: null,
         assessmentEditedAt: null,
