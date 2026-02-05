@@ -17,6 +17,7 @@ export const patientSessions = pgTable('patient_sessions', {
   notes: text('notes'), // Generated consultation notes
   typedInput: text('typed_input'), // Text input when in typed mode
   consultationNotes: text('consultation_notes'), // Legacy additional notes (deprecated)
+  contextText: text('context_text'), // New: Context
   problemsText: text('problems_text'), // New: Problems
   objectiveText: text('objective_text'), // New: Objective
   assessmentText: text('assessment_text'), // New: Assessment
