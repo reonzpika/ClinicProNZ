@@ -925,7 +925,7 @@ export default function ConsultationPage() {
         flex h-full min-h-dvh flex-col transition-all duration-300 ease-in-out
       `}
       >
-        <Container size="fluid" className="h-full min-h-0">
+        <Container size="fluid" className="h-full min-h-0 overflow-y-auto">
           <div className={`flex h-full min-h-0 flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}>
             {/* Mobile Tools Button removed; tools embedded below settings */}
 
