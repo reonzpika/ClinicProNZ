@@ -2,8 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { TrafficLightModal } from './components/TrafficLightModal';
-import { FlowchartSteps } from './components/FlowchartSteps';
+import { TrafficLightModal, FlowchartSteps } from '@/src/features/12-month-prescriptions';
 import { Container } from '@/src/shared/components/layout/Container';
 
 export default function TwelveMonthRxPage() {
@@ -79,30 +78,6 @@ export default function TwelveMonthRxPage() {
               Open Medication Checker
             </button>
           </div>
-
-          <div className="flex gap-3 justify-center">
-            <button
-              type="button"
-              onClick={() => openChecker('green')}
-              className="text-sm px-4 py-2 rounded-lg border border-border hover:bg-surface transition-colors"
-            >
-              GREEN
-            </button>
-            <button
-              type="button"
-              onClick={() => openChecker('amber')}
-              className="text-sm px-4 py-2 rounded-lg border border-border hover:bg-surface transition-colors"
-            >
-              AMBER
-            </button>
-            <button
-              type="button"
-              onClick={() => openChecker('red')}
-              className="text-sm px-4 py-2 rounded-lg border border-border hover:bg-surface transition-colors"
-            >
-              RED
-            </button>
-          </div>
         </div>
       </section>
 
@@ -142,7 +117,7 @@ export default function TwelveMonthRxPage() {
               </p>
 
               <Link
-                href="/12-months-prescriptions/guide"
+                href="/12-month-prescriptions/guide"
                 className="inline-block mt-2 text-primary hover:underline font-medium"
               >
                 → Read full guide (legal vs guidance, RNZCGP standards, equity considerations)
@@ -150,7 +125,7 @@ export default function TwelveMonthRxPage() {
             </div>
           </details>
 
-          <details className="mb-8 bg-white border border-border rounded-lg p-6">
+          <details className="mb-6 bg-white border border-border rounded-lg p-6">
             <summary className="font-semibold text-lg cursor-pointer">
               Which tool do I need?
             </summary>
@@ -168,44 +143,6 @@ export default function TwelveMonthRxPage() {
               </p>
             </div>
           </details>
-
-          <div className="space-y-6">
-            <div className="flex gap-4">
-              <div className="text-3xl">1</div>
-              <div>
-                <h3 className="text-xl font-semibold mb-2 text-text-primary">
-                  Follow the flowchart
-                </h3>
-                <p className="text-text-secondary">
-                  Step-by-step decision process for prescription duration
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <div className="text-3xl">2</div>
-              <div>
-                <h3 className="text-xl font-semibold mb-2 text-text-primary">
-                  Check medication details
-                </h3>
-                <p className="text-text-secondary">
-                  Open the checker to see zone, criteria, and monitoring requirements
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <div className="text-3xl">3</div>
-              <div>
-                <h3 className="text-xl font-semibold mb-2 text-text-primary">
-                  Use together
-                </h3>
-                <p className="text-text-secondary">
-                  Flowchart guides the process, checker provides medication-specific details
-                </p>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -251,7 +188,6 @@ export default function TwelveMonthRxPage() {
               <p className="text-sm text-green-700 font-medium mb-1">
                 ✓ Decision: 12 months OK (GREEN zone)
               </p>
-              <p className="text-sm text-text-tertiary">Time: 30 seconds</p>
             </div>
 
             <div className="bg-white border border-border rounded-lg p-6">
@@ -264,7 +200,6 @@ export default function TwelveMonthRxPage() {
               <p className="text-sm text-amber-700 font-medium mb-1">
                 ✓ Decision: 12 months OK (eGFR &gt;45)
               </p>
-              <p className="text-sm text-text-tertiary">Time: 1-2 minutes</p>
             </div>
 
             <div className="bg-white border border-border rounded-lg p-6">
@@ -277,7 +212,6 @@ export default function TwelveMonthRxPage() {
               <p className="text-sm text-red-700 font-medium mb-1">
                 ✗ Decision: MAX 3 months (Class C controlled)
               </p>
-              <p className="text-sm text-text-tertiary">Time: 10 seconds</p>
             </div>
 
             <div className="bg-white border border-border rounded-lg p-6">
@@ -290,7 +224,6 @@ export default function TwelveMonthRxPage() {
               <p className="text-sm text-amber-700 font-medium mb-1">
                 → Decision: 6 months safer (age &gt;75, falls)
               </p>
-              <p className="text-sm text-text-tertiary">Time: 2-3 minutes</p>
             </div>
 
             <div className="bg-white border border-border rounded-lg p-6">
@@ -303,7 +236,6 @@ export default function TwelveMonthRxPage() {
               <p className="text-sm text-green-700 font-medium mb-1">
                 ✓ Decision: 12 months OK (if stable, annual review planned)
               </p>
-              <p className="text-sm text-text-tertiary">Time: 1 minute</p>
             </div>
 
             <div className="bg-white border border-border rounded-lg p-6">
@@ -316,7 +248,6 @@ export default function TwelveMonthRxPage() {
               <p className="text-sm text-amber-700 font-medium mb-1">
                 → Decision: 3-6 months, monitor closely
               </p>
-              <p className="text-sm text-text-tertiary">Time: 2 minutes</p>
             </div>
 
             <div className="bg-white border border-border rounded-lg p-6">
@@ -329,7 +260,6 @@ export default function TwelveMonthRxPage() {
               <p className="text-sm text-red-700 font-medium mb-1">
                 ✗ Decision: MAX 3 months
               </p>
-              <p className="text-sm text-text-tertiary">Time: 10 seconds</p>
             </div>
 
             <div className="bg-white border border-border rounded-lg p-6">
@@ -342,7 +272,6 @@ export default function TwelveMonthRxPage() {
               <p className="text-sm text-amber-700 font-medium mb-1">
                 → Decision: 6 months safer (medication reconciliation)
               </p>
-              <p className="text-sm text-text-tertiary">Time: 5 minutes</p>
             </div>
 
             <div className="bg-white border border-border rounded-lg p-6">
@@ -355,7 +284,6 @@ export default function TwelveMonthRxPage() {
               <p className="text-sm text-amber-700 font-medium mb-1">
                 → Decision: 6 months (hypo awareness check)
               </p>
-              <p className="text-sm text-text-tertiary">Time: 1-2 minutes</p>
             </div>
 
             <div className="bg-white border border-border rounded-lg p-6">
@@ -368,7 +296,6 @@ export default function TwelveMonthRxPage() {
               <p className="text-sm text-green-700 font-medium mb-1">
                 ✓ Decision: 12 months OK (eGFR 65, educated re DKA)
               </p>
-              <p className="text-sm text-text-tertiary">Time: 2 minutes</p>
             </div>
 
             <div className="bg-white border border-border rounded-lg p-6">
@@ -381,7 +308,6 @@ export default function TwelveMonthRxPage() {
               <p className="text-sm text-green-700 font-medium mb-1">
                 ✓ Decision: 12 months OK (eGFR &gt;35)
               </p>
-              <p className="text-sm text-text-tertiary">Time: 1 minute</p>
             </div>
           </div>
         </div>

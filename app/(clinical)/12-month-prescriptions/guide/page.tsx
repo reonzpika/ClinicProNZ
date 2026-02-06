@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
 import { Container } from '@/src/shared/components/layout/Container';
-import { NZ_12MONTH_RX_GUIDE } from '../data/nz-12month-rx-guide';
+import { NZ_12MONTH_RX_GUIDE } from '@/src/features/12-month-prescriptions/lib/nz-12month-rx-guide';
 import { cn } from '@/src/lib/utils';
 
 const components: Components = {
@@ -63,7 +63,7 @@ export default function GuidePage() {
       <Container size="md">
         <div className="pb-16">
           <Link
-            href="/12-months-prescriptions"
+            href="/12-month-prescriptions"
             className="text-primary hover:underline font-medium"
           >
             ← Back to decision tools

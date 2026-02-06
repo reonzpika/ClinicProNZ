@@ -1,4 +1,5 @@
-# Traffic Light Medication Checker for 12-Month Prescriptions
+// Content from Traffic_Light_Medication_Checker.md
+export const TRAFFIC_LIGHT_CONTENT: string = `# Traffic Light Medication Checker for 12-Month Prescriptions
 
 **Quick visual guide for in-consultation decision-making**
 
@@ -90,22 +91,22 @@
 
 | Medication Class | Key Parameter | 12mo OK if: | MAX if: | Monitoring |
 |-----------------|---------------|-------------|---------|------------|
-| **ACEi/ARBs** | **eGFR** | ≥60 | <45 = 6mo max | 6-12 monthly renal + K+ |
-| **Metformin** | **eGFR** | >45 | <30 = STOP | 6-12 monthly renal |
-| **DOACs** | **CrCl (Cockcroft-Gault)** | Varies by drug | See table below | 6-12 monthly CrCl |
-| **Spironolactone** | **K+, eGFR** | NEVER 12mo | 6mo max always | 1wk, 1mo, then 6-monthly |
-| **TCAs** | **Age, cardiac risk** | Use judgment | 6mo safer | Annual + ECG if indicated |
-| **Diuretics (loop)** | **Electrolytes** | Rarely | 6mo max | 3-6 monthly electrolytes |
-| **Diuretics (thiazide)** | **Electrolytes** | 6-12mo | - | 6-monthly electrolytes |
-| **NSAIDs (Rx)** | **Renal, triple whammy** | 6-12mo if alone | 3mo if triple whammy | 3-6 monthly if chronic |
-| **Allopurinol** | **eGFR** | >60 | <30 = 6mo, dose reduce | 6-12 monthly renal |
-| **Colchicine** | **eGFR** | >60 | <30 = 3mo, dose reduce | 6-12 monthly renal |
-| **SGLT-2i (empagliflozin)** | **eGFR** | >30 | <20 = STOP | Annually (+ sick day rules) |
-| **Sulfonylureas** | **Age, renal** | If <70 & eGFR >60 | Age>70 or eGFR<60 = 6mo | Monitor for hypos |
-| **GLP-1 agonists** | **Injectable** | Yes (weekly injection) | - | Annual review |
-| **Gabapentin/Pregabalin** | **eGFR, addiction risk** | eGFR >60 | <30 = 6mo, dose reduce | 6-12 monthly renal |
-| **Oral steroids (chronic)** | **Multiple** | NEVER 12mo | 3-6mo max | Multiple - see detail |
-| **Bisphosphonates** | **eGFR, dental** | eGFR >35 | <35 = specialist | Annual renal + dental check |
+| [**ACEi/ARBs**](#ace-inhibitors-arbs) | **eGFR** | ≥60 | <45 = 6mo max | 6-12 monthly renal + K+ |
+| [**Metformin**](#metformin) | **eGFR** | >45 | <30 = STOP | 6-12 monthly renal |
+| [**DOACs**](#doacs-dabigatran-rivaroxaban-apixaban) | **CrCl (Cockcroft-Gault)** | Varies by drug | See table below | 6-12 monthly CrCl |
+| [**Spironolactone**](#spironolactone) | **K+, eGFR** | NEVER 12mo | 6mo max always | 1wk, 1mo, then 6-monthly |
+| [**TCAs**](#tricyclic-antidepressants-tcas) | **Age, cardiac risk** | Use judgment | 6mo safer | Annual + ECG if indicated |
+| [**Diuretics (loop)**](#diuretics-thiazides-and-loop) | **Electrolytes** | Rarely | 6mo max | 3-6 monthly electrolytes |
+| [**Diuretics (thiazide)**](#diuretics-thiazides-and-loop) | **Electrolytes** | 6-12mo | - | 6-monthly electrolytes |
+| [**NSAIDs (Rx)**](#nsaids-prescription-strength) | **Renal, triple whammy** | 6-12mo if alone | 3mo if triple whammy | 3-6 monthly if chronic |
+| [**Allopurinol**](#allopurinol) | **eGFR** | >60 | <30 = 6mo, dose reduce | 6-12 monthly renal |
+| [**Colchicine**](#colchicine) | **eGFR** | >60 | <30 = 3mo, dose reduce | 6-12 monthly renal |
+| [**SGLT-2i (empagliflozin)**](#sglt-2-inhibitors-empagliflozin) | **eGFR** | >30 | <20 = STOP | Annually (+ sick day rules) |
+| [**Sulfonylureas**](#sulfonylureas-gliclazide-glipizide) | **Age, renal** | If <70 & eGFR >60 | Age>70 or eGFR<60 = 6mo | Monitor for hypos |
+| [**GLP-1 agonists**](#glp-1-receptor-agonists-dulaglutide-liraglutide) | **Injectable** | Yes (weekly injection) | - | Annual review |
+| [**Gabapentin/Pregabalin**](#gabapentin-pregabalin) | **eGFR, addiction risk** | eGFR >60 | <30 = 6mo, dose reduce | 6-12 monthly renal |
+| [**Oral steroids (chronic)**](#oral-corticosteroids-chronic-use) | **Multiple** | NEVER 12mo | 3-6mo max | Multiple - see detail |
+| [**Bisphosphonates**](#bisphosphonates-alendronate-risedronate) | **eGFR, dental** | eGFR >35 | <35 = specialist | Annual renal + dental check |
 
 **DOAC Details:**
 - **Dabigatran:** CrCl ≥50 = 12mo OK; CrCl 30-49 = 6mo max; CrCl <30 = CONTRAINDICATED
@@ -643,3 +644,4 @@
 
 ---
 
+`;

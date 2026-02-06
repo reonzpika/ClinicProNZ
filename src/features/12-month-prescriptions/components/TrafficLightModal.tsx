@@ -10,7 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/src/shared/components/ui/dialog';
-import { TRAFFIC_LIGHT_CONTENT } from '../data/traffic-light-checker';
+// Data lives in this feature's lib; use relative import to keep boundary clear
+import { TRAFFIC_LIGHT_CONTENT } from '../lib/traffic-light-checker';
 import { cn } from '@/src/lib/utils';
 
 interface TrafficLightModalProps {
@@ -36,11 +37,23 @@ export function TrafficLightModal({
       }, 200);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [open, initialSection]);
 
   useEffect(() => {
     if (open) amberCountRef.current = 0;
   }, [open]);
+
+  function slugify(text: string): string {
+    return String(text)
+      .toLowerCase()
+      .replace(/\//g, ' ')
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+  }
 
   const scrollToSection = (section: string) => {
     document.getElementById(`${section}-zone`)?.scrollIntoView({
@@ -69,6 +82,19 @@ export function TrafficLightModal({
         >
           {children}
         </h2>
+      );
+    },
+    h3: ({ node, children, ...props }) => {
+      const text = String(children);
+      const id = slugify(text) || undefined;
+      return (
+        <h3
+          id={id}
+          className="text-xl font-bold mt-8 mb-3 text-text-primary"
+          {...props}
+        >
+          {children}
+        </h3>
       );
     },
     table: ({ node, ...props }) => (
