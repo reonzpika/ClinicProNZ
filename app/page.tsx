@@ -132,6 +132,23 @@ export default function HomePage() {
 
           <div className="rounded-lg border border-border bg-white p-5 transition-shadow hover:shadow-md">
             <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-2xl font-normal text-text-primary">
+                12-Month Prescriptions
+              </h3>
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded font-medium">
+                New
+              </span>
+            </div>
+            <p className="text-text-secondary mb-2">
+              Clinical decision tools for extended prescriptions. Flowchart + medication checker.
+            </p>
+            <Link href="/12-months-prescriptions" className="text-primary hover:underline font-medium">
+              → Open tools
+            </Link>
+          </div>
+
+          <div className="rounded-lg border border-border bg-white p-5 transition-shadow hover:shadow-md">
+            <div className="flex items-center gap-2 mb-2">
               <h3 className="text-2xl font-normal text-text-primary">Coming: Inbox Intelligence</h3>
               <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">Building</span>
             </div>

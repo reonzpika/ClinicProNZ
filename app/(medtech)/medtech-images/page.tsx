@@ -31,7 +31,7 @@ import { Button } from '@/src/shared/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
 
 // Force dynamic rendering (launch cookie is per-request)
-// eslint-disable-next-line react-refresh/only-export-components
+
 export const dynamic = 'force-dynamic';
 
 type LaunchSessionState =

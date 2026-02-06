@@ -33,7 +33,9 @@
     "test:resend": "vitest run src/lib/services/referral-images/__tests__/resend-api.test.ts",
     "clean": "rimraf .next out coverage",
     "commit": "cz",
-    "prepare": "husky"
+    "prepare": "husky",
+    "packageManager": "pnpm@9"
+
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.43",
