@@ -18,8 +18,9 @@ const checkerPath = path.join(
 );
 const raw = fs.readFileSync(checkerPath, 'utf-8');
 const match = raw.match(/export const TRAFFIC_LIGHT_CONTENT: string = `([\s\S]*?)`;/m);
-if (!match) throw new Error('Could not extract TRAFFIC_LIGHT_CONTENT from checker file');
-const md = match[1].trim();
+const captured = match?.[1];
+if (captured === undefined) throw new Error('Could not extract TRAFFIC_LIGHT_CONTENT from checker file');
+const md = captured.trim();
 
 function slugify(text: string): string {
   return String(text)
@@ -40,8 +41,10 @@ function parseTable(segment: string): { headers: string[]; rows: string[][] } | 
       .split('|')
       .map((c) => c.trim())
       .filter((_, i, arr) => i > 0 && i < arr.length - 1);
-  const headers = parseRow(lines[0]);
+  const firstLine = lines[0];
   const sep = lines[1];
+  if (firstLine === undefined || sep === undefined) return null;
+  const headers = parseRow(firstLine);
   const isSeparator = /^[\s|\-]+$/.test(sep);
   const dataLines = isSeparator ? lines.slice(2) : lines.slice(1);
   const rows = dataLines.map(parseRow);
@@ -55,7 +58,8 @@ function classifySegment(segment: string): 'table' | 'list' | 'hr' | 'paragraph'
   if (/^---+$/.test(t) || t === '---') return 'hr';
   const lines = t.split('\n');
   if (lines.some((l) => l.includes('|'))) return 'table';
-  if (lines[0].trimStart().startsWith('-')) return 'list';
+  const first = lines[0];
+  if (first?.trimStart().startsWith('-')) return 'list';
   return 'paragraph';
 }
 
@@ -93,13 +97,15 @@ function parseBlocks(content: string): Block[] {
 function parseSubsections(content: string): Block[] {
   const parts = content.split(/\n### /);
   const result: Block[] = [];
-  const first = parts[0].trim();
+  const firstPart = parts[0];
+  const first = firstPart !== undefined ? firstPart.trim() : '';
   if (first) {
     const topBlocks = parseBlocks(first);
     result.push(...topBlocks);
   }
   for (let i = 1; i < parts.length; i++) {
     const chunk = parts[i];
+    if (chunk === undefined) continue;
     const lineEnd = chunk.indexOf('\n');
     const firstLine = lineEnd >= 0 ? chunk.slice(0, lineEnd) : chunk;
     const rest = lineEnd >= 0 ? chunk.slice(lineEnd + 1) : '';
@@ -107,7 +113,7 @@ function parseSubsections(content: string): Block[] {
     let subtitle: string | undefined;
     let body = rest;
     const subMatch = rest.match(/^\s*\*\(([^)]*)\)\*\s*\n?/);
-    if (subMatch) {
+    if (subMatch && subMatch[0] !== undefined) {
       subtitle = subMatch[1];
       body = rest.slice(subMatch[0].length);
     }
@@ -125,6 +131,7 @@ const sectionSplits = md.split(/\n## /).filter(Boolean);
 let amberCount = 0;
 for (let i = 0; i < sectionSplits.length; i++) {
   const chunk = sectionSplits[i];
+  if (chunk === undefined) continue;
   const firstNewline = chunk.indexOf('\n');
   const titleLine = firstNewline >= 0 ? chunk.slice(0, firstNewline).trim() : chunk.trim();
   const body = firstNewline >= 0 ? chunk.slice(firstNewline + 1) : '';
@@ -150,8 +157,7 @@ for (let i = 0; i < sectionSplits.length; i++) {
 }
 
 const updatedMatch = md.match(/\*\*Updated\s+([^*]+)\*\*/);
-const updated = updatedMatch ? updatedMatch[1].trim() : undefined;
-const document = { updated, sections };
+const updated = updatedMatch?.[1]?.trim();
 
 function escapeForTs(s: string): string {
   return JSON.stringify(s);

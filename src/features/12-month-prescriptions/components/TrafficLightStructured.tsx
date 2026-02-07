@@ -5,17 +5,6 @@ import remarkGfm from 'remark-gfm';
 import type { Components } from 'react-markdown';
 import type { Block, Section as SectionType, TrafficLightDocument as DocType } from '../lib/traffic-light-types';
 
-function slugify(text: string): string {
-  return String(text)
-    .toLowerCase()
-    .replace(/\//g, ' ')
-    .replace(/[^a-z0-9\s-]/g, '')
-    .trim()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
 const proseMarkdownComponents: Components = {
   p: ({ children }) => <span className="block">{children}</span>,
   strong: ({ children }) => <strong className="font-semibold text-text-primary">{children}</strong>,
