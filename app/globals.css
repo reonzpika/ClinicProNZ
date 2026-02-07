@@ -185,3 +185,44 @@ body {
     box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
   }
 }
+
+/* React Flow Custom Styles */
+.react-flow__node {
+  cursor: pointer;
+}
+
+.react-flow__node:hover {
+  filter: brightness(0.95);
+}
+
+.react-flow__edge-path {
+  stroke-width: 2;
+}
+
+.react-flow__edge-text {
+  font-size: 12px;
+  font-weight: 600;
+  fill: #374151;
+}
+
+.react-flow__controls-button {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+}
+
+.react-flow__controls-button:hover {
+  background-color: #f9fafb;
+}
+
+.react-flow__minimap {
+  background-color: white;
+}
+
+/* Quick Start expandable section (only the main summary, not nested details) */
+.quick-start-details > summary::before {
+  content: "▶ ";
+  font-size: 0.9em;
+}
+.quick-start-details[open] > summary::before {
+  content: "▼ ";
+}

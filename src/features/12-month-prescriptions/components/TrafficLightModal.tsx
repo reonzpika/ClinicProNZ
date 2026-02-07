@@ -1,18 +1,14 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import type { Components } from 'react-markdown';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/src/shared/components/ui/dialog';
-// Data lives in this feature's lib; use relative import to keep boundary clear
-import { TRAFFIC_LIGHT_CONTENT } from '../lib/traffic-light-checker';
 import { cn } from '@/src/lib/utils';
+import { TrafficLightContent } from './TrafficLightContent';
 
 interface TrafficLightModalProps {
   open: boolean;
@@ -27,12 +23,10 @@ export function TrafficLightModal({
 }: TrafficLightModalProps) {
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const amberCountRef = useRef(0);
-
   useEffect(() => {
-    if (open && initialSection) {
+    if (open && initialSection && contentRef.current) {
       const timer = setTimeout(() => {
-        const element = document.getElementById(`${initialSection}-zone`);
+        const element = contentRef.current?.querySelector(`#${initialSection}-zone`);
         element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 200);
       return () => clearTimeout(timer);
@@ -40,80 +34,9 @@ export function TrafficLightModal({
     return undefined;
   }, [open, initialSection]);
 
-  useEffect(() => {
-    if (open) amberCountRef.current = 0;
-  }, [open]);
-
-  function slugify(text: string): string {
-    return String(text)
-      .toLowerCase()
-      .replace(/\//g, ' ')
-      .replace(/[^a-z0-9\s-]/g, '')
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '');
-  }
-
   const scrollToSection = (section: string) => {
-    document.getElementById(`${section}-zone`)?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
-  };
-
-  const components: Components = {
-    h2: ({ node, children, ...props }) => {
-      const text = String(children);
-      let id: string | undefined;
-      if (/GREEN/i.test(text)) {
-        id = 'green-zone';
-      } else if (/AMBER/i.test(text)) {
-        amberCountRef.current += 1;
-        id = amberCountRef.current === 1 ? 'amber-zone' : 'amber-zone-detail';
-      } else if (/RED/i.test(text)) {
-        id = 'red-zone';
-      }
-      return (
-        <h2
-          id={id}
-          className="text-2xl font-bold mt-12 mb-4 text-text-primary first:mt-0"
-          {...props}
-        >
-          {children}
-        </h2>
-      );
-    },
-    h3: ({ node, children, ...props }) => {
-      const text = String(children);
-      const id = slugify(text) || undefined;
-      return (
-        <h3
-          id={id}
-          className="text-xl font-bold mt-8 mb-3 text-text-primary"
-          {...props}
-        >
-          {children}
-        </h3>
-      );
-    },
-    table: ({ node, ...props }) => (
-      <div className="overflow-x-auto my-6">
-        <table
-          className="min-w-full border border-border divide-y divide-border"
-          {...props}
-        />
-      </div>
-    ),
-    th: ({ node, ...props }) => (
-      <th
-        className="px-4 py-2 text-left text-sm font-semibold text-text-primary bg-surface"
-        {...props}
-      />
-    ),
-    td: ({ node, ...props }) => (
-      <td className="px-4 py-2 text-sm text-text-secondary border-b border-border" {...props} />
-    ),
+    const element = contentRef.current?.querySelector(`#${section}-zone`);
+    element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   return (
@@ -154,13 +77,8 @@ export function TrafficLightModal({
             </button>
           </div>
         </DialogHeader>
-        <div
-          ref={contentRef}
-          className="flex-1 overflow-y-auto p-8 prose prose-lg max-w-none prose-headings:text-text-primary prose-p:text-text-secondary prose-strong:text-text-primary"
-        >
-          <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-            {TRAFFIC_LIGHT_CONTENT}
-          </ReactMarkdown>
+        <div ref={contentRef} className="flex-1 overflow-y-auto p-8">
+          <TrafficLightContent key={open ? 'open' : 'closed'} />
         </div>
       </DialogContent>
     </Dialog>
