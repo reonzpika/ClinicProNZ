@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { imageToolUsage, users } from '@/db/schema';
-import { sendMonthResetEmail, sendShareEncourageEmail } from '@/src/lib/services/referral-images/email-service';
+import { sendCheckInEmail, sendMonthResetEmail, sendShareEncourageEmail } from '@/src/lib/services/referral-images/email-service';
 import { getCurrentMonth } from '@/src/lib/services/referral-images/utils';
 import { getDb } from 'database/client';
 
@@ -25,6 +25,7 @@ function isAuthorized(req: NextRequest, url: URL): boolean {
  * GET /api/maintenance/referral-images-email-sequence
  *
  * Cron: runs daily to send:
+ * - Email 2 (Check-in): 3 days after signup, all users
  * - Email 5 (Share Encourage): 5 days after limit hit, if user hasn't upgraded
  * - Email 6 (Month Reset): at start of new month, if user hasn't upgraded
  */
@@ -38,13 +39,58 @@ export async function GET(req: NextRequest) {
     const db = getDb();
     const currentMonth = getCurrentMonth();
     const now = new Date();
+    const threeDaysAgo = new Date(now);
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    const fourDaysAgo = new Date(now);
+    fourDaysAgo.setDate(fourDaysAgo.getDate() - 4);
     const fiveDaysAgo = new Date(now);
     fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
     const sixDaysAgo = new Date(now);
     sixDaysAgo.setDate(sixDaysAgo.getDate() - 6);
 
+    let checkInSent = 0;
     let shareEncourageSent = 0;
     let monthResetSent = 0;
+
+    // Email 2: Check-in (Day 3 after signup, all users)
+    const checkInRows = await db
+      .select({
+        userId: users.id,
+        email: users.email,
+        name: users.name,
+      })
+      .from(users)
+      .where(
+        and(
+          sql`${users.createdAt} >= ${fourDaysAgo}`,
+          sql`${users.createdAt} < ${threeDaysAgo}`,
+          sql`${users.checkInEmailSentAt} IS NULL`,
+          sql`${users.email} IS NOT NULL`
+        )
+      );
+
+    for (const row of checkInRows) {
+      const email = row.email;
+      if (!email) continue;
+
+      try {
+        await sendCheckInEmail({
+          email,
+          name: row.name ?? email.split('@')[0],
+          userId: row.userId,
+        });
+        await db
+          .update(users)
+          .set({
+            checkInEmailSentAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, row.userId));
+        checkInSent++;
+      } catch (err) {
+        console.error('[referral-images-email-sequence] Check-in failed for', row.userId, err);
+      }
+    }
 
     // Email 5: Share Encourage (5 days after limit hit, free tier, not yet sent)
     const shareEncourageRows = await db
@@ -152,6 +198,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      checkInSent,
       shareEncourageSent,
       monthResetSent,
     });

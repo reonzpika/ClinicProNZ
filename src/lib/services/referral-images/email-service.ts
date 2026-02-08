@@ -112,64 +112,34 @@ export async function sendWelcomeEmail(data: EmailData) {
 }
 
 /**
- * Email 2: Usage Tip (Day 3, if 1+ image captured)
+ * Email 2: Check-in (Day 3 after signup, all users)
  */
-export async function sendUsageTipEmail(data: EmailData) {
+export async function sendCheckInEmail(data: EmailData) {
   const { email, name } = data;
 
   return await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: 'What other GPs use Referral Images for',
+    subject: "How's Referral Images working for you?",
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
         
-        <p>You've captured your first image. Here's what other GPs use it for:</p>
+        <p>You've been using Referral Images for a few days now.</p>
         
-        <h4>Specialist referrals (dermatology, plastics, etc.)</h4>
-        <p>Always JPEG, auto-sized, under 500KB. Dermatologists won't reject them.</p>
+        <p>Quick check-in: How's it working for you?</p>
         
-        <h4>Wound progress tracking</h4>
-        <p>Before/after photos for clinical notes</p>
-        
-        <h4>Insurance/ACC documentation</h4>
-        <p>Pre-procedure records, claims</p>
-        
-        <p>That's it. Keep using it - saves you &gt;10 minutes every time.</p>
-      </div>
-    `,
-  });
-}
-
-/**
- * Email 3: Value Reinforcement (Day 7, if 3+ images)
- */
-export async function sendValueReinforcementEmail(data: EmailData & { imageCount: number }) {
-  const { email, name, imageCount } = data;
-  const timeSaved = imageCount * 10;
-
-  return await resend.emails.send({
-    from: FROM_EMAIL,
-    to: email,
-    subject: `You've saved ${timeSaved} minutes this week`,
-    html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-        <h2>Hi ${name || 'there'},</h2>
-        
-        <p>You've captured ${imageCount} referral images so far.</p>
-        
-        <h3>Time you've saved:</h3>
-        <ul>
-          <li>Images captured: ${imageCount}</li>
-          <li>Average time saved per referral: 10 minutes</li>
-          <li>Total time saved: ${timeSaved} minutes</li>
+        <ul style="line-height: 1.8;">
+          <li>Is the tool saving you time?</li>
+          <li>Any issues or frustrations?</li>
+          <li>Missing a feature you need?</li>
         </ul>
         
-        <p>That's time you're not staying late or doing during breaks.</p>
+        <p>Just hit reply and let me know. I'm a GP too, so I get it.</p>
         
-        <h3>Know a colleague still emailing photos to themselves?</h3>
-        <p>Send them this: <a href="${APP_URL}/referral-images" style="color: #0070e0;">${APP_URL}/referral-images</a></p>
+        <p>Cheers,<br>Dr. Ryo</p>
+        
+        <p style="font-size: 14px; color: #666;">P.S. If it's working well, keep using it. If not, I want to fix it.</p>
       </div>
     `,
   });

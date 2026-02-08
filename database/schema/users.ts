@@ -21,4 +21,6 @@ export const users = pgTable('users', {
   shareReminderSent: boolean('share_reminder_sent').default(false).notNull(),
   // Referral Images: last month we sent "Month Reset" email (YYYY-MM)
   lastMonthResetEmailFor: text('last_month_reset_email_for'),
+  // Referral Images: Day 3 check-in email (sent 3 days after signup)
+  checkInEmailSentAt: timestamp('check_in_email_sent_at'),
 });
