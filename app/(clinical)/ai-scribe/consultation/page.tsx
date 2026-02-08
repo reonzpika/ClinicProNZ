@@ -917,8 +917,8 @@ export default function ConsultationPage() {
     if (typeof window === 'undefined') return;
     
     const logScrollInfo = () => {
-      const main = document.querySelector('main');
-      const outerDiv = document.querySelector('main > div');
+      const main = document.querySelector('main') as HTMLElement | null;
+      const outerDiv = document.querySelector('main > div') as HTMLElement | null;
       
       console.log('🔍 SCROLL DIAGNOSTIC:', {
         main: main ? {
