@@ -912,6 +912,39 @@ export default function ConsultationPage() {
     && !bootTimeoutElapsed
   ) || (!bootMinDelayDone && (settingsLoading || waitingDefaults || ensureSessionLoading || (!patientSessionsFetched && !hasSession)));
 
+  // Diagnostic logging for scroll debugging
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const logScrollInfo = () => {
+      const main = document.querySelector('main');
+      const outerDiv = document.querySelector('main > div');
+      
+      console.log('🔍 SCROLL DIAGNOSTIC:', {
+        main: main ? {
+          scrollHeight: main.scrollHeight,
+          clientHeight: main.clientHeight,
+          offsetHeight: main.offsetHeight,
+          hasOverflow: main.scrollHeight > main.clientHeight,
+          overflowY: window.getComputedStyle(main).overflowY,
+        } : 'not found',
+        outerDiv: outerDiv ? {
+          scrollHeight: outerDiv.scrollHeight,
+          clientHeight: outerDiv.clientHeight,
+          offsetHeight: outerDiv.offsetHeight,
+        } : 'not found',
+        viewport: {
+          innerHeight: window.innerHeight,
+          documentHeight: document.documentElement.scrollHeight,
+        }
+      });
+    };
+    
+    // Log after content loads
+    const timer = setTimeout(logScrollInfo, 2000);
+    return () => clearTimeout(timer);
+  }, [isBootLoading, currentPatientSessionId]);
+
   return (
     <RecordingAwareSessionContext.Provider value={contextValue}>
       <div className="flex flex-col">
@@ -925,8 +958,8 @@ export default function ConsultationPage() {
         flex flex-col transition-all duration-300 ease-in-out
       `}
       >
-        <Container size="fluid" className="min-h-0">
-          <div className={`flex min-h-0 flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}>
+        <Container size="fluid">
+          <div className={`flex flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}>
             {/* Mobile Tools Button removed; tools embedded below settings */}
 
             {/* Upgrade Notification for users redirected from registration */}
