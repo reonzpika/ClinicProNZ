@@ -2,7 +2,7 @@
 project_name: ClinicPro SaaS
 project_stage: Operational
 owner: Development Team
-last_updated: "2026-02-01"
+last_updated: "2026-02-08"
 version: "1.0.4"
 tags:
   - saas
@@ -38,6 +38,7 @@ Maintenance only. If you touch ClinicPro this week, keep it to stability fixes; 
 - ✅ **Features**: Core features in production use
 
 ### Recent Updates
+- **2026-02-08**: Referral Images Email 2 — Day 3 check-in email implemented (feedback-focused, sent to all users); Email 3 (value reinforcement) removed from sequence.
 - **2026-02-01**: AI Scribe landing — `/ai-scribe` now shows the full ClinicPro landing (same as `/landing-page`); minimal "Open AI Scribe" page removed; feature not public from that URL.
 - **2026-01-31**: Referral Images filename and overlay — Filenames now use date+time (no random ID); desktop card label shows side + description and full filename on hover.
 - **2026-01-31**: GP Referral Images — Standalone referral photo workflow (freemium: Month 1 unlimited, then 10 images/month, 2 grace unlocks; $50 one-time premium). E2E testing complete; all phases passed.
