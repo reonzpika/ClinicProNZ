@@ -922,7 +922,7 @@ export default function ConsultationPage() {
           onSessionCreated={() => setSessionModalOpen(false)}
         />
       <div className={`
-        flex min-h-dvh flex-col transition-all duration-300 ease-in-out
+        flex flex-col transition-all duration-300 ease-in-out
       `}
       >
         <Container size="fluid" className="min-h-0">
