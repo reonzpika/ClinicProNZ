@@ -914,7 +914,7 @@ export default function ConsultationPage() {
 
   return (
     <RecordingAwareSessionContext.Provider value={contextValue}>
-      <div className="flex h-full flex-col">
+      <div className="flex flex-col">
         <SessionModal
           isOpen={sessionModalOpen}
           onClose={() => setSessionModalOpen(false)}
