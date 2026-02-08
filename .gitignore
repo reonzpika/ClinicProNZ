@@ -47,6 +47,10 @@ yarn-error.log*
 .env*.local
 .env.local
 
+# credentials files (never commit these)
+*credentials*.txt
+openmailer-credentials.txt
+
 # local folder
 local
 
