@@ -1,6 +1,5 @@
 // Combined from 12Month_Rx_GP_Guide_REVISED.md + Source_Authority_Quick_Guide.md
 export const NZ_12MONTH_RX_GUIDE: string = `# New Zealand's 12-Month Prescription Policy: GP Decision Support Guide
-**REVISED EDITION with Source Attribution**
 
 *Effective: 1 February 2026*
 
