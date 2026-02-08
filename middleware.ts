@@ -17,6 +17,14 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
   }
 
+  // OpenMailer tracking and unsubscribe (public)
+  if (
+    req.nextUrl.pathname.startsWith('/api/openmailer/track/') ||
+    req.nextUrl.pathname === '/api/openmailer/unsubscribe'
+  ) {
+    return NextResponse.next();
+  }
+
   // Skip rate limiting for static assets, Next.js internals, auth routes, marketing pages, and admin reset
   if (
     req.nextUrl.pathname.startsWith('/_next')
@@ -180,6 +188,22 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next({ request: { headers: requestHeaders } });
   }
 
+  // Protect /api/openmailer routes (admin only; track/* is allowed above)
+  if (req.nextUrl.pathname.startsWith('/api/openmailer')) {
+    const resolvedAuth = await auth();
+    if (!resolvedAuth.userId) {
+      return returnUnauthorized();
+    }
+    const userTier = (resolvedAuth.sessionClaims as any)?.metadata?.tier || 'basic';
+    if (userTier !== 'admin') {
+      return returnUnauthorized();
+    }
+    const requestHeaders = new Headers(req.headers);
+    requestHeaders.set('x-user-id', resolvedAuth.userId);
+    requestHeaders.set('x-user-tier', userTier);
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
+
   // Protect /api/rag/query routes - require sign-in only
   if (req.nextUrl.pathname.startsWith('/api/rag/query')) {
     const resolvedAuth = await auth();
@@ -309,6 +333,7 @@ export const config = {
     '/api/search/:path*',
     '/api/image/:path*', // Image tool API routes
     '/api/referral-images/:path*', // Referral images API routes
+    '/api/openmailer/:path*', // OpenMailer API (track public, rest admin)
     '/ai-scribe/:path*',
     '/billing/:path*',
     '/admin/:path*',
