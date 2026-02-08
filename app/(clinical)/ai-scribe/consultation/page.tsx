@@ -970,7 +970,7 @@ export default function ConsultationPage() {
                 ? (
                     <div className="flex h-full gap-6">
                       {/* Left Column - Supporting Information (30-35%) */}
-                      <div className="h-full w-1/3 space-y-4 overflow-y-auto">
+                      <div className="h-full w-1/3 space-y-4">
                       {/* Patient Session Manager - V2 Feature */}
                         <PatientSessionManager />
 
@@ -1056,7 +1056,7 @@ export default function ConsultationPage() {
                       <div className="w-px bg-slate-200" />
 
                       {/* Right Column - Main Workflow (65-70%) */}
-                      <div className="h-full flex-1 space-y-4 overflow-y-auto">
+                      <div className="h-full flex-1 space-y-4">
                         {/* Conditional Layout Based on Documentation Mode */}
                         {isDocumentationMode
                           ? (
@@ -1129,7 +1129,7 @@ export default function ConsultationPage() {
                   isMobile
                     ? (
                       // Phone-only reduced UI
-                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full overflow-y-auto">
+                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full">
                         {/* Conditional Layout Based on Documentation Mode (mobile) */}
                         {isDocumentationMode
                           ? (
@@ -1237,7 +1237,7 @@ export default function ConsultationPage() {
                     )
                     : (
                       // Tablet/Small desktop: keep existing full UI
-                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full overflow-y-auto">
+                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full">
                         {/* Patient Session Manager - V2 Feature */}
                         <PatientSessionManager />
 
