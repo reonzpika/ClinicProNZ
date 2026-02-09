@@ -912,84 +912,30 @@ export default function ConsultationPage() {
     && !bootTimeoutElapsed
   ) || (!bootMinDelayDone && (settingsLoading || waitingDefaults || ensureSessionLoading || (!patientSessionsFetched && !hasSession)));
 
-  // Enhanced diagnostic logging for scroll debugging
+  // Diagnostic logging to verify scroll fix
   useEffect(() => {
     if (typeof window === 'undefined') return;
     
-    const logScrollInfo = (label: string) => {
+    const logScrollInfo = () => {
       const main = document.querySelector('main') as HTMLElement | null;
-      const outerDiv = document.querySelector('main > div') as HTMLElement | null;
-      const container = document.querySelector('main > div > div > div') as HTMLElement | null;
-      const testDiv = document.querySelector('main > div > div[class*="h-\\[2000px\\]"]') as HTMLElement | null;
+      if (!main) return;
       
-      const mainStyles = main ? window.getComputedStyle(main) : null;
-      
-      console.log(`🔍 SCROLL DIAGNOSTIC (${label}):`, {
-        main: main ? {
-          scrollHeight: main.scrollHeight,
-          clientHeight: main.clientHeight,
-          offsetHeight: main.offsetHeight,
-          hasOverflow: main.scrollHeight > main.clientHeight,
-          overflowY: mainStyles?.overflowY,
-          height: mainStyles?.height,
-          maxHeight: mainStyles?.maxHeight,
-          minHeight: mainStyles?.minHeight,
-          pointerEvents: mainStyles?.pointerEvents,
-        } : 'not found',
-        outerDiv: outerDiv ? {
-          scrollHeight: outerDiv.scrollHeight,
-          clientHeight: outerDiv.clientHeight,
-          offsetHeight: outerDiv.offsetHeight,
-        } : 'not found',
-        container: container ? {
-          scrollHeight: container.scrollHeight,
-          clientHeight: container.clientHeight,
-          offsetHeight: container.offsetHeight,
-        } : 'not found',
-        testDiv: testDiv ? {
-          scrollHeight: testDiv.scrollHeight,
-          clientHeight: testDiv.clientHeight,
-          offsetHeight: testDiv.offsetHeight,
-          found: '✅ 2000px test div exists',
-        } : '❌ Test div not found',
-        viewport: {
-          innerHeight: window.innerHeight,
-          documentHeight: document.documentElement.scrollHeight,
-        },
-        bootState: {
-          isBootLoading,
-          settingsLoading,
-          hasSession,
-        }
+      const hasOverflow = main.scrollHeight > main.clientHeight;
+      console.log('✅ SCROLL FIX VERIFICATION:', {
+        scrollHeight: main.scrollHeight,
+        clientHeight: main.clientHeight,
+        hasOverflow,
+        status: hasOverflow ? '✅ OVERFLOW CREATED - SHOULD SCROLL' : '❌ NO OVERFLOW - ISSUE REMAINS',
       });
     };
     
-    // Log at multiple times to see how content loads
-    logScrollInfo('0ms - immediate');
-    const timer1 = setTimeout(() => logScrollInfo('500ms'), 500);
-    const timer2 = setTimeout(() => logScrollInfo('2000ms'), 2000);
-    const timer3 = setTimeout(() => logScrollInfo('5000ms'), 5000);
-    
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
-  }, [isBootLoading, currentPatientSessionId, settingsLoading, hasSession]);
+    const timer = setTimeout(logScrollInfo, 2000);
+    return () => clearTimeout(timer);
+  }, [currentPatientSessionId]);
 
   return (
     <RecordingAwareSessionContext.Provider value={contextValue}>
       <div className="flex flex-col">
-        {/* DIAGNOSTIC TEST: Force overflow */}
-        <div className="h-[2000px] shrink-0 bg-red-500/10 p-4">
-          <div className="text-sm font-bold text-red-700">
-            🔴 FORCE OVERFLOW TEST - 2000px tall
-          </div>
-          <div className="text-xs text-red-600">
-            If page scrolls with this div, the issue is content sizing.
-            If it doesn't scroll, the issue is container constraints.
-          </div>
-        </div>
         <SessionModal
           isOpen={sessionModalOpen}
           onClose={() => setSessionModalOpen(false)}

@@ -118,7 +118,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <div className={`
         flex-1 transition-all duration-300 ease-in-out
         ${isDesktop ? (sidebarCollapsed ? 'ml-16' : 'ml-64') : 'ml-0'}
-        grid min-h-dvh grid-rows-[auto_1fr_auto]
+        grid min-h-dvh max-h-dvh grid-rows-[auto_1fr_auto]
       `}
       >
         {/* Header spacer to reserve height (constant). Header itself is fixed overlay below. */}
