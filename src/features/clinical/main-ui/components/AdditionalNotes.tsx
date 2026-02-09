@@ -548,7 +548,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onChange={e => handleSectionChange('context', e.target.value)}
                 onBlur={() => handleSectionBlur('context')}
                 onKeyDown={e => handleTextareaKeyDown('context', e)}
-                className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full resize-y rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                rows={4}
                 ref={contextRef}
               />
             </div>
@@ -565,7 +566,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onChange={e => handleSectionChange('problems', e.target.value)}
                 onBlur={() => handleSectionBlur('problems')}
                 onKeyDown={e => handleTextareaKeyDown('problems', e)}
-                className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full resize-y rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                rows={4}
                 ref={problemsRef}
               />
             </div>
@@ -585,7 +587,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onChange={e => handleSectionChange('objective', e.target.value)}
                 onBlur={() => handleSectionBlur('objective')}
                 onKeyDown={e => handleTextareaKeyDown('objective', e)}
-                className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full resize-y rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                rows={4}
                 ref={objectiveRef}
               />
             </div>
@@ -602,7 +605,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onChange={e => handleSectionChange('assessment', e.target.value)}
                 onBlur={() => handleSectionBlur('assessment')}
                 onKeyDown={e => handleTextareaKeyDown('assessment', e)}
-                className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full resize-y rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                rows={4}
                 ref={assessmentRef}
               />
             </div>
@@ -622,7 +626,8 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onChange={e => handleSectionChange('plan', e.target.value)}
                 onBlur={() => handleSectionBlur('plan')}
                 onKeyDown={e => handleTextareaKeyDown('plan', e)}
-                className="min-h-[100px] w-full resize-none overflow-y-auto rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full resize-y rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                rows={4}
                 ref={planRef}
               />
             </div>

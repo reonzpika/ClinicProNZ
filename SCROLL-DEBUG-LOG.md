@@ -240,9 +240,50 @@ After the loading overlay disappears, the fully-rendered consultation page conte
 
 ---
 
+## ✅ SOLUTION FOUND!
+
+### Root Cause
+The `AdditionalNotes` component textareas had `overflow-y-auto` in the "large" view mode. These textareas with internal scrolling were capturing mouse wheel events and preventing them from bubbling to the parent scroll container.
+
+### Diagnostic Evidence
+Console logging showed:
+```
+✅ Wheel event received on container! {deltaY: 100, target: 'TEXTAREA', defaultPrevented: false}
+```
+
+This confirmed wheel events were reaching the container but originating from TEXTAREA elements.
+
+### The Fix
+**Changed in:** `src/features/clinical/main-ui/components/AdditionalNotes.tsx`
+
+**Lines affected:** 551, 568, 588, 605, 625 (large view textareas)
+
+**What changed:**
+```tsx
+// BEFORE (with internal scroll)
+className="min-h-[100px] w-full resize-none overflow-y-auto ..."
+
+// AFTER (with manual resize handle)
+className="w-full resize-y ..."
+rows={4}
+```
+
+**Changes:**
+1. Removed `overflow-y-auto` (internal scrolling)
+2. Removed `min-h-[100px]` (fixed height)
+3. Changed `resize-none` to `resize-y` (allow manual resizing)
+4. Added `rows={4}` (default textarea height)
+
+### Why This Works
+- Textareas no longer have internal scrolling
+- Wheel events now pass through to the parent scroll container
+- Users can still resize textareas manually if needed (resize-y)
+- Textareas start at a reasonable size (4 rows)
+
 ## Files Modified
-- `app/(clinical)/ai-scribe/consultation/page.tsx` (multiple commits)
-- No changes to `src/shared/components/AppLayout.tsx` yet
+- `app/(clinical)/ai-scribe/consultation/page.tsx` (diagnostic logging - can be removed)
+- `src/features/clinical/main-ui/components/AdditionalNotes.tsx` (THE FIX)
+- `SCROLL-DEBUG-LOG.md` (documentation)
 
 ## Branch
 `cursor/consultation-page-scroll-30c2`
