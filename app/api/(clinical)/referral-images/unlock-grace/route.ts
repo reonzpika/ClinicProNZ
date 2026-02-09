@@ -1,10 +1,10 @@
+import { getDb } from 'database/client';
 import { and, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { imageToolUsage } from '@/db/schema';
 import { canUseGraceUnlock, getCurrentMonth } from '@/src/lib/services/referral-images/utils';
-import { getDb } from 'database/client';
 
 export const runtime = 'nodejs';
 
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     if (!userId) {
       return NextResponse.json(
         { error: 'userId is required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -46,8 +46,8 @@ export async function POST(req: NextRequest) {
       .where(
         and(
           eq(imageToolUsage.userId, userId),
-          eq(imageToolUsage.month, currentMonth)
-        )
+          eq(imageToolUsage.month, currentMonth),
+        ),
       )
       .limit(1);
 
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
     if (!usage) {
       return NextResponse.json(
         { error: 'No usage record found for this month' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -81,8 +81,8 @@ export async function POST(req: NextRequest) {
       .where(
         and(
           eq(imageToolUsage.userId, userId),
-          eq(imageToolUsage.month, currentMonth)
-        )
+          eq(imageToolUsage.month, currentMonth),
+        ),
       );
 
     // Calculate new limit: 10 base + (unlocks * 10)
@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
     console.error('[referral-images/unlock-grace] Error:', error);
     return NextResponse.json(
       { error: 'Failed to unlock grace images' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

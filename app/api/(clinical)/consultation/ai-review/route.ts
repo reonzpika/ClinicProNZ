@@ -1,10 +1,11 @@
 // app/api/(clinical)/consultation/ai-review/route.ts
 
-import { NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { extractRBACContext, checkCoreAccess } from '@/src/lib/rbac-enforcer';
 import { getDb } from 'database/client';
+import { NextResponse } from 'next/server';
+
 import { aiSuggestions } from '@/db/schema';
+import { checkCoreAccess, extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 // Prompt configurations for each review type
 const PROMPTS = {
@@ -57,7 +58,7 @@ Provide your assessment in this format:
 - [What additional information would help assess for specific red flag]
 
 ✅ SAFETY ASSESSMENT:
-[One sentence summary of overall safety profile]`
+[One sentence summary of overall safety profile]`,
   },
 
   ddx: {
@@ -119,7 +120,7 @@ Provide your assessment:
 2. [Second differential if warranted]
 
 OR if none:
-✅ Current differential assessment appears comprehensive based on documented information`
+✅ Current differential assessment appears comprehensive based on documented information`,
   },
 
   investigations: {
@@ -179,7 +180,7 @@ Priority 2 - Useful if resources allow:
 [Any relevant funding considerations]
 
 OR if plan looks complete:
-✅ Investigation plan appears appropriate for current clinical picture`
+✅ Investigation plan appears appropriate for current clinical picture`,
   },
 
   management: {
@@ -276,8 +277,8 @@ Escalation plan if not improving:
 OR if plan looks comprehensive:
 ✅ Management plan appears evidence-based and comprehensive
 
-BPAC REFERENCE: [Link to relevant guideline if applicable]`
-  }
+BPAC REFERENCE: [Link to relevant guideline if applicable]`,
+  },
 };
 
 export async function POST(req: Request) {
@@ -292,14 +293,14 @@ export async function POST(req: Request) {
       objectiveText,
       assessmentText,
       planText,
-      sessionId
+      sessionId,
     } = body;
 
     // Validate review type
     if (!reviewType || !['red_flags', 'ddx', 'investigations', 'management'].includes(reviewType)) {
       return NextResponse.json(
         { error: 'Invalid review type' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -307,7 +308,7 @@ export async function POST(req: Request) {
     if (!problemsText && !objectiveText && !assessmentText && !planText) {
       return NextResponse.json(
         { error: 'No consultation content provided' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -318,7 +319,7 @@ export async function POST(req: Request) {
     if (!permissionCheck.allowed) {
       return NextResponse.json(
         { error: permissionCheck.reason || 'Access denied' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -357,7 +358,7 @@ ${planText || 'Not documented'}
       system: promptConfig.system,
       messages: [{
         role: 'user',
-        content: promptConfig.user(fullNote)
+        content: promptConfig.user(fullNote),
       }],
     });
 
@@ -376,7 +377,7 @@ ${planText || 'Not documented'}
       responseTimeMs: responseTime,
       inputTokens: message.usage.input_tokens,
       outputTokens: message.usage.output_tokens,
-    }).catch(err => {
+    }).catch((err) => {
       console.error('Failed to log AI suggestion:', err);
     });
 
@@ -389,16 +390,15 @@ ${planText || 'Not documented'}
       },
       responseTimeMs: responseTime,
     });
-
   } catch (error) {
     console.error('AI review error:', error);
 
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : 'Failed to generate AI review',
-        code: 'AI_REVIEW_ERROR'
+        code: 'AI_REVIEW_ERROR',
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

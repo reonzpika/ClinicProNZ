@@ -17,16 +17,16 @@ import { retry } from 'ts-retry-promise';
 const PRESIGNED_UPLOAD_EXPIRY = 300; // 5 minutes
 const PRESIGNED_DOWNLOAD_EXPIRY = 3600; // 1 hour
 
-export interface PresignedUploadResult {
+export type PresignedUploadResult = {
   uploadUrl: string;
   s3Key: string;
   expiresAt: number;
-}
+};
 
-export interface PresignedDownloadResult {
+export type PresignedDownloadResult = {
   downloadUrl: string;
   expiresAt: number;
-}
+};
 
 export class ReferralImagesS3Service {
   private s3: S3Client;

@@ -122,7 +122,7 @@ export async function putImageToolObject(s3Key: string, body: Buffer, contentTyp
       Key: s3Key,
       Body: body,
       ContentType: contentType,
-    })
+    }),
   );
 }
 

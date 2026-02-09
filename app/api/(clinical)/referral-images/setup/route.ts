@@ -1,5 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
-import { clerkClient } from '@clerk/nextjs/server';
+import { auth, clerkClient } from '@clerk/nextjs/server';
 import { getDb } from 'database/client';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
@@ -18,11 +17,11 @@ export const runtime = 'nodejs';
  */
 export async function POST() {
   console.log('[referral-images/setup] POST request received at:', new Date().toISOString());
-  
+
   try {
     const { userId } = await auth();
     console.log('[referral-images/setup] User ID from auth:', userId);
-    
+
     if (!userId) {
       console.log('[referral-images/setup] No userId - unauthorized');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -49,10 +48,10 @@ export async function POST() {
       console.log('[referral-images/setup] No row by userId - fetching from Clerk');
       const clerk = await clerkClient();
       const clerkUser = await clerk.users.getUser(userId);
-      const email =
-        clerkUser.emailAddresses[0]?.emailAddress ?? clerkUser.id + '@clinicpro.app';
-      const name =
-        [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || undefined;
+      const email
+        = clerkUser.emailAddresses[0]?.emailAddress ?? `${clerkUser.id}@clinicpro.app`;
+      const name
+        = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || undefined;
 
       const [existingByEmail] = await db
         .select({ id: users.id })
@@ -140,7 +139,7 @@ export async function POST() {
     console.error('[referral-images/setup] Error:', error);
     return NextResponse.json(
       { error: 'Failed to complete setup' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

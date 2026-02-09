@@ -27,7 +27,7 @@ export default defineConfig({
   // - '!transcription_chunks': Manually managed table (Drizzle will warn about sequence, always abort)
   // - '!paediatric_medications': Manually created table to ignore
   // - Manages all other tables defined in schema files
-  // 
+  //
   // KNOWN ISSUE: Drizzle may prompt to drop transcription_chunks_id_seq1 (IDENTITY internal sequence)
   // This is a Drizzle limitation - tablesFilter doesn't apply to sequences.
   // ALWAYS SELECT "No, abort" when prompted. The sequence is required by the table.

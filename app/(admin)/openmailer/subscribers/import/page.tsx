@@ -10,7 +10,9 @@ export default function OpenmailerImportPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) return;
+    if (!file) {
+ return;
+}
     setLoading(true);
     setResult(null);
     try {
@@ -53,7 +55,7 @@ export default function OpenmailerImportPage() {
             <input
               type="file"
               accept=".csv"
-              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+              onChange={e => setFile(e.target.files?.[0] ?? null)}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
             />
           </div>
@@ -64,7 +66,7 @@ export default function OpenmailerImportPage() {
             <input
               type="text"
               value={listName}
-              onChange={(e) => setListName(e.target.value)}
+              onChange={e => setListName(e.target.value)}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
               placeholder="e.g. pho-contacts"
             />
@@ -81,7 +83,13 @@ export default function OpenmailerImportPage() {
           <div className="mt-4 rounded bg-green-50 p-4 text-sm">
             <p className="font-medium text-green-800">Import complete</p>
             <p className="text-green-700">
-              Success: {result.success} · Failed: {result.failed}
+              Success:
+{' '}
+{result.success}
+{' '}
+· Failed:
+{' '}
+{result.failed}
             </p>
           </div>
         )}

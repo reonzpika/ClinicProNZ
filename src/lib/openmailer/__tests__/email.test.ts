@@ -2,7 +2,7 @@
  * Unit tests for OpenMailer email helpers.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   extractUrlsFromHtml,
@@ -10,17 +10,20 @@ import {
   replaceLinksWithTracking,
 } from '../email';
 
-const TRACKING_BASE =
-  process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
+const TRACKING_BASE
+  = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
 
 describe('injectTrackingPixel', () => {
   it('injects pixel immediately before </body> when </body> is present', () => {
     const html = '<html><body><p>Hi</p></body></html>';
     const result = injectTrackingPixel(html, 'camp1', 'sub1');
+
     expect(result).toContain('</body>');
+
     const beforeBody = result.split('</body>')[0];
+
     expect(beforeBody).toContain(
-      `${TRACKING_BASE}/api/openmailer/track/open?c=camp1&s=sub1`
+      `${TRACKING_BASE}/api/openmailer/track/open?c=camp1&s=sub1`,
     );
     expect(beforeBody).toContain('<img src="');
     expect(beforeBody).toContain('width="1" height="1"');
@@ -30,6 +33,7 @@ describe('injectTrackingPixel', () => {
   it('appends pixel at end when HTML has no </body>', () => {
     const html = '<p>No body tag</p>';
     const result = injectTrackingPixel(html, 'c1', 's1');
+
     expect(result).toContain('<p>No body tag</p>');
     expect(result).toContain('/api/openmailer/track/open?');
     expect(result).toContain('c=c1');
@@ -39,6 +43,7 @@ describe('injectTrackingPixel', () => {
   it('encodes campaignId and subscriberId in pixel URL', () => {
     const html = '<p>x</p>';
     const result = injectTrackingPixel(html, 'a+b', 's=1');
+
     // encodeURIComponent('a+b') => 'a%2Bb', encodeURIComponent('s=1') => 's%3D1'
     expect(result).toContain('c=a%2Bb');
     expect(result).toContain('s=s%3D1');
@@ -50,35 +55,39 @@ describe('replaceLinksWithTracking', () => {
     const html = '<a href="https://example.com">Link</a>';
     const linkMap = [{ url: 'https://example.com', shortCode: 'abc' }];
     const result = replaceLinksWithTracking(html, linkMap, 'sub1');
+
     expect(result).toContain(
-      `${TRACKING_BASE}/api/openmailer/track/click/abc?s=sub1`
+      `${TRACKING_BASE}/api/openmailer/track/click/abc?s=sub1`,
     );
     expect(result).not.toContain('href="https://example.com"');
   });
 
   it('replaces same URL appearing twice', () => {
-    const html =
-      '<a href="https://example.com">A</a> <a href="https://example.com">B</a>';
+    const html
+      = '<a href="https://example.com">A</a> <a href="https://example.com">B</a>';
     const linkMap = [{ url: 'https://example.com', shortCode: 'x' }];
     const result = replaceLinksWithTracking(html, linkMap, 'sub1');
     const count = (result.match(/track\/click\/x/g) ?? []).length;
+
     expect(count).toBe(2);
   });
 
   it('replaces href with single quotes', () => {
-    const html = "<a href='https://example.com'>Link</a>";
+    const html = '<a href=\'https://example.com\'>Link</a>';
     const linkMap = [{ url: 'https://example.com', shortCode: 'abc' }];
     const result = replaceLinksWithTracking(html, linkMap, 'sub1');
+
     expect(result).toContain(
-      `${TRACKING_BASE}/api/openmailer/track/click/abc?s=sub1`
+      `${TRACKING_BASE}/api/openmailer/track/click/abc?s=sub1`,
     );
-    expect(result).not.toContain("href='https://example.com'");
+    expect(result).not.toContain('href=\'https://example.com\'');
   });
 
   it('leaves URL unchanged when not in linkMap', () => {
     const html = '<a href="https://other.com">Other</a>';
     const linkMap = [{ url: 'https://example.com', shortCode: 'abc' }];
     const result = replaceLinksWithTracking(html, linkMap, 'sub1');
+
     expect(result).toContain('href="https://other.com"');
     expect(result).not.toContain('/track/click/');
   });
@@ -87,28 +96,32 @@ describe('replaceLinksWithTracking', () => {
 describe('extractUrlsFromHtml', () => {
   it('returns array with one URL for single href', () => {
     const html = '<a href="https://example.com">Link</a>';
+
     expect(extractUrlsFromHtml(html)).toEqual(['https://example.com']);
   });
 
   it('returns unique URLs only (no duplicates)', () => {
-    const html =
-      '<a href="https://example.com">A</a><a href="https://example.com">B</a>';
+    const html
+      = '<a href="https://example.com">A</a><a href="https://example.com">B</a>';
+
     expect(extractUrlsFromHtml(html)).toEqual(['https://example.com']);
   });
 
   it('excludes mailto and # anchors', () => {
-    const html =
-      '<a href="mailto:x@y.com">Mail</a><a href="#">Top</a><a href="https://example.com">Link</a>';
+    const html
+      = '<a href="mailto:x@y.com">Mail</a><a href="#">Top</a><a href="https://example.com">Link</a>';
     const urls = extractUrlsFromHtml(html);
+
     expect(urls).not.toContain('mailto:x@y.com');
     expect(urls).not.toContain('#');
     expect(urls).toContain('https://example.com');
   });
 
   it('extracts URLs from both double and single quoted hrefs', () => {
-    const html =
-      '<a href="https://a.com">A</a><a href=\'https://b.com\'>B</a>';
+    const html
+      = '<a href="https://a.com">A</a><a href=\'https://b.com\'>B</a>';
     const urls = extractUrlsFromHtml(html);
+
     expect(urls).toContain('https://a.com');
     expect(urls).toContain('https://b.com');
     expect(urls).toHaveLength(2);
@@ -141,6 +154,7 @@ describe('sendOpenmailerEmail', () => {
       html: '<p>Hi</p>',
       from: 'sender@example.com',
     });
+
     expect(result).toEqual({ success: true, messageId: 're_xyz' });
     expect(mockSend).toHaveBeenCalledWith({
       from: 'sender@example.com',
@@ -168,6 +182,7 @@ describe('sendOpenmailerEmail', () => {
       html: '<p>Hi</p>',
       from: 'sender@example.com',
     });
+
     expect(result).toEqual({ success: false, error: 'Invalid key' });
   });
 
@@ -184,6 +199,7 @@ describe('sendOpenmailerEmail', () => {
       html: '<p>Hi</p>',
       from: 'sender@example.com',
     });
+
     expect(result).toEqual({ success: false, error: 'Network error' });
   });
 });

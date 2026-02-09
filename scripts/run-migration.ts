@@ -20,14 +20,14 @@ dotenv.config();
 function parseStatements(content: string): string[] {
   return content
     .split(/;\s*\n/)
-    .map((chunk) =>
+    .map(chunk =>
       chunk
         .split('\n')
-        .filter((line) => !line.trim().startsWith('--'))
+        .filter(line => !line.trim().startsWith('--'))
         .join('\n')
         .trim(),
     )
-    .filter((s) => s.length > 0);
+    .filter(s => s.length > 0);
 }
 
 async function main() {

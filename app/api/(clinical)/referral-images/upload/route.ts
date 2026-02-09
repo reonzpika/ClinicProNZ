@@ -1,4 +1,5 @@
 import Ably from 'ably';
+import { getDb } from 'database/client';
 import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import type { NextRequest } from 'next/server';
@@ -6,10 +7,9 @@ import { NextResponse } from 'next/server';
 import sharp from 'sharp';
 
 import { imageToolUploads, imageToolUsage, users } from '@/db/schema';
-import { calculateLimit, canUseGraceUnlock, getCurrentMonth, getMonthFromDate, calculateExpiryDate } from '@/src/lib/services/referral-images/utils';
-import { sendLimitHitEmail } from '@/src/lib/services/referral-images/email-service';
 import { buildImageToolS3Key, generateImageToolPresignedUpload } from '@/src/lib/image-tool/s3';
-import { getDb } from 'database/client';
+import { sendLimitHitEmail } from '@/src/lib/services/referral-images/email-service';
+import { calculateExpiryDate, calculateLimit, canUseGraceUnlock, getCurrentMonth, getMonthFromDate } from '@/src/lib/services/referral-images/utils';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
     if (!userId || !imageData) {
       return NextResponse.json(
         { error: 'Missing required fields' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -81,8 +81,8 @@ export async function POST(req: NextRequest) {
       .where(
         and(
           eq(imageToolUsage.userId, userId),
-          eq(imageToolUsage.month, currentMonth)
-        )
+          eq(imageToolUsage.month, currentMonth),
+        ),
       )
       .limit(1);
 
@@ -155,7 +155,7 @@ export async function POST(req: NextRequest) {
     const imageId = nanoid(12);
     const s3Key = buildImageToolS3Key({ userId, imageId, contentType: 'image/jpeg' });
     // #region agent log
-    fetch('http://127.0.0.1:7242/ingest/b70ba97c-65e6-4de6-addd-e020eb9f4fec',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'upload/route.ts:148',message:'s3Key generated ONCE',data:{s3Key,imageId,userId},timestamp:Date.now(),sessionId:'debug-session',hypothesisId:'FIX',runId:'post-fix'})}).catch(()=>{});
+    fetch('http://127.0.0.1:7242/ingest/b70ba97c-65e6-4de6-addd-e020eb9f4fec', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ location: 'upload/route.ts:148', message: 's3Key generated ONCE', data: { s3Key, imageId, userId }, timestamp: Date.now(), sessionId: 'debug-session', hypothesisId: 'FIX', runId: 'post-fix' }) }).catch(() => {});
     // #endregion
 
     // Get presigned upload URL using the pre-generated s3Key
@@ -195,11 +195,11 @@ export async function POST(req: NextRequest) {
 
     // Increment usage count; optionally grant grace and send limit hit email
     const newImageCount = imageCount + 1;
-    const shouldSendLimitHitEmail =
-      accountCreatedMonth !== currentMonth &&
-      newImageCount === 10 &&
-      !limitHitEmailSentAt &&
-      canUseGraceUnlock(graceUnlocksUsed);
+    const shouldSendLimitHitEmail
+      = accountCreatedMonth !== currentMonth
+        && newImageCount === 10
+        && !limitHitEmailSentAt
+        && canUseGraceUnlock(graceUnlocksUsed);
 
     await db
       .update(imageToolUsage)
@@ -214,8 +214,8 @@ export async function POST(req: NextRequest) {
       .where(
         and(
           eq(imageToolUsage.userId, userId),
-          eq(imageToolUsage.month, currentMonth)
-        )
+          eq(imageToolUsage.month, currentMonth),
+        ),
       );
 
     // Send Email 4 (limit hit) when 10th image captured in month 2+
@@ -265,7 +265,7 @@ export async function POST(req: NextRequest) {
     try {
       const ably = new Ably.Rest({ key: process.env.ABLY_API_KEY });
       console.log('[referral-images/upload] Ably Rest client created');
-      
+
       const channel = ably.channels.get(`user:${userId}`);
       console.log('[referral-images/upload] Got channel:', channel.name);
 
@@ -277,7 +277,7 @@ export async function POST(req: NextRequest) {
       console.log('[referral-images/upload] Publishing message:', messageData);
 
       const publishResult = await channel.publish('image-uploaded', messageData);
-      
+
       console.log('[referral-images/upload] Ably publish successful!', {
         result: publishResult,
         channelName: channel.name,
@@ -286,7 +286,7 @@ export async function POST(req: NextRequest) {
       });
     } catch (error: any) {
       console.error('[referral-images/upload] Ably publish failed:', {
-        error: error,
+        error,
         message: error?.message,
         code: error?.code,
         statusCode: error?.statusCode,
@@ -310,7 +310,7 @@ export async function POST(req: NextRequest) {
     console.error('[referral-images/upload] Error:', error);
     return NextResponse.json(
       { error: 'Failed to upload image' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -42,7 +42,7 @@ export default async function OpenmailerCampaignsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {campaigns.map((c) => (
+              {campaigns.map(c => (
                 <tr key={c.id}>
                   <td className="whitespace-nowrap px-6 py-4">
                     <Link

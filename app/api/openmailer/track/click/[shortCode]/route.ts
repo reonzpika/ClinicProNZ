@@ -1,7 +1,7 @@
 import { getDb } from 'database/client';
-import { and, eq } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import { and, eq, sql } from 'drizzle-orm';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import {
   openmailerCampaigns,
@@ -12,13 +12,13 @@ import {
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ shortCode: string }> }
+  context: { params: Promise<{ shortCode: string }> },
 ) {
   const { shortCode } = await context.params;
-  const baseUrl =
-    process.env.NEXT_PUBLIC_APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-    'https://clinicpro.co.nz';
+  const baseUrl
+    = process.env.NEXT_PUBLIC_APP_URL
+      || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null)
+      || 'https://clinicpro.co.nz';
 
   try {
     const db = getDb();
@@ -40,8 +40,8 @@ export async function GET(
         .where(
           and(
             eq(openmailerEmails.campaignId, link.campaignId),
-            eq(openmailerEmails.subscriberId, subscriberId)
-          )
+            eq(openmailerEmails.subscriberId, subscriberId),
+          ),
         )
         .limit(1);
 

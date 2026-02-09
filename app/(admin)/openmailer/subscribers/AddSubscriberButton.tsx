@@ -24,7 +24,9 @@ export function AddSubscriberButton() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.email.trim()) return;
+    if (!form.email.trim()) {
+ return;
+}
     setLoading(true);
     try {
       const res = await fetch('/api/openmailer/subscribers', {
@@ -76,9 +78,8 @@ export function AddSubscriberButton() {
               id="add-email"
               type="email"
               value={form.email}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, email: e.target.value }))
-              }
+              onChange={e =>
+                setForm(f => ({ ...f, email: e.target.value }))}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
               placeholder="e.g. name@example.com"
               required
@@ -95,7 +96,7 @@ export function AddSubscriberButton() {
               id="add-name"
               type="text"
               value={form.name}
-              onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
               placeholder="Optional"
             />
@@ -110,9 +111,8 @@ export function AddSubscriberButton() {
             <select
               id="add-list"
               value={form.listName}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, listName: e.target.value }))
-              }
+              onChange={e =>
+                setForm(f => ({ ...f, listName: e.target.value }))}
               className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
             >
               <option value="pho-contacts">pho-contacts</option>

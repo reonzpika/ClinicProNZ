@@ -1,10 +1,10 @@
 import { clerkClient } from '@clerk/nextjs/server';
+import { getDb } from 'database/client';
 import { eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { users } from '@/db/schema';
-import { getDb } from 'database/client';
 
 export const runtime = 'nodejs';
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   if (!userId || typeof userId !== 'string') {
     return NextResponse.json(
       { error: 'userId is required' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
 
     const clerk = await clerkClient();
     const clerkUser = await clerk.users.getUser(userId);
-    const email =
-      clerkUser.emailAddresses[0]?.emailAddress ?? null;
+    const email
+      = clerkUser.emailAddresses[0]?.emailAddress ?? null;
 
     if (!email) {
       return NextResponse.json({
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
     console.error('[referral-images/check-setup] Error:', error);
     return NextResponse.json(
       { error: 'Failed to check setup' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,19 +1,19 @@
+import { getDb } from 'database/client';
 import { and, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import sharp from 'sharp';
 
 import { imageToolUploads } from '@/db/schema';
-import { getDb } from 'database/client';
 import { getImageToolObject, putImageToolObject } from '@/src/lib/image-tool/s3';
 
 export const runtime = 'nodejs';
 
-interface RouteParams {
+type RouteParams = {
   params: Promise<{
     imageId: string;
   }>;
-}
+};
 
 /**
  * POST /api/referral-images/rotate/[imageId]?u=userId
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   if (!requestUserId) {
     return NextResponse.json(
       { error: 'Missing user ID (query param u required)' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   } catch {
     return NextResponse.json(
       { error: 'Invalid JSON body' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   if (typeof degrees !== 'number' || ![-270, -180, -90, 90, 180, 270].includes(degrees)) {
     return NextResponse.json(
       { error: 'degrees must be one of: -270, -180, -90, 90, 180, 270' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     if (!imageRow.length) {
       return NextResponse.json(
         { error: 'Image not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     if (!row || row.userId !== requestUserId) {
       return NextResponse.json(
         { error: row ? 'Forbidden' : 'Image not found' },
-        { status: row ? 403 : 404 }
+        { status: row ? 403 : 404 },
       );
     }
 
@@ -92,8 +92,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       .where(
         and(
           eq(imageToolUploads.imageId, imageId),
-          eq(imageToolUploads.userId, requestUserId)
-        )
+          eq(imageToolUploads.userId, requestUserId),
+        ),
       );
 
     return new NextResponse(null, { status: 204 });
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     console.error('[referral-images/rotate] Error:', error);
     return NextResponse.json(
       { error: 'Failed to rotate image' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

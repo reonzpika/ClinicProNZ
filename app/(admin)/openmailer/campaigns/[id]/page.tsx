@@ -19,7 +19,9 @@ export default async function OpenmailerCampaignDetailPage({
     .from(openmailerCampaigns)
     .where(eq(openmailerCampaigns.id, id))
     .limit(1);
-  if (!campaign) notFound();
+  if (!campaign) {
+ notFound();
+}
 
   return (
     <div className="space-y-6">
@@ -42,13 +44,19 @@ export default async function OpenmailerCampaignDetailPage({
         <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
           <p className="text-sm text-gray-600">Sent</p>
           <p className="mt-1 font-semibold text-gray-900">
-            {campaign.totalSent} / {campaign.totalRecipients}
+            {campaign.totalSent}
+{' '}
+/
+{campaign.totalRecipients}
           </p>
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
           <p className="text-sm text-gray-600">Opens / Clicks</p>
           <p className="mt-1 font-semibold text-gray-900">
-            {campaign.totalOpens} / {campaign.totalClicks}
+            {campaign.totalOpens}
+{' '}
+/
+{campaign.totalClicks}
           </p>
         </div>
       </div>

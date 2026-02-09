@@ -1,6 +1,7 @@
 import { getDb } from 'database/client';
 import { desc } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { openmailerCampaigns } from '@/db/schema';
 
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
   if (!name || !subject || !bodyHtml || !listName) {
     return NextResponse.json(
       { error: 'name, subject, bodyHtml, listName required' },
-      { status: 400 }
+      { status: 400 },
     );
   }
   const id = crypto.randomUUID();

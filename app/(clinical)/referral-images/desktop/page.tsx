@@ -1,30 +1,31 @@
 'use client';
 
-import { Suspense, useEffect, useState, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { QRCodeSVG } from 'qrcode.react';
 import * as Tabs from '@radix-ui/react-tabs';
-import { Copy, Mail, MessageSquare, QrCode, Download, CheckCircle, AlertCircle, Share2, Trash2, Smartphone, RotateCcw, RotateCw, Loader2 } from 'lucide-react';
 import Ably from 'ably';
+import { AlertCircle, CheckCircle, Copy, Download, Loader2, Mail, MessageSquare, QrCode, RotateCcw, RotateCw, Share2, Smartphone, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { QRCodeSVG } from 'qrcode.react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 
-import { ShareModal } from '../components/ShareModal';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/src/shared/components/ui/dialog';
+import { useToast } from '@/src/shared/components/ui/toast';
+
 import { BookmarkInstructionsModal } from '../components/BookmarkInstructionsModal';
-import { useShare } from '../components/useShare';
 import {
   incrementDownloadCount,
   isSharePromptThreshold,
 } from '../components/share-prompt-threshold';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/src/shared/components/ui/dialog';
-import { useToast } from '@/src/shared/components/ui/toast';
+import { ShareModal } from '../components/ShareModal';
+import { useShare } from '../components/useShare';
 
-interface ImageData {
+type ImageData = {
   imageId: string;
   presignedUrl: string;
   filename: string;
@@ -34,9 +35,9 @@ interface ImageData {
     side?: 'R' | 'L';
     description?: string;
   };
-}
+};
 
-interface StatusData {
+type StatusData = {
   tier: string;
   imageCount: number;
   limit: number;
@@ -45,14 +46,16 @@ interface StatusData {
   referralCode?: string | null;
   totalLifetimeImages?: number;
   images: ImageData[];
-}
+};
 
 function formatBytes(bytes: number): string {
-  if (bytes === 0 || !Number.isFinite(bytes)) return '0 KB';
+  if (bytes === 0 || !Number.isFinite(bytes)) {
+ return '0 KB';
+}
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB'];
   const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), sizes.length - 1);
-  return Math.round(bytes / Math.pow(k, i)) + ' ' + sizes[i];
+  return `${Math.round(bytes / k ** i)} ${sizes[i]}`;
 }
 
 /** Display title for an image: includes side in title when present (matches download filename). */
@@ -61,7 +64,9 @@ function imageDisplayTitle(image: ImageData): string {
   if (image.metadata?.description) {
     return sideLabel ? `${image.metadata.description} (${sideLabel})` : image.metadata.description;
   }
-  if (sideLabel) return sideLabel;
+  if (sideLabel) {
+ return sideLabel;
+}
   return image.filename || 'Clinical photo';
 }
 
@@ -88,35 +93,41 @@ function ReferralImagesDesktopPageContent() {
   const [emailSent, setEmailSent] = useState(false);
 
   // Share URL: Always use landing page for sharing to others (with optional referral tracking)
-  const shareUrl =
-    typeof window !== 'undefined'
+  const shareUrl
+    = typeof window !== 'undefined'
       ? `${window.location.origin}/referral-images${status?.referralCode ? `?ref=${status.referralCode}` : ''}`
       : '';
   const { handleShare, shareModalOpen, setShareModalOpen, shareLocation } = useShare(
     userId ?? null,
-    shareUrl
+    shareUrl,
   );
   const toast = useToast();
 
   const onShareClick = async (location: string) => {
     const usedNative = await handleShare(location);
-    if (usedNative) toast.show({ title: 'Thanks for sharing!', durationMs: 3000 });
+    if (usedNative) {
+ toast.show({ title: 'Thanks for sharing!', durationMs: 3000 });
+}
   };
 
   const fetchStatus = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+ return;
+}
 
     try {
       const response = await fetch(`/api/referral-images/status/${userId}`);
-      if (!response.ok) throw new Error('Failed to fetch status');
+      if (!response.ok) {
+ throw new Error('Failed to fetch status');
+}
 
       const data = await response.json();
       setStatus(data);
       setError(null);
       if (
-        data.totalLifetimeImages >= 10 &&
-        typeof window !== 'undefined' &&
-        !window.localStorage.getItem(`milestone_10_${userId}`)
+        data.totalLifetimeImages >= 10
+        && typeof window !== 'undefined'
+        && !window.localStorage.getItem(`milestone_10_${userId}`)
       ) {
         setShowMilestoneModal(true);
       }
@@ -135,7 +146,9 @@ function ReferralImagesDesktopPageContent() {
 
   // Bookmark banner: hide if user previously dismissed
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+ return;
+}
     const isDismissed = localStorage.getItem('bookmark_banner_dismissed');
     setBookmarkBannerDismissed(!!isDismissed);
   }, []);
@@ -160,10 +173,10 @@ function ReferralImagesDesktopPageContent() {
     }
 
     console.log('[Ably Setup] Creating Ably Realtime instance...');
-    const ably = new Ably.Realtime({ 
+    const ably = new Ably.Realtime({
       key: process.env.NEXT_PUBLIC_ABLY_API_KEY,
     });
-    
+
     console.log('[Ably Setup] Getting channel for user:', userId);
     const channel = ably.channels.get(`user:${userId}`);
 
@@ -256,7 +269,7 @@ function ReferralImagesDesktopPageContent() {
     // Subscribe to image-uploaded events
     console.log('[Ably Subscribe] Subscribing to image-uploaded events...');
     console.log('[Ably Subscribe] Channel state before subscribe:', channel.state);
-    
+
     channel.subscribe('image-uploaded', (message) => {
       console.log('[Ably Message] Image uploaded event received!', {
         messageId: message.id,
@@ -278,18 +291,18 @@ function ReferralImagesDesktopPageContent() {
         channelState: channel.state,
         timestamp: new Date().toISOString(),
       });
-      
+
       console.log('[Ably Cleanup] Unsubscribing from channel...');
       channel.unsubscribe();
-      
+
       console.log('[Ably Cleanup] Closing Ably connection...');
       ably.close();
-      
+
       console.log('[Ably Cleanup] Cleanup completed');
     };
   }, [userId, fetchStatus]);
 
-  const mobileLink = typeof window !== 'undefined' 
+  const mobileLink = typeof window !== 'undefined'
     ? `${window.location.origin}/referral-images/capture?u=${userId}`
     : '';
 
@@ -304,11 +317,13 @@ function ReferralImagesDesktopPageContent() {
   };
 
   const shareViaEmail = async () => {
-    if (!userId) return;
-    
+    if (!userId) {
+ return;
+}
+
     setIsSendingEmail(true);
     setEmailSent(false);
-    
+
     try {
       const response = await fetch('/api/referral-images/send-mobile-link', {
         method: 'POST',
@@ -321,19 +336,19 @@ function ReferralImagesDesktopPageContent() {
       }
 
       setEmailSent(true);
-      toast.show({ 
-        title: 'Email sent! Check your inbox', 
-        durationMs: 3000 
+      toast.show({
+        title: 'Email sent! Check your inbox',
+        durationMs: 3000,
       });
-      
+
       // Reset success message after 5 seconds
       setTimeout(() => setEmailSent(false), 5000);
     } catch (err) {
       console.error('Failed to send email:', err);
-      toast.show({ 
-        title: 'Failed to send email. Please try again.', 
+      toast.show({
+        title: 'Failed to send email. Please try again.',
         variant: 'destructive',
-        durationMs: 3000 
+        durationMs: 3000,
       });
     } finally {
       setIsSendingEmail(false);
@@ -348,7 +363,9 @@ function ReferralImagesDesktopPageContent() {
   const triggerFileDownload = async (url: string, filename: string): Promise<boolean> => {
     try {
       const res = await fetch(url, { mode: 'cors' });
-      if (!res.ok) return false;
+      if (!res.ok) {
+ return false;
+}
       const blob = await res.blob();
       const objectUrl = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -368,18 +385,25 @@ function ReferralImagesDesktopPageContent() {
     userId ? `/api/referral-images/download/${image.imageId}?u=${userId}` : '';
 
   const downloadAll = async () => {
-    if (!status?.images.length || !userId) return;
+    if (!status?.images.length || !userId) {
+ return;
+}
 
     setIsDownloadingAll(true);
     try {
       let successCount = 0;
       for (const image of status.images) {
         const url = downloadUrl(image);
-        if (!url) continue;
+        if (!url) {
+ continue;
+}
         const ok = await triggerFileDownload(url, image.filename);
-        if (ok) successCount++;
-        else toast.show({ title: `Failed to download ${image.filename}`, variant: 'destructive' });
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        if (ok) {
+ successCount++;
+} else {
+ toast.show({ title: `Failed to download ${image.filename}`, variant: 'destructive' });
+}
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
       const newTotal = incrementDownloadCount(userId, successCount);
       setShowDownloadSuccessModal(isSharePromptThreshold(newTotal));
@@ -390,7 +414,9 @@ function ReferralImagesDesktopPageContent() {
 
   const downloadSingleImage = async (image: ImageData) => {
     const url = downloadUrl(image);
-    if (!url) return;
+    if (!url) {
+ return;
+}
 
     setDownloadingImageIds(prev => new Set(prev).add(image.imageId));
     try {
@@ -402,7 +428,7 @@ function ReferralImagesDesktopPageContent() {
         toast.show({ title: 'Failed to download image', variant: 'destructive' });
       }
     } finally {
-      setDownloadingImageIds(prev => {
+      setDownloadingImageIds((prev) => {
         const next = new Set(prev);
         next.delete(image.imageId);
         return next;
@@ -411,8 +437,10 @@ function ReferralImagesDesktopPageContent() {
   };
 
   const handleDeleteClick = async (imageId: string) => {
-    if (!userId) return;
-    
+    if (!userId) {
+ return;
+}
+
     // First click: show confirmation (checkmark)
     if (deleteConfirmImageId !== imageId) {
       setDeleteConfirmImageId(imageId);
@@ -422,13 +450,15 @@ function ReferralImagesDesktopPageContent() {
       }, 3000);
       return;
     }
-    
+
     // Second click: actually delete
     setDeletingImageId(imageId);
     setDeleteConfirmImageId(null);
     try {
       const res = await fetch(`/api/referral-images/delete/${imageId}?u=${userId}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Delete failed');
+      if (!res.ok) {
+ throw new Error('Delete failed');
+}
       await fetchStatus();
       toast.show({ title: 'Image deleted', durationMs: 2000 });
     } catch (err) {
@@ -440,7 +470,9 @@ function ReferralImagesDesktopPageContent() {
   };
 
   const handleRotateImage = async (imageId: string, degrees: number) => {
-    if (!userId) return;
+    if (!userId) {
+ return;
+}
     setRotatingImageId(imageId);
     try {
       const res = await fetch(`/api/referral-images/rotate/${imageId}?u=${userId}`, {
@@ -448,7 +480,9 @@ function ReferralImagesDesktopPageContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ degrees }),
       });
-      if (!res.ok) throw new Error('Rotate failed');
+      if (!res.ok) {
+ throw new Error('Rotate failed');
+}
       await fetchStatus();
     } catch (err) {
       console.error(err);
@@ -460,10 +494,10 @@ function ReferralImagesDesktopPageContent() {
 
   if (!userId) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-text-primary mb-2">Missing User ID</h1>
+          <AlertCircle className="mx-auto mb-4 size-16 text-red-500" />
+          <h1 className="mb-2 text-2xl font-bold text-text-primary">Missing User ID</h1>
           <p className="text-text-secondary">Please use the link from your welcome email.</p>
         </div>
       </div>
@@ -472,9 +506,9 @@ function ReferralImagesDesktopPageContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <div className="mx-auto mb-4 size-12 animate-spin rounded-full border-b-2 border-primary"></div>
           <p className="text-text-secondary">Loading...</p>
         </div>
       </div>
@@ -483,14 +517,14 @@ function ReferralImagesDesktopPageContent() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-text-primary mb-2">Error</h1>
-          <p className="text-text-secondary mb-4">{error}</p>
+          <AlertCircle className="mx-auto mb-4 size-16 text-red-500" />
+          <h1 className="mb-2 text-2xl font-bold text-text-primary">Error</h1>
+          <p className="mb-4 text-text-secondary">{error}</p>
           <button
             onClick={() => fetchStatus()}
-            className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark"
+            className="rounded-lg bg-primary px-6 py-2 text-white hover:bg-primary-dark"
           >
             Retry
           </button>
@@ -503,14 +537,17 @@ function ReferralImagesDesktopPageContent() {
     <div className="min-h-screen bg-background">
       {/* Bookmark banner - top banner, closable, blue highlight. Once dismissed it does not reappear (stored in localStorage until user clears site data). */}
       {!bookmarkBannerDismissed && (
-        <div className="bg-blue-100 border-b border-blue-200 px-4 py-3 flex items-center justify-between gap-4">
-          <p className="text-sm text-blue-900 flex-1">
+        <div className="flex items-center justify-between gap-4 border-b border-blue-200 bg-blue-100 px-4 py-3">
+          <p className="flex-1 text-sm text-blue-900">
             <span className="mr-1" aria-hidden>🔖</span>
-            <strong>Bookmark this page</strong> on your computer for quick access.{' '}
+            <strong>Bookmark this page</strong>
+{' '}
+on your computer for quick access.
+{' '}
             <button
               type="button"
               onClick={() => setShowBookmarkInstructions(true)}
-              className="text-blue-800 hover:text-blue-900 underline font-medium"
+              className="font-medium text-blue-800 underline hover:text-blue-900"
             >
               How to bookmark
             </button>
@@ -523,7 +560,7 @@ function ReferralImagesDesktopPageContent() {
               }
               setBookmarkBannerDismissed(true);
             }}
-            className="shrink-0 p-1 rounded hover:bg-blue-200/50 text-blue-900"
+            className="shrink-0 rounded p-1 text-blue-900 hover:bg-blue-200/50"
             aria-label="Dismiss bookmark banner"
           >
             ×
@@ -532,12 +569,12 @@ function ReferralImagesDesktopPageContent() {
       )}
 
       {/* Header */}
-      <header className="bg-white border-b border-border sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <header className="sticky top-0 z-50 border-b border-border bg-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
           <div className="flex items-center gap-2">
             <Link
               href="/"
-              className="text-xl font-bold text-text-primary hover:text-primary transition-colors"
+              className="text-xl font-bold text-text-primary transition-colors hover:text-primary"
             >
               ClinicPro
             </Link>
@@ -549,24 +586,24 @@ function ReferralImagesDesktopPageContent() {
           <div className="flex items-center gap-3">
             <Link
               href={mobileLink || '#'}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors text-text-primary"
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-text-primary transition-colors hover:bg-surface"
               title="Open mobile capture page"
             >
-              <Smartphone className="w-4 h-4" />
+              <Smartphone className="size-4" />
               Switch to Mobile Page
             </Link>
             <button
               type="button"
               onClick={() => onShareClick('desktop_header')}
               disabled={!userId || !shareUrl}
-              className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
               title={shareUrl ? 'Share with colleagues' : 'Share'}
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="size-4" />
               Share
             </button>
             {status?.tier === 'premium' && (
-              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-semibold">
+              <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-semibold text-green-800">
                 Premium
               </span>
             )}
@@ -599,9 +636,9 @@ function ReferralImagesDesktopPageContent() {
             </DialogTitle>
           </DialogHeader>
           <p className="text-text-secondary">Ready to attach to your referral.</p>
-          <div className="border-t border-border my-4" />
+          <div className="my-4 border-t border-border" />
           <p className="text-text-primary">Just saved &gt;10 minutes?</p>
-          <p className="text-sm text-text-secondary mb-4">
+          <p className="mb-4 text-sm text-text-secondary">
             Know GPs in your practice who still email photos to themselves?
           </p>
           <div className="flex flex-col gap-3">
@@ -611,23 +648,22 @@ function ReferralImagesDesktopPageContent() {
                 setShowDownloadSuccessModal(false);
                 onShareClick('desktop_after_download');
               }}
-              className="px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-white transition-colors hover:bg-primary-dark"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="size-4" />
               Share ClinicPro
             </button>
-            <p className="text-xs text-text-tertiary text-center">(Takes 5 seconds)</p>
+            <p className="text-center text-xs text-text-tertiary">(Takes 5 seconds)</p>
             <button
               type="button"
               onClick={() => setShowDownloadSuccessModal(false)}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors"
+              className="rounded-lg border border-border px-4 py-2 transition-colors hover:bg-surface"
             >
               Close
             </button>
           </div>
         </DialogContent>
       </Dialog>
-
 
       {/* 10th image milestone modal */}
       <Dialog
@@ -644,15 +680,19 @@ function ReferralImagesDesktopPageContent() {
             <DialogTitle>10 Referral Images Captured!</DialogTitle>
           </DialogHeader>
           <p className="text-text-secondary">
-            You&apos;ve saved approximately{' '}
+            You&apos;ve saved approximately
+{' '}
             <strong>
-              {(status?.totalLifetimeImages ?? 10) * 5} minutes
-            </strong>{' '}
+              {(status?.totalLifetimeImages ?? 10) * 5}
+{' '}
+minutes
+            </strong>
+{' '}
             of workflow time with ClinicPro.
           </p>
-          <div className="border-t border-border my-4" />
+          <div className="my-4 border-t border-border" />
           <p className="text-text-primary">Help your colleagues save time too</p>
-          <p className="text-sm text-text-secondary mb-4">
+          <p className="mb-4 text-sm text-text-secondary">
             Share ClinicPro with GPs who still do the email-resize-upload routine.
           </p>
           <div className="flex flex-col gap-3">
@@ -665,9 +705,9 @@ function ReferralImagesDesktopPageContent() {
                 }
                 onShareClick('desktop_milestone_10');
               }}
-              className="px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
+              className="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-white transition-colors hover:bg-primary-dark"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="size-4" />
               Share with Colleagues
             </button>
             <button
@@ -678,7 +718,7 @@ function ReferralImagesDesktopPageContent() {
                   window.localStorage.setItem(`milestone_10_${userId}`, 'true');
                 }
               }}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors"
+              className="rounded-lg border border-border px-4 py-2 transition-colors hover:bg-surface"
             >
               Maybe Later
             </button>
@@ -687,21 +727,21 @@ function ReferralImagesDesktopPageContent() {
       </Dialog>
 
       {/* Enlarged image modal */}
-      <Dialog open={enlargedImage !== null} onOpenChange={(open) => !open && setEnlargedImage(null)}>
-        <DialogContent className="sm:max-w-4xl max-w-[90vw]">
+      <Dialog open={enlargedImage !== null} onOpenChange={open => !open && setEnlargedImage(null)}>
+        <DialogContent className="max-w-[90vw] sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle className="sr-only">Enlarged image</DialogTitle>
           </DialogHeader>
           {enlargedImage && (
             <>
-              <div className="flex justify-center bg-black/5 rounded-lg overflow-hidden">
+              <div className="flex justify-center overflow-hidden rounded-lg bg-black/5">
                 <img
                   src={enlargedImage.presignedUrl}
                   alt={imageDisplayTitle(enlargedImage)}
-                  className="max-w-full max-h-[85vh] object-contain"
+                  className="max-h-[85vh] max-w-full object-contain"
                 />
               </div>
-              <p className="text-sm text-text-secondary text-center mt-2">
+              <p className="mt-2 text-center text-sm text-text-secondary">
                 {imageDisplayTitle(enlargedImage)}
               </p>
               <DialogFooter className="gap-2 sm:gap-0">
@@ -711,16 +751,18 @@ function ReferralImagesDesktopPageContent() {
                     downloadSingleImage(enlargedImage);
                   }}
                   disabled={downloadingImageIds.has(enlargedImage.imageId)}
-                  className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2 text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {downloadingImageIds.has(enlargedImage.imageId) ? (
+                  {downloadingImageIds.has(enlargedImage.imageId)
+? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="size-4 animate-spin" />
                       Downloading...
                     </>
-                  ) : (
+                  )
+: (
                     <>
-                      <Download className="w-4 h-4" />
+                      <Download className="size-4" />
                       Download
                     </>
                   )}
@@ -728,7 +770,7 @@ function ReferralImagesDesktopPageContent() {
                 <button
                   type="button"
                   onClick={() => setEnlargedImage(null)}
-                  className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors"
+                  className="rounded-lg border border-border px-4 py-2 transition-colors hover:bg-surface"
                 >
                   Close
                 </button>
@@ -738,40 +780,46 @@ function ReferralImagesDesktopPageContent() {
         </DialogContent>
       </Dialog>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="mx-auto max-w-7xl px-4 py-8">
         {/* Mobile Link Sharing - collapsed by default */}
-        <details className="bg-white rounded-lg shadow-sm border border-border mb-6 group">
-          <summary className="list-none cursor-pointer">
-            <div className="p-6 pb-4 flex items-center justify-between">
+        <details className="group mb-6 rounded-lg border border-border bg-white shadow-sm">
+          <summary className="cursor-pointer list-none">
+            <div className="flex items-center justify-between p-6 pb-4">
               <h2 className="text-lg font-semibold text-text-primary">
                 Send Mobile Link to Your Phone
               </h2>
-              <span className="text-text-tertiary group-open:rotate-180 transition-transform" aria-hidden>▼</span>
+              <span className="text-text-tertiary transition-transform group-open:rotate-180" aria-hidden>▼</span>
             </div>
           </summary>
           <div className="px-6 pb-6 pt-0">
-          <p className="text-sm text-text-secondary mb-4">
-            💡 <strong>Save the mobile link to your phone&apos;s home screen</strong> for instant access during consults.
+          <p className="mb-4 text-sm text-text-secondary">
+            💡
+{' '}
+<strong>Save the mobile link to your phone&apos;s home screen</strong>
+{' '}
+for instant access during consults.
           </p>
-          <div className="flex items-center gap-3 mb-4">
+          <div className="mb-4 flex items-center gap-3">
             <input
               type="text"
               value={mobileLink}
               readOnly
-              className="flex-1 px-4 py-2 bg-surface border border-border rounded-lg font-mono text-sm text-text-primary"
+              className="flex-1 rounded-lg border border-border bg-surface px-4 py-2 font-mono text-sm text-text-primary"
             />
             <button
               onClick={copyToClipboard}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-2"
+              className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white transition-colors hover:bg-primary-dark"
             >
-              {copySuccess ? (
+              {copySuccess
+? (
                 <>
-                  <CheckCircle className="w-4 h-4" />
+                  <CheckCircle className="size-4" />
                   Copied
                 </>
-              ) : (
+              )
+: (
                 <>
-                  <Copy className="w-4 h-4" />
+                  <Copy className="size-4" />
                   Copy
                 </>
               )}
@@ -782,57 +830,61 @@ function ReferralImagesDesktopPageContent() {
             <button
               onClick={shareViaEmail}
               disabled={isSendingEmail}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {isSendingEmail ? (
+              {isSendingEmail
+? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                   Sending...
                 </>
-              ) : emailSent ? (
+              )
+: emailSent
+? (
                 <>
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="size-4 text-green-600" />
                   Sent!
                 </>
-              ) : (
+              )
+: (
                 <>
-                  <Mail className="w-4 h-4" />
+                  <Mail className="size-4" />
                   Email Me
                 </>
               )}
             </button>
             <button
               onClick={shareViaWhatsApp}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors flex items-center gap-2"
+              className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition-colors hover:bg-surface"
             >
-              <MessageSquare className="w-4 h-4" />
+              <MessageSquare className="size-4" />
               WhatsApp
             </button>
             <button
               onClick={() => setShowQR(!showQR)}
-              className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors flex items-center gap-2"
+              className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition-colors hover:bg-surface"
             >
-              <QrCode className="w-4 h-4" />
+              <QrCode className="size-4" />
               {showQR ? 'Hide QR' : 'Show QR'}
             </button>
           </div>
 
           {showQR && mobileLink && (
-            <div className="mt-4 p-4 bg-surface rounded-lg">
-              <p className="text-sm text-text-secondary mb-2">Scan with your phone camera:</p>
-              <div className="bg-white p-4 inline-block rounded-lg">
+            <div className="mt-4 rounded-lg bg-surface p-4">
+              <p className="mb-2 text-sm text-text-secondary">Scan with your phone camera:</p>
+              <div className="inline-block rounded-lg bg-white p-4">
                 <QRCodeSVG value={mobileLink} size={200} level="M" />
               </div>
             </div>
           )}
 
-          <details className="mt-4 rounded-lg border border-border overflow-hidden">
-            <summary className="px-4 py-3 bg-surface cursor-pointer text-sm font-medium text-text-primary hover:bg-black/5">
+          <details className="mt-4 overflow-hidden rounded-lg border border-border">
+            <summary className="cursor-pointer bg-surface px-4 py-3 text-sm font-medium text-text-primary hover:bg-black/5">
               How to save to home screen
             </summary>
-            <div className="p-4 border-t border-border">
+            <div className="border-t border-border p-4">
               <Tabs.Root defaultValue="iphone" className="text-sm">
-                <Tabs.List className="flex gap-1 rounded-lg border border-border p-1 mb-4">
+                <Tabs.List className="mb-4 flex gap-1 rounded-lg border border-border p-1">
                   <Tabs.Trigger
                     value="iphone"
                     className="flex-1 rounded-md px-3 py-1.5 text-sm font-medium data-[state=active]:bg-surface data-[state=active]:shadow-sm"
@@ -846,16 +898,16 @@ function ReferralImagesDesktopPageContent() {
                     Android
                   </Tabs.Trigger>
                 </Tabs.List>
-                <Tabs.Content value="iphone" className="text-text-secondary space-y-2">
-                  <ol className="list-decimal list-inside space-y-1">
+                <Tabs.Content value="iphone" className="space-y-2 text-text-secondary">
+                  <ol className="list-inside list-decimal space-y-1">
                     <li>Open the mobile link in Safari</li>
                     <li>Tap the Share button (□↑)</li>
                     <li>Scroll and tap &quot;Add to Home Screen&quot;</li>
                     <li>Tap &quot;Add&quot;</li>
                   </ol>
                 </Tabs.Content>
-                <Tabs.Content value="android" className="text-text-secondary space-y-2">
-                  <ol className="list-decimal list-inside space-y-1">
+                <Tabs.Content value="android" className="space-y-2 text-text-secondary">
+                  <ol className="list-inside list-decimal space-y-1">
                     <li>Open the mobile link in Chrome</li>
                     <li>Tap the menu (⋮) in top-right</li>
                     <li>Tap &quot;Add to Home screen&quot;</li>
@@ -869,8 +921,8 @@ function ReferralImagesDesktopPageContent() {
         </details>
 
         {/* Images Gallery */}
-        <div className="bg-white rounded-lg shadow-sm border border-border p-6">
-          <div className="flex justify-between items-center mb-6">
+        <div className="rounded-lg border border-border bg-white p-6 shadow-sm">
+          <div className="mb-6 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-text-primary">
               Your Images (updates in real-time)
             </h2>
@@ -878,16 +930,18 @@ function ReferralImagesDesktopPageContent() {
               <button
                 onClick={downloadAll}
                 disabled={isDownloadingAll}
-                className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2 text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isDownloadingAll ? (
+                {isDownloadingAll
+? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="size-4 animate-spin" />
                     Downloading...
                   </>
-                ) : (
+                )
+: (
                   <>
-                    <Download className="w-4 h-4" />
+                    <Download className="size-4" />
                     Download All
                   </>
                 )}
@@ -896,20 +950,20 @@ function ReferralImagesDesktopPageContent() {
           </div>
 
           {status && status.images.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-text-secondary mb-4">No images yet</p>
+            <div className="py-12 text-center">
+              <p className="mb-4 text-text-secondary">No images yet</p>
               <p className="text-sm text-text-tertiary">
                 Use your mobile link to capture photos
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {status?.images.map((image) => (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {status?.images.map(image => (
                 <div
                   key={image.imageId}
                   role="button"
                   tabIndex={0}
-                  className="group relative aspect-square border border-border rounded-lg overflow-hidden hover:border-primary hover:shadow-md transition-all cursor-pointer"
+                  className="group relative aspect-square cursor-pointer overflow-hidden rounded-lg border border-border transition-all hover:border-primary hover:shadow-md"
                   onClick={() => setEnlargedImage(image)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -921,10 +975,10 @@ function ReferralImagesDesktopPageContent() {
                   <img
                     src={image.presignedUrl}
                     alt={imageDisplayTitle(image)}
-                    className="w-full h-full object-cover"
+                    className="size-full object-cover"
                   />
                   {/* Action buttons - stopPropagation so card click (open modal) does not fire; visible on hover/focus */}
-                  <div className="absolute top-2 right-2 flex gap-1 pointer-events-auto opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
+                  <div className="pointer-events-auto absolute right-2 top-2 flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
                     <button
                       type="button"
                       onClick={(e) => {
@@ -932,13 +986,13 @@ function ReferralImagesDesktopPageContent() {
                         e.preventDefault();
                         handleRotateImage(image.imageId, -90);
                       }}
-                      onKeyDown={(e) => e.stopPropagation()}
+                      onKeyDown={e => e.stopPropagation()}
                       disabled={rotatingImageId === image.imageId}
-                      className="p-2 rounded-lg bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-50"
+                      className="rounded-lg bg-black/50 p-2 text-white transition-colors hover:bg-black/70 disabled:opacity-50"
                       title="Rotate left"
                       aria-label="Rotate left"
                     >
-                      <RotateCcw className="w-4 h-4" />
+                      <RotateCcw className="size-4" />
                     </button>
                     <button
                       type="button"
@@ -947,13 +1001,13 @@ function ReferralImagesDesktopPageContent() {
                         e.preventDefault();
                         handleRotateImage(image.imageId, 90);
                       }}
-                      onKeyDown={(e) => e.stopPropagation()}
+                      onKeyDown={e => e.stopPropagation()}
                       disabled={rotatingImageId === image.imageId}
-                      className="p-2 rounded-lg bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-50"
+                      className="rounded-lg bg-black/50 p-2 text-white transition-colors hover:bg-black/70 disabled:opacity-50"
                       title="Rotate right"
                       aria-label="Rotate right"
                     >
-                      <RotateCw className="w-4 h-4" />
+                      <RotateCw className="size-4" />
                     </button>
                     <button
                       type="button"
@@ -962,16 +1016,18 @@ function ReferralImagesDesktopPageContent() {
                         e.preventDefault();
                         downloadSingleImage(image);
                       }}
-                      onKeyDown={(e) => e.stopPropagation()}
+                      onKeyDown={e => e.stopPropagation()}
                       disabled={downloadingImageIds.has(image.imageId)}
-                      className="p-2 rounded-lg bg-black/50 text-white hover:bg-black/70 transition-colors disabled:opacity-50"
+                      className="rounded-lg bg-black/50 p-2 text-white transition-colors hover:bg-black/70 disabled:opacity-50"
                       title="Download"
                       aria-label="Download"
                     >
-                      {downloadingImageIds.has(image.imageId) ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Download className="w-4 h-4" />
+                      {downloadingImageIds.has(image.imageId)
+? (
+                        <Loader2 className="size-4 animate-spin" />
+                      )
+: (
+                        <Download className="size-4" />
                       )}
                     </button>
                     <button
@@ -981,9 +1037,9 @@ function ReferralImagesDesktopPageContent() {
                         e.preventDefault();
                         handleDeleteClick(image.imageId);
                       }}
-                      onKeyDown={(e) => e.stopPropagation()}
+                      onKeyDown={e => e.stopPropagation()}
                       disabled={deletingImageId === image.imageId}
-                      className={`p-2 rounded-lg ${
+                      className={`rounded-lg p-2 ${
                         deleteConfirmImageId === image.imageId
                           ? 'bg-red-600 hover:bg-red-700'
                           : 'bg-black/50 hover:bg-black/70'
@@ -997,21 +1053,25 @@ function ReferralImagesDesktopPageContent() {
                       }
                       aria-label={deleteConfirmImageId === image.imageId ? 'Confirm delete' : 'Delete image'}
                     >
-                      {deletingImageId === image.imageId ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : deleteConfirmImageId === image.imageId ? (
-                        <CheckCircle className="w-4 h-4" />
-                      ) : (
-                        <Trash2 className="w-4 h-4" />
+                      {deletingImageId === image.imageId
+? (
+                        <Loader2 className="size-4 animate-spin" />
+                      )
+: deleteConfirmImageId === image.imageId
+? (
+                        <CheckCircle className="size-4" />
+                      )
+: (
+                        <Trash2 className="size-4" />
                       )}
                     </button>
                   </div>
                   {/* Metadata Overlay - single label: description (side) || side || filename */}
-                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 to-transparent text-white pointer-events-none">
-                    <p className="text-sm truncate font-medium">
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 text-white">
+                    <p className="truncate text-sm font-medium">
                       {imageDisplayTitle(image)}
                     </p>
-                    <p className="text-xs opacity-80 mt-1">
+                    <p className="mt-1 text-xs opacity-80">
                       {formatBytes(image.fileSize)}
                     </p>
                   </div>
@@ -1025,17 +1085,24 @@ function ReferralImagesDesktopPageContent() {
               <button
                 onClick={downloadAll}
                 disabled={isDownloadingAll}
-                className="w-full max-w-md px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex w-full max-w-md items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
               >
-                {isDownloadingAll ? (
+                {isDownloadingAll
+? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="size-5 animate-spin" />
                     Downloading...
                   </>
-                ) : (
+                )
+: (
                   <>
-                    <Download className="w-5 h-5" />
-                    Download All {status.images.length} Image{status.images.length !== 1 ? 's' : ''}
+                    <Download className="size-5" />
+                    Download All
+{' '}
+{status.images.length}
+{' '}
+Image
+{status.images.length !== 1 ? 's' : ''}
                   </>
                 )}
               </button>
@@ -1060,11 +1127,11 @@ function ReferralImagesDesktopPageContent() {
 export default function ReferralImagesDesktopPage() {
   return (
     <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-background">
+      fallback={(
+        <div className="flex min-h-screen items-center justify-center bg-background">
           <p className="text-text-secondary">Loading...</p>
         </div>
-      }
+      )}
     >
       <ReferralImagesDesktopPageContent />
     </Suspense>

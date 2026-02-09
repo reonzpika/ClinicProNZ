@@ -1,12 +1,13 @@
 import { getDb } from 'database/client';
 import { and, eq, sql } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { openmailerCampaigns, openmailerEmails } from '@/db/schema';
 
 // 1x1 transparent GIF (base64)
-const PIXEL =
-  'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+const PIXEL
+  = 'R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
@@ -22,8 +23,8 @@ export async function GET(request: NextRequest) {
         .where(
           and(
             eq(openmailerEmails.campaignId, campaignId),
-            eq(openmailerEmails.subscriberId, subscriberId)
-          )
+            eq(openmailerEmails.subscriberId, subscriberId),
+          ),
         )
         .limit(1);
 
@@ -50,8 +51,8 @@ export async function GET(request: NextRequest) {
     headers: {
       'Content-Type': 'image/gif',
       'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-      Pragma: 'no-cache',
-      Expires: '0',
+      'Pragma': 'no-cache',
+      'Expires': '0',
     },
   });
 }

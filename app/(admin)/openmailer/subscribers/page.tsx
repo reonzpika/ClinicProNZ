@@ -102,7 +102,7 @@ export default async function OpenmailerSubscribersPage({
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {rows.map((r) => (
+              {rows.map(r => (
                 <tr key={r.id}>
                   <td className="whitespace-nowrap px-6 py-4 text-gray-900">
                     {r.email}

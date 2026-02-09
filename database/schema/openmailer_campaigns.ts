@@ -24,10 +24,10 @@ export const openmailerCampaigns = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
+  table => [
     index('openmailer_campaigns_list_name_idx').on(table.listName),
     index('openmailer_campaigns_status_idx').on(table.status),
-  ]
+  ],
 );
 
 export type OpenmailerCampaign = typeof openmailerCampaigns.$inferSelect;

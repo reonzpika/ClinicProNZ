@@ -1,18 +1,18 @@
+import { getDb } from 'database/client';
 import { and, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { imageToolUploads } from '@/db/schema';
-import { getDb } from 'database/client';
 import { deleteImageToolObject } from '@/src/lib/image-tool/s3';
 
 export const runtime = 'nodejs';
 
-interface RouteParams {
+type RouteParams = {
   params: Promise<{
     imageId: string;
   }>;
-}
+};
 
 /**
  * DELETE /api/referral-images/delete/[imageId]?u=userId
@@ -26,7 +26,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   if (!requestUserId) {
     return NextResponse.json(
       { error: 'Missing user ID (query param u required)' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -45,7 +45,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     if (!imageRow.length) {
       return NextResponse.json(
         { error: 'Image not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -53,14 +53,14 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     if (!row) {
       return NextResponse.json(
         { error: 'Image not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     if (row.userId !== requestUserId) {
       return NextResponse.json(
         { error: 'Forbidden' },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -68,7 +68,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       .delete(imageToolUploads)
       .where(and(
         eq(imageToolUploads.imageId, imageId),
-        eq(imageToolUploads.userId, requestUserId)
+        eq(imageToolUploads.userId, requestUserId),
       ));
 
     try {
@@ -83,7 +83,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     console.error('[referral-images/delete] Error:', error);
     return NextResponse.json(
       { error: 'Failed to delete image' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -14,7 +14,9 @@ const LOADING_MESSAGES = [
 ] as const;
 
 function isMobileDevice(): boolean {
-  if (typeof navigator === 'undefined') return false;
+  if (typeof navigator === 'undefined') {
+ return false;
+}
   return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 }
 
@@ -69,7 +71,9 @@ export default function ReferralImagesLandingPage() {
   // Smart redirect: when signed in, check setup; if has setup, redirect to desktop or capture by device
   // If no setup, auto-trigger setup for seamless post-signup experience
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded) {
+ return;
+}
     if (!userId) {
       setHasSetup(false);
       return;
@@ -78,17 +82,21 @@ export default function ReferralImagesLandingPage() {
     fetch(`/api/referral-images/check-setup?userId=${encodeURIComponent(userId)}`)
       .then((res) => {
         if (!res.ok) {
-          if (!cancelled) setHasSetup(false);
+          if (!cancelled) {
+ setHasSetup(false);
+}
           return null;
         }
         return res.json() as Promise<{ hasSetup?: boolean; referralUserId?: string | null }>;
       })
       .then(async (data) => {
-        if (cancelled || data == null) return;
+        if (cancelled || data == null) {
+ return;
+}
         const hasSetupVal = !!data.hasSetup;
         const referralUserId = data.referralUserId ?? userId;
         setHasSetup(hasSetupVal);
-        
+
         if (hasSetupVal) {
           // User has setup - redirect to desktop/capture page
           setIsRedirecting(true);
@@ -96,7 +104,7 @@ export default function ReferralImagesLandingPage() {
           router.push(
             isMobile
               ? `/referral-images/capture?u=${referralUserId}`
-              : `/referral-images/desktop?u=${referralUserId}`
+              : `/referral-images/desktop?u=${referralUserId}`,
           );
         } else {
           // User is signed in but no setup - auto-trigger setup for seamless experience
@@ -104,7 +112,9 @@ export default function ReferralImagesLandingPage() {
           setIsSetupLoading(true);
           try {
             const response = await fetch('/api/referral-images/setup', { method: 'POST' });
-            if (!response.ok) throw new Error('Setup failed');
+            if (!response.ok) {
+ throw new Error('Setup failed');
+}
             const setupData = await response.json();
             if (typeof window !== 'undefined' && setupData.desktopLink != null && setupData.mobileLink != null) {
               sessionStorage.setItem('referral-images-desktop-link', setupData.desktopLink);
@@ -120,7 +130,9 @@ export default function ReferralImagesLandingPage() {
         }
       })
       .catch(() => {
-        if (!cancelled) setHasSetup(false);
+        if (!cancelled) {
+ setHasSetup(false);
+}
       });
     return () => {
       cancelled = true;
@@ -128,11 +140,15 @@ export default function ReferralImagesLandingPage() {
   }, [userId, isLoaded, router]);
 
   const handleGetStarted = async () => {
-    if (!userId) return;
+    if (!userId) {
+ return;
+}
     setIsSetupLoading(true);
     try {
       const response = await fetch('/api/referral-images/setup', { method: 'POST' });
-      if (!response.ok) throw new Error('Setup failed');
+      if (!response.ok) {
+ throw new Error('Setup failed');
+}
       const data = await response.json();
       if (typeof window !== 'undefined' && data.desktopLink != null && data.mobileLink != null) {
         sessionStorage.setItem('referral-images-desktop-link', data.desktopLink);
@@ -147,12 +163,12 @@ export default function ReferralImagesLandingPage() {
     }
   };
 
-  const showLoading =
-    !isLoaded ||
-    (userId && hasSetup === null) ||
-    isRedirecting ||
-    isSetupLoading ||
-    isLoading;
+  const showLoading
+    = !isLoaded
+      || (userId && hasSetup === null)
+      || isRedirecting
+      || isSetupLoading
+      || isLoading;
   const showLanding = isLoaded && (hasSetup === false || !userId);
 
   useEffect(() => {
@@ -161,14 +177,14 @@ export default function ReferralImagesLandingPage() {
       return;
     }
     const interval = setInterval(() => {
-      setLoadingMessageIndex((prev) =>
-        prev < LOADING_MESSAGES.length - 1 ? prev + 1 : prev
+      setLoadingMessageIndex(prev =>
+        prev < LOADING_MESSAGES.length - 1 ? prev + 1 : prev,
       );
     }, 1000);
     return () => clearInterval(interval);
   }, [showLoading]);
   const primaryCtaSignedInNoSetup = userId && hasSetup === false;
-  const signupRedirectUrl = '/auth/register?redirect_url=' + encodeURIComponent('/referral-images');
+  const signupRedirectUrl = `/auth/register?redirect_url=${encodeURIComponent('/referral-images')}`;
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,8 +234,8 @@ export default function ReferralImagesLandingPage() {
   if (showLoading) {
     return (
       <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/95">
-        <Loader2 className="w-12 h-12 animate-spin text-primary mb-4" />
-        <p className="text-text-primary text-lg">
+        <Loader2 className="mb-4 size-12 animate-spin text-primary" />
+        <p className="text-lg text-text-primary">
           {LOADING_MESSAGES[loadingMessageIndex]}
         </p>
       </div>
@@ -229,23 +245,25 @@ export default function ReferralImagesLandingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="bg-white border-b border-border sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+      <header className="sticky top-0 z-50 border-b border-border bg-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between p-4">
           <div className="text-xl font-bold text-text-primary">
             ClinicPro
           </div>
-          {primaryCtaSignedInNoSetup ? (
+          {primaryCtaSignedInNoSetup
+? (
             <button
               onClick={handleGetStarted}
               disabled={isSetupLoading}
-              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+              className="rounded-lg bg-primary px-6 py-2 text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
             >
               {isSetupLoading ? 'Setting up...' : 'Get Started'}
             </button>
-          ) : (
+          )
+: (
             <Link
               href={signupRedirectUrl}
-              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
+              className="inline-block rounded-lg bg-primary px-6 py-2 text-white transition-colors hover:bg-primary-dark"
             >
               Get Started
             </Link>
@@ -256,38 +274,41 @@ export default function ReferralImagesLandingPage() {
       {/* Hero Section */}
       {showLanding && (
       <>
-      <section className="py-20 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-10">
-            <h1 className="text-4xl md:text-5xl font-bold text-text-primary mb-6">
+      <section className="px-4 py-20">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-10 text-center">
+            <h1 className="mb-6 text-4xl font-bold text-text-primary md:text-5xl">
               Referral photos from phone to desktop in 30 seconds
             </h1>
-            <p className="text-xl text-text-secondary mb-4 max-w-2xl mx-auto">
+            <p className="mx-auto mb-4 max-w-2xl text-xl text-text-secondary">
               Stop emailing photos to yourself. Take photo → instant desktop transfer → auto-sized JPEG → attach to referral. Done. Saves &gt;10 minutes per referral. Free.
             </p>
-            <p className="text-text-secondary mb-8 max-w-2xl mx-auto">
+            <p className="mx-auto mb-8 max-w-2xl text-text-secondary">
               Built by Dr. Ryo Eguchi, Auckland GP. I hated this workflow, so I fixed it.
               <br />
               <em className="text-text-tertiary">&quot;It&apos;s intolerable how long it takes&quot;, Fellow NZ GP</em>
             </p>
-            {primaryCtaSignedInNoSetup ? (
+            {primaryCtaSignedInNoSetup
+? (
               <button
                 onClick={handleGetStarted}
                 disabled={isSetupLoading}
-                className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+                className="rounded-lg bg-primary px-8 py-4 text-lg text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
               >
                 {isSetupLoading ? 'Setting up...' : 'Get Started'}
               </button>
-            ) : (
+            )
+: (
               <>
                 <Link
                   href={signupRedirectUrl}
-                  className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
+                  className="inline-block rounded-lg bg-primary px-8 py-4 text-lg text-white transition-colors hover:bg-primary-dark"
                 >
                   Get Started
                 </Link>
                 <p className="mt-3 text-sm text-text-tertiary">
-                  Prefer to sign up with email?{' '}
+                  Prefer to sign up with email?
+{' '}
                   <button
                     type="button"
                     onClick={() => setShowSignupModal(true)}
@@ -300,20 +321,20 @@ export default function ReferralImagesLandingPage() {
             )}
             {!userId && (
               <div className="mt-4 flex justify-center">
-                <p className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-lg px-5 py-3 text-amber-900 text-base">
+                <p className="inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-5 py-3 text-base text-amber-900">
                   <span aria-hidden>💡</span>
                   Why free? I&apos;m a GP who hated this workflow. Built this to fix it. No catch.
                 </p>
               </div>
             )}
           </div>
-          <div className="relative w-full max-w-4xl mx-auto rounded-xl overflow-hidden shadow-lg">
+          <div className="relative mx-auto w-full max-w-4xl overflow-hidden rounded-xl shadow-lg">
             <Image
               src="/images/referral-images/referral_images_hero_image_2.png"
               alt="GP before: stressed at desk; after: photo to desktop in 30 seconds"
               width={1200}
               height={675}
-              className="w-full h-auto object-contain"
+              className="h-auto w-full object-contain"
               priority
             />
           </div>
@@ -321,45 +342,45 @@ export default function ReferralImagesLandingPage() {
       </section>
 
       {/* Value Props */}
-      <section className="py-16 px-4 bg-surface">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-white rounded-lg p-6 text-center">
-              <Clock className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-text-primary mb-2">
+      <section className="bg-surface px-4 py-16">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg bg-white p-6 text-center">
+              <Clock className="mx-auto mb-4 size-12 text-primary" />
+              <h3 className="mb-2 text-lg font-semibold text-text-primary">
                 Save &gt;10 Minutes Per Referral
               </h3>
-              <p className="text-text-secondary text-sm">
+              <p className="text-sm text-text-secondary">
                 No more email-to-self, download, resize, re-upload. Photo to desktop in 30 seconds, ready to attach.
               </p>
             </div>
 
-            <div className="bg-white rounded-lg p-6 text-center">
-              <Camera className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-text-primary mb-2">
+            <div className="rounded-lg bg-white p-6 text-center">
+              <Camera className="mx-auto mb-4 size-12 text-primary" />
+              <h3 className="mb-2 text-lg font-semibold text-text-primary">
                 Auto-Resize
               </h3>
-              <p className="text-text-secondary text-sm">
+              <p className="text-sm text-text-secondary">
                 Perfect size for email attachments (&lt;500KB). No more rejected referrals.
               </p>
             </div>
 
-            <div className="bg-white rounded-lg p-6 text-center">
-              <FileImage className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-text-primary mb-2">
+            <div className="rounded-lg bg-white p-6 text-center">
+              <FileImage className="mx-auto mb-4 size-12 text-primary" />
+              <h3 className="mb-2 text-lg font-semibold text-text-primary">
                 JPEG Format (Not PDF)
               </h3>
-              <p className="text-text-secondary text-sm">
+              <p className="text-sm text-text-secondary">
                 Always JPEG, never PDF. Specialists won&apos;t ask you to resend.
               </p>
             </div>
 
-            <div className="bg-white rounded-lg p-6 text-center">
-              <Shield className="w-12 h-12 text-primary mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-text-primary mb-2">
+            <div className="rounded-lg bg-white p-6 text-center">
+              <Shield className="mx-auto mb-4 size-12 text-primary" />
+              <h3 className="mb-2 text-lg font-semibold text-text-primary">
                 24h Auto-Delete
               </h3>
-              <p className="text-text-secondary text-sm">
+              <p className="text-sm text-text-secondary">
                 Images delete automatically. Nothing stored long-term.
               </p>
             </div>
@@ -368,18 +389,18 @@ export default function ReferralImagesLandingPage() {
       </section>
 
       {/* How It Works */}
-      <section className="py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-text-primary text-center mb-12">
+      <section className="px-4 py-16">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="mb-12 text-center text-3xl font-bold text-text-primary">
             How It Works
           </h2>
           <div className="space-y-8">
             <div className="flex items-start gap-6">
-              <div className="flex-shrink-0 w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-lg">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-bold text-white">
                 1
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-text-primary mb-2">
+                <h3 className="mb-2 text-xl font-semibold text-text-primary">
                   Sign up & get your links
                 </h3>
                 <p className="text-text-secondary">
@@ -389,11 +410,11 @@ export default function ReferralImagesLandingPage() {
             </div>
 
             <div className="flex items-start gap-6">
-              <div className="flex-shrink-0 w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-lg">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-bold text-white">
                 2
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-text-primary mb-2">
+                <h3 className="mb-2 text-xl font-semibold text-text-primary">
                   Save mobile link to home screen
                 </h3>
                 <p className="text-text-secondary">
@@ -403,11 +424,11 @@ export default function ReferralImagesLandingPage() {
             </div>
 
             <div className="flex items-start gap-6">
-              <div className="flex-shrink-0 w-12 h-12 bg-primary text-white rounded-full flex items-center justify-center font-bold text-lg">
+              <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-bold text-white">
                 3
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-text-primary mb-2">
+                <h3 className="mb-2 text-xl font-semibold text-text-primary">
                   Capture, label, sync
                 </h3>
                 <p className="text-text-secondary">
@@ -420,57 +441,57 @@ export default function ReferralImagesLandingPage() {
       </section>
 
       {/* What's Included */}
-      <section className="py-16 px-4 bg-surface">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-text-primary text-center mb-12">
+      <section className="bg-surface px-4 py-16">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="mb-12 text-center text-3xl font-bold text-text-primary">
             What's Included
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div className="flex items-start gap-3">
-              <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+              <CheckCircle className="mt-1 size-6 shrink-0 text-green-500" />
               <div>
-                <h4 className="font-semibold text-text-primary mb-1">Free to use</h4>
-                <p className="text-text-secondary text-sm">No credit card required</p>
+                <h4 className="mb-1 font-semibold text-text-primary">Free to use</h4>
+                <p className="text-sm text-text-secondary">No credit card required</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+              <CheckCircle className="mt-1 size-6 shrink-0 text-green-500" />
               <div>
-                <h4 className="font-semibold text-text-primary mb-1">Easy file naming</h4>
-                <p className="text-text-secondary text-sm">Quick metadata for organisation</p>
+                <h4 className="mb-1 font-semibold text-text-primary">Easy file naming</h4>
+                <p className="text-sm text-text-secondary">Quick metadata for organisation</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+              <CheckCircle className="mt-1 size-6 shrink-0 text-green-500" />
               <div>
-                <h4 className="font-semibold text-text-primary mb-1">24h storage</h4>
-                <p className="text-text-secondary text-sm">Automatic cleanup</p>
+                <h4 className="mb-1 font-semibold text-text-primary">24h storage</h4>
+                <p className="text-sm text-text-secondary">Automatic cleanup</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+              <CheckCircle className="mt-1 size-6 shrink-0 text-green-500" />
               <div>
-                <h4 className="font-semibold text-text-primary mb-1">Auto-compression</h4>
-                <p className="text-text-secondary text-sm">Under 500KB guaranteed</p>
+                <h4 className="mb-1 font-semibold text-text-primary">Auto-compression</h4>
+                <p className="text-sm text-text-secondary">Under 500KB guaranteed</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+              <CheckCircle className="mt-1 size-6 shrink-0 text-green-500" />
               <div>
-                <h4 className="font-semibold text-text-primary mb-1">Real-time sync</h4>
-                <p className="text-text-secondary text-sm">Photos appear on desktop instantly</p>
+                <h4 className="mb-1 font-semibold text-text-primary">Real-time sync</h4>
+                <p className="text-sm text-text-secondary">Photos appear on desktop instantly</p>
               </div>
             </div>
 
             <div className="flex items-start gap-3">
-              <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0 mt-1" />
+              <CheckCircle className="mt-1 size-6 shrink-0 text-green-500" />
               <div>
-                <h4 className="font-semibold text-text-primary mb-1">Easy e-Referral Downloads</h4>
-                <p className="text-text-secondary text-sm">Always JPEG (never PDF). Auto-sized for e-referrals. Specialists won&apos;t reject them.</p>
+                <h4 className="mb-1 font-semibold text-text-primary">Easy e-Referral Downloads</h4>
+                <p className="text-sm text-text-secondary">Always JPEG (never PDF). Auto-sized for e-referrals. Specialists won&apos;t reject them.</p>
               </div>
             </div>
           </div>
@@ -478,51 +499,53 @@ export default function ReferralImagesLandingPage() {
       </section>
 
       {/* What GPs Are Saying About the Problem */}
-      <section className="py-16 px-4 bg-[#F8FAFC]">
-        <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl font-bold text-text-primary mb-10">
+      <section className="bg-[#F8FAFC] px-4 py-16">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="mb-10 text-3xl font-bold text-text-primary">
             What GPs Are Saying About the Problem
           </h2>
 
           <div className="space-y-6">
-            <blockquote className="bg-white border-l-4 border-primary rounded-r-lg px-6 py-5 sm:px-8 sm:py-6 text-left max-w-[700px] mx-auto shadow-sm">
-              <p className="text-lg sm:text-xl text-text-secondary italic mb-2">
+            <blockquote className="mx-auto max-w-[700px] rounded-r-lg border-l-4 border-primary bg-white px-6 py-5 text-left shadow-sm sm:px-8 sm:py-6">
+              <p className="mb-2 text-lg italic text-text-secondary sm:text-xl">
                 &quot;It&apos;s intolerable how long it takes&quot;
               </p>
               <footer className="text-sm font-medium text-text-tertiary">, NZ GP</footer>
             </blockquote>
 
-            <blockquote className="bg-white border-l-4 border-primary rounded-r-lg px-5 py-4 sm:px-8 sm:py-6 text-left max-w-[700px] mx-auto shadow-sm">
-              <p className="text-base sm:text-lg text-text-secondary italic mb-2">
+            <blockquote className="mx-auto max-w-[700px] rounded-r-lg border-l-4 border-primary bg-white px-5 py-4 text-left shadow-sm sm:px-8 sm:py-6">
+              <p className="mb-2 text-base italic text-text-secondary sm:text-lg">
                 &quot;I&apos;ve had to make referrals without photos after &gt;1/2 hr faffing around&quot;
               </p>
               <footer className="text-sm font-medium text-text-tertiary">, NZ GP</footer>
             </blockquote>
 
-            <blockquote className="bg-white border-l-4 border-primary rounded-r-lg px-5 py-4 sm:px-8 sm:py-6 text-left max-w-[700px] mx-auto shadow-sm">
-              <p className="text-base sm:text-lg text-text-secondary italic mb-2">
+            <blockquote className="mx-auto max-w-[700px] rounded-r-lg border-l-4 border-primary bg-white px-5 py-4 text-left shadow-sm sm:px-8 sm:py-6">
+              <p className="mb-2 text-base italic text-text-secondary sm:text-lg">
                 &quot;Whenever we attach [PDFs] to derm referrals we always get a request back &apos;can we please have jpeg&apos; so have given up using it&quot;
               </p>
               <footer className="text-sm font-medium text-text-tertiary">, NZ GP on competing tools</footer>
             </blockquote>
           </div>
 
-          <p className="text-lg text-text-tertiary mt-10 mb-8">
+          <p className="mb-8 mt-10 text-lg text-text-tertiary">
             Built by a GP who had the same frustrations.
           </p>
 
-          {primaryCtaSignedInNoSetup ? (
+          {primaryCtaSignedInNoSetup
+? (
             <button
               onClick={handleGetStarted}
               disabled={isSetupLoading}
-              className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+              className="rounded-lg bg-primary px-8 py-4 text-lg text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
             >
               {isSetupLoading ? 'Setting up...' : 'Get Started'}
             </button>
-          ) : (
+          )
+: (
             <Link
               href={signupRedirectUrl}
-              className="px-8 py-4 text-lg bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors inline-block"
+              className="inline-block rounded-lg bg-primary px-8 py-4 text-lg text-white transition-colors hover:bg-primary-dark"
             >
               Get Started
             </Link>
@@ -531,26 +554,28 @@ export default function ReferralImagesLandingPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 px-4 bg-primary text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+      <section className="bg-primary px-4 py-20 text-white">
+        <div className="mx-auto max-w-4xl text-center">
+          <h2 className="mb-6 text-3xl font-bold md:text-4xl">
             Ready to stop wasting &gt;10 minutes per referral?
           </h2>
-          <p className="text-xl mb-8 opacity-90">
+          <p className="mb-8 text-xl opacity-90">
             Join NZ GPs who&apos;ve stopped emailing photos to themselves.
           </p>
-          {primaryCtaSignedInNoSetup ? (
+          {primaryCtaSignedInNoSetup
+? (
             <button
               onClick={handleGetStarted}
               disabled={isSetupLoading}
-              className="px-8 py-4 text-lg bg-white text-primary rounded-lg hover:bg-gray-100 transition-colors font-semibold disabled:opacity-50"
+              className="rounded-lg bg-white px-8 py-4 text-lg font-semibold text-primary transition-colors hover:bg-gray-100 disabled:opacity-50"
             >
               {isSetupLoading ? 'Setting up...' : 'Get Started'}
             </button>
-          ) : (
+          )
+: (
             <Link
               href={signupRedirectUrl}
-              className="px-8 py-4 text-lg bg-white text-primary rounded-lg hover:bg-gray-100 transition-colors font-semibold inline-block"
+              className="inline-block rounded-lg bg-white px-8 py-4 text-lg font-semibold text-primary transition-colors hover:bg-gray-100"
             >
               Get Started
             </Link>
@@ -562,26 +587,26 @@ export default function ReferralImagesLandingPage() {
       </section>
 
       {/* FAQ */}
-      <section className="py-16 px-4 bg-surface">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-text-primary mb-12 text-center">
+      <section className="bg-surface px-4 py-16">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="mb-12 text-center text-3xl font-bold text-text-primary">
             Common Questions
           </h2>
           <div className="space-y-4">
             {referralImagesFaqItems.map((item, index) => (
               <details
                 key={index}
-                className="group bg-white border border-border rounded-lg overflow-hidden"
+                className="group overflow-hidden rounded-lg border border-border bg-white"
                 open={expandedFaq === index}
               >
                 <summary
-                  className="px-6 py-4 cursor-pointer flex justify-between items-center hover:bg-black/5 transition list-none [&::-webkit-details-marker]:hidden"
+                  className="flex cursor-pointer list-none items-center justify-between px-6 py-4 transition hover:bg-black/5 [&::-webkit-details-marker]:hidden"
                   onClick={(e) => {
                     e.preventDefault();
                     setExpandedFaq(expandedFaq === index ? null : index);
                   }}
                 >
-                  <span className="font-medium text-text-primary pr-4">{item.question}</span>
+                  <span className="pr-4 font-medium text-text-primary">{item.question}</span>
                   <span
                     className={`shrink-0 text-text-tertiary transition-transform ${expandedFaq === index ? 'rotate-90' : ''}`}
                     aria-hidden
@@ -589,7 +614,7 @@ export default function ReferralImagesLandingPage() {
                     →
                   </span>
                 </summary>
-                <div className="px-6 py-4 border-t border-border text-text-secondary bg-white">
+                <div className="border-t border-border bg-white px-6 py-4 text-text-secondary">
                   {item.answer}
                 </div>
               </details>
@@ -599,8 +624,8 @@ export default function ReferralImagesLandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-border py-8 px-4">
-        <div className="max-w-7xl mx-auto text-center text-text-tertiary text-sm">
+      <footer className="border-t border-border bg-white px-4 py-8">
+        <div className="mx-auto max-w-7xl text-center text-sm text-text-tertiary">
           <p>Built by a practising GP for GPs</p>
           <div className="mt-4 space-x-6">
             <a href="/terms" className="hover:text-text-primary">Terms</a>
@@ -614,35 +639,35 @@ export default function ReferralImagesLandingPage() {
 
       {/* Signup Modal */}
       {showSignupModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-8">
-            <h3 className="text-2xl font-semibold text-text-primary mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-8">
+            <h3 className="mb-6 text-2xl font-semibold text-text-primary">
               Get Started with GP Referral Images
             </h3>
-            
+
             <form onSubmit={handleSignup} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
+                <label className="mb-2 block text-sm font-medium text-text-primary">
                   Email *
                 </label>
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  onChange={e => setEmail(e.target.value)}
+                  className="w-full rounded-lg border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-text-primary mb-2">
+                <label className="mb-2 block text-sm font-medium text-text-primary">
                   Name (optional)
                 </label>
                 <input
                   type="text"
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                  onChange={e => setName(e.target.value)}
+                  className="w-full rounded-lg border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                 />
               </div>
 
@@ -651,16 +676,22 @@ export default function ReferralImagesLandingPage() {
                   type="checkbox"
                   id="terms"
                   checked={agreedToTerms}
-                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  onChange={e => setAgreedToTerms(e.target.checked)}
                   className="mt-1"
                 />
                 <label htmlFor="terms" className="text-sm text-text-secondary">
-                  I agree to the <a href="/terms" className="text-primary hover:underline">terms and conditions</a> and <a href="/privacy" className="text-primary hover:underline">privacy policy</a>
+                  I agree to the
+{' '}
+<a href="/terms" className="text-primary hover:underline">terms and conditions</a>
+{' '}
+and
+{' '}
+<a href="/privacy" className="text-primary hover:underline">privacy policy</a>
                 </label>
               </div>
 
               {error && (
-                <div className="text-red-500 text-sm">
+                <div className="text-sm text-red-500">
                   {error}
                 </div>
               )}
@@ -669,14 +700,14 @@ export default function ReferralImagesLandingPage() {
                 <button
                   type="button"
                   onClick={() => setShowSignupModal(false)}
-                  className="flex-1 px-6 py-3 border border-border rounded-lg hover:bg-surface transition-colors"
+                  className="flex-1 rounded-lg border border-border px-6 py-3 transition-colors hover:bg-surface"
                   disabled={isLoading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+                  className="flex-1 rounded-lg bg-primary px-6 py-3 text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
                   disabled={isLoading}
                 >
                   {isLoading ? 'Creating...' : 'Get Started'}
@@ -684,7 +715,7 @@ export default function ReferralImagesLandingPage() {
               </div>
             </form>
 
-            <p className="mt-6 text-xs text-text-tertiary text-center">
+            <p className="mt-6 text-center text-xs text-text-tertiary">
               Your permanent desktop and mobile links will be sent to your email immediately.
             </p>
           </div>
