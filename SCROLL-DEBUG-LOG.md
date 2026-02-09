@@ -4,10 +4,18 @@
 
 **Symptom:** Mouse wheel scrolling only works when cursor is over the left sidebar. Scrolling does NOT work anywhere on the main content area of `/ai-scribe/consultation` page.
 
-**Specific Observation:**
+**Specific Observations:**
 - During loading overlay: Scrolling works briefly on main content
 - After loading overlay disappears: Scrolling stops working on main content
 - Sidebar: Always scrolls correctly (has its own scroll container)
+- **CRITICAL: Scrolling WORKS when mouse is on the actual scrollbar (right edge)** ← This means scroll container IS working!
+- **CRITICAL: Scrolling DOES NOT WORK when mouse is over the main content area** ← Something is blocking wheel events!
+
+**This tells us:**
+- ✅ The scroll container has overflow (scrollbar is visible)
+- ✅ The scrolling mechanism works (can scroll via scrollbar)
+- ❌ Mouse wheel events are being blocked/captured on the content area
+- **Conclusion: This is NOT a CSS layout issue - it's an event blocking issue!**
 
 ---
 
@@ -161,24 +169,68 @@ return (
 
 ---
 
+## NEW HYPOTHESIS (Based on Scrollbar Working)
+
+**The scroll container is working correctly!** The issue is that wheel events are being blocked on the content area.
+
+Possible causes:
+1. **Transparent overlay** covering the content area
+2. **JavaScript event listener** capturing wheel/scroll events and preventing default
+3. **pointer-events: none** on content elements
+4. **touch-action: none** preventing scroll gestures
+5. **Fixed/absolute positioned element** with high z-index covering content
+6. **React component** capturing wheel events (modal, overlay, etc.)
+
 ## Next Steps to Try
 
-### Diagnostic Steps
-1. Add `console.log` to check actual computed heights
-2. Inspect element in browser dev tools to see actual applied CSS
-3. Check if scroll events are firing on main element
-4. Verify `scrollHeight` vs `clientHeight` of main container
-5. Test with a minimal reproduction (simple tall div in main)
+### PRIORITY 1: Find Event Blocking Source
+1. ✅ Check for transparent overlays with z-index
+2. ✅ Search for wheel event listeners in code
+3. ✅ Search for scroll event preventDefault calls
+4. ✅ Check for pointer-events CSS on content
+5. ✅ Check for touch-action CSS
+6. Check React components that might capture events (modals, providers, etc.)
 
-### Potential Fixes to Test
-1. Add explicit `height: 100%` to html/body in globals.css
-2. Change AppLayout grid from `grid-rows-[auto_1fr_auto]` to different approach
-3. Add explicit `overflow-y: scroll` instead of `overflow-auto`
-4. Remove `overscroll-y-contain` from main element
-5. Test if `min-h-0` is causing issues on any element
-6. Add `will-change: scroll-position` to main element
+### PRIORITY 2: Test Fixes
+1. Add `pointer-events: auto !important` to main content
+2. Remove any wheel/scroll event listeners
+3. Check if loading overlay is still mounted (hidden but blocking)
+4. Test with all conditional overlays disabled
 
 ---
+
+## Analysis & Plan
+
+### KEY INSIGHT FROM USER FEEDBACK
+**Scrolling WORKS on:**
+- Left sidebar ✅
+- Right scrollbar (actual scrollbar element) ✅  
+- Main content DURING loading overlay ✅
+
+**Scrolling DOES NOT WORK on:**
+- Main content area AFTER loading completes ❌
+
+**This means:**
+1. The scroll container IS working (scrollbar is present and functional)
+2. The content DOES have overflow (otherwise no scrollbar)
+3. Something about the RENDERED CONTENT is blocking wheel events
+4. The loading overlay itself doesn't block (scrolling works with it shown)
+
+### HYPOTHESIS
+After the loading overlay disappears, the fully-rendered consultation page content contains something that's capturing or blocking wheel events. Possibilities:
+1. A component with wheel event listener that prevents default
+2. A transparent element with high z-index over content
+3. CSS property on rendered content blocking pointer events
+4. React component interfering with events (provider, portal, etc.)
+
+### NEXT DIAGNOSTIC STEPS
+1. ✅ Enhanced console logging to check:
+   - pointer-events CSS on all levels
+   - Actual wheel event firing (attach test listener)
+   - Boot loading state
+2. User to test and provide console output
+3. Based on output, identify which component/element is blocking
+4. Apply targeted fix
 
 ## Browser/Environment Info Needed
 - Which browser? (Chrome, Firefox, Safari?)

@@ -919,6 +919,7 @@ export default function ConsultationPage() {
     const logScrollInfo = () => {
       const main = document.querySelector('main') as HTMLElement | null;
       const outerDiv = document.querySelector('main > div') as HTMLElement | null;
+      const container = document.querySelector('main > div > div > div') as HTMLElement | null;
       
       console.log('🔍 SCROLL DIAGNOSTIC:', {
         main: main ? {
@@ -927,23 +928,51 @@ export default function ConsultationPage() {
           offsetHeight: main.offsetHeight,
           hasOverflow: main.scrollHeight > main.clientHeight,
           overflowY: window.getComputedStyle(main).overflowY,
+          pointerEvents: window.getComputedStyle(main).pointerEvents,
         } : 'not found',
         outerDiv: outerDiv ? {
           scrollHeight: outerDiv.scrollHeight,
           clientHeight: outerDiv.clientHeight,
           offsetHeight: outerDiv.offsetHeight,
+          pointerEvents: window.getComputedStyle(outerDiv).pointerEvents,
+        } : 'not found',
+        container: container ? {
+          scrollHeight: container.scrollHeight,
+          clientHeight: container.clientHeight,
+          offsetHeight: container.offsetHeight,
+          pointerEvents: window.getComputedStyle(container).pointerEvents,
         } : 'not found',
         viewport: {
           innerHeight: window.innerHeight,
           documentHeight: document.documentElement.scrollHeight,
+        },
+        bootState: {
+          isBootLoading,
+          settingsLoading,
+          hasSession,
         }
       });
+      
+      // Test wheel event
+      console.log('🔍 Testing wheel events on main content...');
+      if (container) {
+        const wheelHandler = (e: WheelEvent) => {
+          console.log('✅ Wheel event received on container!', {
+            deltaY: e.deltaY,
+            target: (e.target as HTMLElement)?.tagName,
+            defaultPrevented: e.defaultPrevented,
+          });
+        };
+        container.addEventListener('wheel', wheelHandler, { passive: true });
+        setTimeout(() => container.removeEventListener('wheel', wheelHandler as any), 5000);
+        console.log('Wheel event listener attached to container for 5 seconds. Try scrolling now!');
+      }
     };
     
     // Log after content loads
     const timer = setTimeout(logScrollInfo, 2000);
     return () => clearTimeout(timer);
-  }, [isBootLoading, currentPatientSessionId]);
+  }, [isBootLoading, currentPatientSessionId, settingsLoading, hasSession]);
 
   return (
     <RecordingAwareSessionContext.Provider value={contextValue}>
