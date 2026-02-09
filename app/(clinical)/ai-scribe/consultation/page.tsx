@@ -914,7 +914,7 @@ export default function ConsultationPage() {
 
   return (
     <RecordingAwareSessionContext.Provider value={contextValue}>
-      <div className="flex h-full flex-col">
+      <div className="flex flex-col">
         <SessionModal
           isOpen={sessionModalOpen}
           onClose={() => setSessionModalOpen(false)}
@@ -922,11 +922,11 @@ export default function ConsultationPage() {
           onSessionCreated={() => setSessionModalOpen(false)}
         />
       <div className={`
-        flex h-full min-h-dvh flex-col transition-all duration-300 ease-in-out
+        flex flex-col transition-all duration-300 ease-in-out
       `}
       >
-        <Container size="fluid" className="h-full min-h-0">
-          <div className={`flex h-full min-h-0 flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}>
+        <Container size="fluid">
+          <div className={`flex flex-col ${(isMobile || isTablet) ? 'py-4' : 'py-6'}`}>
             {/* Mobile Tools Button removed; tools embedded below settings */}
 
             {/* Upgrade Notification for users redirected from registration */}
@@ -964,13 +964,13 @@ export default function ConsultationPage() {
             )}
 
             {/* Main Clinical Documentation Area */}
-            <div className="h-full flex-1">
+            <div>
               {/* Large Desktop Dual-Column Layout */}
               {isLargeDesktop
                 ? (
-                    <div className="flex h-full gap-6">
+                    <div className="flex gap-6">
                       {/* Left Column - Supporting Information (30-35%) */}
-                      <div className="h-full w-1/3 space-y-4">
+                      <div className="w-1/3 space-y-4">
                       {/* Patient Session Manager - V2 Feature */}
                         <PatientSessionManager />
 
@@ -1056,13 +1056,13 @@ export default function ConsultationPage() {
                       <div className="w-px bg-slate-200" />
 
                       {/* Right Column - Main Workflow (65-70%) */}
-                      <div className="h-full flex-1 space-y-4">
+                      <div className="flex-1 space-y-4">
                         {/* Conditional Layout Based on Documentation Mode */}
                         {isDocumentationMode
                           ? (
                               <>
                                 {/* Clinical Documentation - Top Priority */}
-                                <div className="flex h-full flex-col">
+                                <div className="flex flex-col">
 
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
@@ -1076,9 +1076,9 @@ export default function ConsultationPage() {
                               </>
                             )
                           : (
-                              <div className="flex h-full flex-col space-y-4">
+                              <div className="flex flex-col space-y-4">
                                 {/* Input Components */}
-                                <div className="flex flex-1 flex-col space-y-4">
+                                <div className="flex flex-col space-y-4">
                                   {inputMode === 'audio'
                                     ? (
                                         <TranscriptionControls
@@ -1129,12 +1129,12 @@ export default function ConsultationPage() {
                   isMobile
                     ? (
                       // Phone-only reduced UI
-                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full">
+                      <Stack spacing={isDesktop ? 'sm' : 'sm'}>
                         {/* Conditional Layout Based on Documentation Mode (mobile) */}
                         {isDocumentationMode
                           ? (
                               // Post-generation: show only the generated note (controlled mobile post-gen layout)
-                              <div className="flex h-[calc(100svh_-_56px_-_var(--footer-h,76px))] min-h-0 flex-col">
+                              <div className="flex min-h-0 flex-col">
                                 <GeneratedNotes
                                   onGenerate={handleGenerateNotes}
                                   onFinish={handleFinish}
@@ -1149,7 +1149,7 @@ export default function ConsultationPage() {
                             )
                           : (
                               // Pre-generation: Session badge at top, Transcript viewer, Additional notes expanded, sticky footer controls
-                              <div className="flex h-full flex-col space-y-2">
+                              <div className="flex flex-col space-y-2">
                                 {/* Session Badge (pre-gen only) */}
                                 {(() => {
                                   const s = getCurrentPatientSession?.();
@@ -1237,7 +1237,7 @@ export default function ConsultationPage() {
                     )
                     : (
                       // Tablet/Small desktop: keep existing full UI
-                      <Stack spacing={isDesktop ? 'sm' : 'sm'} className="h-full">
+                      <Stack spacing={isDesktop ? 'sm' : 'sm'}>
                         {/* Patient Session Manager - V2 Feature */}
                         <PatientSessionManager />
 
@@ -1252,7 +1252,7 @@ export default function ConsultationPage() {
                           ? (
                               <>
                                 {/* Clinical Documentation - Top Priority */}
-                                <div className="flex flex-1 flex-col">
+                                <div className="flex flex-col">
 
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
@@ -1299,9 +1299,9 @@ export default function ConsultationPage() {
                               </>
                             )
                           : (
-                              <div className="flex flex-1 flex-col space-y-4">
+                              <div className="flex flex-col space-y-4">
                                 {/* Input Components */}
-                                <div className="flex flex-1 flex-col space-y-4">
+                                <div className="flex flex-col space-y-4">
                                   {inputMode === 'audio'
                                     ? (
                                         <TranscriptionControls
