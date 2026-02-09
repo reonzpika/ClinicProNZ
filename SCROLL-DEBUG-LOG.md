@@ -240,7 +240,48 @@ After the loading overlay disappears, the fully-rendered consultation page conte
 
 ---
 
-## ✅ SOLUTION FOUND! (Multi-Step Fix)
+## ✅ SOLUTION FOUND! (Complete Fix Applied)
+
+### 🎯 THE ACTUAL ROOT CAUSE (Discovered via 2000px test div)
+
+**Diagnostic evidence:**
+```
+main: {scrollHeight: 3021, clientHeight: 3021, hasOverflow: false}
+viewport: {innerHeight: 945}
+testDiv: {scrollHeight: 2000, found: '✅'}
+```
+
+**The main element was GROWING to match content (3021px) instead of staying at viewport size (~945px) and creating internal overflow!**
+
+### Why This Happened
+CSS Grid's `1fr` distributes available space but DOESN'T prevent grid tracks from growing beyond that space when content expands. Without a `max-height` constraint, the grid container (and thus the main element) grew freely to accommodate all content.
+
+### The Complete Fix
+
+**Applied in AppLayout.tsx:**
+```tsx
+// BEFORE
+<div className="grid min-h-dvh grid-rows-[auto_1fr_auto]">
+
+// AFTER  
+<div className="grid min-h-dvh max-h-dvh grid-rows-[auto_1fr_auto]">
+//                          ^^^ Added this
+```
+
+Combined with existing `min-h-0` on `<main>` element (prevents CSS Grid's `min-height: auto` from allowing content to push the track larger).
+
+**Result:**
+- Grid container: Constrained to viewport height (max-h-dvh)
+- Main element: Stays at allocated grid height (~945px)
+- Content: Can exceed main's height, creating internal overflow
+- overflow-auto: Now has overflow to scroll!
+
+### Expected After Fix
+```
+main: {scrollHeight: ~3000+, clientHeight: ~945, hasOverflow: true}
+```
+
+## ✅ ALL FIXES APPLIED (Multi-Part Solution)
 
 ### Root Cause #1: Textareas Capturing Wheel Events
 The `AdditionalNotes` component textareas were capturing mouse wheel events and preventing them from bubbling to the parent scroll container.
