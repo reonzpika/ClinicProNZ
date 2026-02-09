@@ -1,4 +1,16 @@
-# Scroll Issue Debug Log - Consultation Page
+# Scroll Issue - RESOLVED ✅
+
+**Issue:** Mouse wheel scrolling on `/ai-scribe/consultation` page only worked on sidebar/scrollbar, not main content area.
+
+**Status:** FIXED  
+**Date Resolved:** 9 February 2026  
+**Branch:** `cursor/consultation-page-scroll-30c2`
+
+**Root Cause:** CSS Grid container lacking `max-height` constraint, allowing `<main>` element to grow to match content height instead of constraining it and creating internal overflow.
+
+**Solution:** Added `max-h-dvh` to grid container in `AppLayout.tsx`
+
+---
 
 ## Problem Description
 

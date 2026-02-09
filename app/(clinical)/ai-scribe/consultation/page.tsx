@@ -912,27 +912,6 @@ export default function ConsultationPage() {
     && !bootTimeoutElapsed
   ) || (!bootMinDelayDone && (settingsLoading || waitingDefaults || ensureSessionLoading || (!patientSessionsFetched && !hasSession)));
 
-  // Diagnostic logging to verify scroll fix
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    
-    const logScrollInfo = () => {
-      const main = document.querySelector('main') as HTMLElement | null;
-      if (!main) return;
-      
-      const hasOverflow = main.scrollHeight > main.clientHeight;
-      console.log('✅ SCROLL FIX VERIFICATION:', {
-        scrollHeight: main.scrollHeight,
-        clientHeight: main.clientHeight,
-        hasOverflow,
-        status: hasOverflow ? '✅ OVERFLOW CREATED - SHOULD SCROLL' : '❌ NO OVERFLOW - ISSUE REMAINS',
-      });
-    };
-    
-    const timer = setTimeout(logScrollInfo, 2000);
-    return () => clearTimeout(timer);
-  }, [currentPatientSessionId]);
-
   return (
     <RecordingAwareSessionContext.Provider value={contextValue}>
       <div className="flex flex-col">
