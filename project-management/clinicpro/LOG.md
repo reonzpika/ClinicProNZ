@@ -78,6 +78,45 @@
 - Local environment missing `DATABASE_URL` - Fixed with mock fallbacks for testing
 - Solution: Continue testing on computer with full `.env` configuration
 
+## 2026-02-08 Sat
+### Milestone: Referral Images Email Sequence - Email 2 Implementation
+
+**Context**: Implemented Email 2 (check-in) for Referral Images email series and removed unused Email 3.
+
+### Progress
+- ✅ Created database migration (`0042_referral_images_checkin_email.sql`) adding `check_in_email_sent_at` to users table
+- ✅ Updated email service: Renamed `sendUsageTipEmail` to `sendCheckInEmail` with feedback-focused content
+- ✅ Removed Email 3 (`sendValueReinforcementEmail`) - no longer needed
+- ✅ Added Email 2 logic to daily cron job (`/api/maintenance/referral-images-email-sequence`)
+- ✅ Email 2 sends on Day 3 after signup to ALL users (regardless of usage)
+
+### Technical Implementation
+- **Database**: Added `checkInEmailSentAt` timestamp to `users` table (not `image_tool_usage` since it targets all users)
+- **Email Content**: Feedback-focused check-in asking "How's it working? Any issues? Missing features?"
+- **Trigger**: Day 3 after user `createdAt`, sent once per user
+- **Cron Schedule**: Runs daily via existing email sequence cron job
+
+### Email Sequence Status
+- Email 1 (Welcome): ✅ Implemented, sends immediately
+- Email 2 (Check-in): ✅ Implemented, Day 3 all users
+- Email 3 (Value): ❌ Removed
+- Email 4 (Limit Hit): ✅ Implemented
+- Email 5 (Share Encourage): ✅ Implemented, Day 5 after limit
+- Email 6 (Month Reset): ✅ Implemented
+
+### Decisions
+- Send Email 2 to ALL users on Day 3 (not just active users) to gather feedback even from non-users
+- Store tracking in `users` table (not `image_tool_usage`) since targeting all users
+- Remove Email 3 entirely rather than repurposing it
+
+### Next Steps
+- Monitor Email 2 feedback responses
+- Consider adding email response handling/tracking
+- Run SQL migration in production when ready
+
+### Blockers Encountered
+- None
+
 ## 2026-01-10 Fri
 ### Milestone: Start project-based logging
 - Logging has moved to per-project `LOG.md` files.
