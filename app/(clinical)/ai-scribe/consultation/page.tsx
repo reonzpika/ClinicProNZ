@@ -1056,13 +1056,13 @@ export default function ConsultationPage() {
                       <div className="w-px bg-slate-200" />
 
                       {/* Right Column - Main Workflow (65-70%) */}
-                      <div className="flex-1 space-y-4">
+                      <div className="flex flex-1 flex-col gap-4">
                         {/* Conditional Layout Based on Documentation Mode */}
                         {isDocumentationMode
                           ? (
                               <>
                                 {/* Clinical Documentation - Top Priority */}
-                                <div className="flex flex-col">
+                                <div className="flex min-h-0 flex-1 flex-col">
 
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
@@ -1252,7 +1252,7 @@ export default function ConsultationPage() {
                           ? (
                               <>
                                 {/* Clinical Documentation - Top Priority */}
-                                <div className="flex flex-col">
+                                <div className="flex min-h-0 flex-1 flex-col">
 
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
