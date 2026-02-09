@@ -1026,7 +1026,7 @@ export default function ConsultationPage() {
             )}
 
             {/* Main Clinical Documentation Area */}
-            <div className="flex-1">
+            <div>
               {/* Large Desktop Dual-Column Layout */}
               {isLargeDesktop
                 ? (
@@ -1140,7 +1140,7 @@ export default function ConsultationPage() {
                           : (
                               <div className="flex flex-col space-y-4">
                                 {/* Input Components */}
-                                <div className="flex flex-1 flex-col space-y-4">
+                                <div className="flex flex-col space-y-4">
                                   {inputMode === 'audio'
                                     ? (
                                         <TranscriptionControls
@@ -1314,7 +1314,7 @@ export default function ConsultationPage() {
                           ? (
                               <>
                                 {/* Clinical Documentation - Top Priority */}
-                                <div className="flex flex-1 flex-col">
+                                <div className="flex flex-col">
 
                                   <GeneratedNotes
                                     onGenerate={handleGenerateNotes}
@@ -1361,9 +1361,9 @@ export default function ConsultationPage() {
                               </>
                             )
                           : (
-                              <div className="flex flex-1 flex-col space-y-4">
+                              <div className="flex flex-col space-y-4">
                                 {/* Input Components */}
-                                <div className="flex flex-1 flex-col space-y-4">
+                                <div className="flex flex-col space-y-4">
                                   {inputMode === 'audio'
                                     ? (
                                         <TranscriptionControls
