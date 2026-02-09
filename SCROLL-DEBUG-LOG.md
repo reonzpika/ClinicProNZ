@@ -240,45 +240,41 @@ After the loading overlay disappears, the fully-rendered consultation page conte
 
 ---
 
-## ✅ SOLUTION FOUND!
+## ✅ SOLUTION FOUND! (Multi-Step Fix)
 
-### Root Cause
-The `AdditionalNotes` component textareas had `overflow-y-auto` in the "large" view mode. These textareas with internal scrolling were capturing mouse wheel events and preventing them from bubbling to the parent scroll container.
+### Root Cause #1: Textareas Capturing Wheel Events
+The `AdditionalNotes` component textareas were capturing mouse wheel events and preventing them from bubbling to the parent scroll container.
 
-### Diagnostic Evidence
-Console logging showed:
+**Fix #1:** Added `handleTextareaWheel` handler to all 15 textareas
+- Checks if textarea is at scroll boundary
+- Allows events to bubble when textarea can't scroll in wheel direction
+- Result: Wheel events now reach parent container
+
+### Root Cause #2: No Scrollable Overflow (THE REAL ISSUE)
+Even with wheel events working, content height exactly matched container height:
 ```
-✅ Wheel event received on container! {deltaY: 100, target: 'TEXTAREA', defaultPrevented: false}
-```
-
-This confirmed wheel events were reaching the container but originating from TEXTAREA elements.
-
-### The Fix
-**Changed in:** `src/features/clinical/main-ui/components/AdditionalNotes.tsx`
-
-**Lines affected:** 551, 568, 588, 605, 625 (large view textareas)
-
-**What changed:**
-```tsx
-// BEFORE (with internal scroll)
-className="min-h-[100px] w-full resize-none overflow-y-auto ..."
-
-// AFTER (with manual resize handle)
-className="w-full resize-y ..."
-rows={4}
+main: {scrollHeight: 1021, clientHeight: 1021, hasOverflow: false}
+viewport: {innerHeight: 945}
 ```
 
-**Changes:**
-1. Removed `overflow-y-auto` (internal scrolling)
-2. Removed `min-h-[100px]` (fixed height)
-3. Changed `resize-none` to `resize-y` (allow manual resizing)
-4. Added `rows={4}` (default textarea height)
+**Diagnostic Evidence:**
+- Content: 1021px tall
+- Container: 1021px tall  
+- **scrollHeight === clientHeight = NO OVERFLOW!**
 
-### Why This Works
-- Textareas no longer have internal scrolling
-- Wheel events now pass through to the parent scroll container
-- Users can still resize textareas manually if needed (resize-y)
-- Textareas start at a reasonable size (4 rows)
+**Root Cause:** `flex-1` in vertical flex contexts forced content to grow and fill exactly 100% of parent height, preventing overflow.
+
+**Fix #2:** Removed `flex-1` from 5 locations:
+1. Line 1029: Main clinical documentation area
+2. Line 1143: Large desktop input components  
+3. Line 1317: Tablet documentation mode
+4. Lines 1364, 1366: Tablet input components
+
+**Why This Works:**
+- Content now sizes based on children (natural sizing)
+- Can exceed parent height
+- Creates scrollable overflow in main container
+- Wheel events bubble correctly AND there's overflow to scroll!
 
 ## Files Modified
 - `app/(clinical)/ai-scribe/consultation/page.tsx` (diagnostic logging - can be removed)
