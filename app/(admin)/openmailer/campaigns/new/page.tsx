@@ -29,7 +29,7 @@ export default function OpenmailerNewCampaignPage() {
         throw new Error(err.error || res.statusText);
       }
       const campaign = await res.json();
-      router.push(`/admin/openmailer/campaigns/${campaign.id}`);
+      router.push(`/openmailer/campaigns/${campaign.id}`);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to create campaign');
     } finally {

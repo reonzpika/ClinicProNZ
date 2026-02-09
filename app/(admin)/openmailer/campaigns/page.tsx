@@ -16,7 +16,7 @@ export default async function OpenmailerCampaignsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Campaigns</h1>
         <Link
-          href="/admin/openmailer/campaigns/new"
+          href="/openmailer/campaigns/new"
           className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
         >
           New campaign
@@ -46,7 +46,7 @@ export default async function OpenmailerCampaignsPage() {
                 <tr key={c.id}>
                   <td className="whitespace-nowrap px-6 py-4">
                     <Link
-                      href={`/admin/openmailer/campaigns/${c.id}`}
+                      href={`/openmailer/campaigns/${c.id}`}
                       className="text-blue-600 hover:underline"
                     >
                       {c.name}

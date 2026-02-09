@@ -13,8 +13,7 @@ export default async function OpenmailerLayout({
   if (!userId) {
     redirect('/login');
   }
-  const isAdmin = checkTierFromSessionClaims(sessionClaims, 'admin');
-  if (!isAdmin) {
+  if (!checkTierFromSessionClaims(sessionClaims, 'admin')) {
     redirect('/dashboard');
   }
 
@@ -25,31 +24,31 @@ export default async function OpenmailerLayout({
           <h1 className="text-lg font-bold text-gray-900">OpenMailer</h1>
           <nav className="mt-4 space-y-1">
             <Link
-              href="/admin/openmailer"
+              href="/openmailer"
               className="block rounded px-3 py-2 text-gray-700 hover:bg-gray-100"
             >
               Dashboard
             </Link>
             <Link
-              href="/admin/openmailer/subscribers"
+              href="/openmailer/subscribers"
               className="block rounded px-3 py-2 text-gray-700 hover:bg-gray-100"
             >
               Subscribers
             </Link>
             <Link
-              href="/admin/openmailer/subscribers/import"
+              href="/openmailer/subscribers/import"
               className="block rounded px-3 py-2 text-gray-700 hover:bg-gray-100"
             >
               Import CSV
             </Link>
             <Link
-              href="/admin/openmailer/campaigns"
+              href="/openmailer/campaigns"
               className="block rounded px-3 py-2 text-gray-700 hover:bg-gray-100"
             >
               Campaigns
             </Link>
             <Link
-              href="/admin/openmailer/campaigns/new"
+              href="/openmailer/campaigns/new"
               className="block rounded px-3 py-2 text-gray-700 hover:bg-gray-100"
             >
               New campaign

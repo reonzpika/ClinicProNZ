@@ -85,7 +85,7 @@ export default async function OpenmailerDashboardPage() {
                 <tr key={c.id}>
                   <td className="whitespace-nowrap px-6 py-4">
                     <Link
-                      href={`/admin/openmailer/campaigns/${c.id}`}
+                      href={`/openmailer/campaigns/${c.id}`}
                       className="text-blue-600 hover:underline"
                     >
                       {c.name}
