@@ -3,16 +3,7 @@ import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { openmailerSubscribers } from '@/db/schema';
-
-function isAdminAuth(req: NextRequest): boolean {
-  const authHeader = req.headers.get('authorization');
-  const apiKey = process.env.OPENMAILER_API_KEY;
-  if (apiKey && authHeader === `Bearer ${apiKey}`) {
-    return true;
-  }
-  const tier = req.headers.get('x-user-tier');
-  return tier === 'admin';
-}
+import { isAdminAuth } from '@/src/lib/openmailer/auth';
 
 export async function GET(request: NextRequest) {
   if (!isAdminAuth(request)) {
