@@ -53,6 +53,21 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
   const planRef = useRef<HTMLTextAreaElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  // Wheel event handler to allow page scrolling when hovering over textareas
+  const handleTextareaWheel = (e: React.WheelEvent<HTMLTextAreaElement>) => {
+    const target = e.currentTarget;
+    const isAtTop = target.scrollTop === 0;
+    const isAtBottom = target.scrollTop + target.clientHeight >= target.scrollHeight;
+
+    // If textarea can't scroll in the wheel direction, allow event to bubble to parent
+    if ((e.deltaY < 0 && isAtTop) || (e.deltaY > 0 && isAtBottom)) {
+      // Let event bubble to parent scroll container
+    }
+
+    // If textarea has no scrollable content, always let event bubble
+    // Event automatically bubbles when we don't stop propagation
+  };
+
   // Keydown handler to cycle focus within SOAP textareas only
   const handleTextareaKeyDown = (
     section: 'context' | 'problems' | 'objective' | 'assessment' | 'plan',
@@ -385,6 +400,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   onChange={e => handleSectionChange('context', e.target.value)}
                   onBlur={() => handleSectionBlur('context')}
                   onKeyDown={e => handleTextareaKeyDown('context', e)}
+                  onWheel={handleTextareaWheel}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={contextRef}
@@ -401,6 +417,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   onChange={e => handleSectionChange('problems', e.target.value)}
                   onBlur={() => handleSectionBlur('problems')}
                   onKeyDown={e => handleTextareaKeyDown('problems', e)}
+                  onWheel={handleTextareaWheel}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={problemsRef}
@@ -422,6 +439,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   onChange={e => handleSectionChange('objective', e.target.value)}
                   onBlur={() => handleSectionBlur('objective')}
                   onKeyDown={e => handleTextareaKeyDown('objective', e)}
+                  onWheel={handleTextareaWheel}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={objectiveRef}
@@ -438,6 +456,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   onChange={e => handleSectionChange('assessment', e.target.value)}
                   onBlur={() => handleSectionBlur('assessment')}
                   onKeyDown={e => handleTextareaKeyDown('assessment', e)}
+                  onWheel={handleTextareaWheel}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={assessmentRef}
@@ -459,6 +478,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                   onChange={e => handleSectionChange('plan', e.target.value)}
                   onBlur={() => handleSectionBlur('plan')}
                   onKeyDown={e => handleTextareaKeyDown('plan', e)}
+                  onWheel={handleTextareaWheel}
                   className="w-full resize-none rounded border border-slate-200 p-2 text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                   rows={2}
                   ref={planRef}
@@ -548,6 +568,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onChange={e => handleSectionChange('context', e.target.value)}
                 onBlur={() => handleSectionBlur('context')}
                 onKeyDown={e => handleTextareaKeyDown('context', e)}
+                onWheel={handleTextareaWheel}
                 className="w-full resize-y rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 rows={4}
                 ref={contextRef}
@@ -566,6 +587,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onChange={e => handleSectionChange('problems', e.target.value)}
                 onBlur={() => handleSectionBlur('problems')}
                 onKeyDown={e => handleTextareaKeyDown('problems', e)}
+                onWheel={handleTextareaWheel}
                 className="w-full resize-y rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 rows={4}
                 ref={problemsRef}
@@ -587,6 +609,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onChange={e => handleSectionChange('objective', e.target.value)}
                 onBlur={() => handleSectionBlur('objective')}
                 onKeyDown={e => handleTextareaKeyDown('objective', e)}
+                onWheel={handleTextareaWheel}
                 className="w-full resize-y rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 rows={4}
                 ref={objectiveRef}
@@ -605,6 +628,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onChange={e => handleSectionChange('assessment', e.target.value)}
                 onBlur={() => handleSectionBlur('assessment')}
                 onKeyDown={e => handleTextareaKeyDown('assessment', e)}
+                onWheel={handleTextareaWheel}
                 className="w-full resize-y rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 rows={4}
                 ref={assessmentRef}
@@ -626,6 +650,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
                 onChange={e => handleSectionChange('plan', e.target.value)}
                 onBlur={() => handleSectionBlur('plan')}
                 onKeyDown={e => handleTextareaKeyDown('plan', e)}
+                onWheel={handleTextareaWheel}
                 className="w-full resize-y rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 rows={4}
                 ref={planRef}
@@ -677,6 +702,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             onChange={e => handleSectionChange('context', e.target.value)}
             onBlur={() => handleSectionBlur('context')}
             onKeyDown={e => handleTextareaKeyDown('context', e)}
+            onWheel={handleTextareaWheel}
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={4}
             ref={contextRef}
@@ -694,6 +720,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             value={problemsText}
             onChange={e => handleSectionChange('problems', e.target.value)}
             onBlur={() => handleSectionBlur('problems')}
+            onWheel={handleTextareaWheel}
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={4}
             ref={problemsRef}
@@ -714,6 +741,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             value={objectiveText}
             onChange={e => handleSectionChange('objective', e.target.value)}
             onBlur={() => handleSectionBlur('objective')}
+            onWheel={handleTextareaWheel}
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={4}
             ref={objectiveRef}
@@ -731,6 +759,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             value={assessmentText}
             onChange={e => handleSectionChange('assessment', e.target.value)}
             onBlur={() => handleSectionBlur('assessment')}
+            onWheel={handleTextareaWheel}
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={4}
             ref={assessmentRef}
@@ -751,6 +780,7 @@ export const AdditionalNotes: React.FC<AdditionalNotesProps> = ({
             value={planText}
             onChange={e => handleSectionChange('plan', e.target.value)}
             onBlur={() => handleSectionBlur('plan')}
+            onWheel={handleTextareaWheel}
             className="w-full resize-none rounded border border-slate-200 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             rows={4}
             ref={planRef}
