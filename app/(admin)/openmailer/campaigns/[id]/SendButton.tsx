@@ -58,9 +58,8 @@ export function SendButton({
           retryCount = 0; // Reset retry count on success
 
           if (shouldContinue) {
-            // Exponential backoff: 1s, 2s, 4s, 8s...
-            const delay = Math.min(1000 * Math.pow(2, retryCount), 8000);
-            await new Promise(r => setTimeout(r, delay));
+            // Wait 1 second between successful batches
+            await new Promise(r => setTimeout(r, 1000));
           }
         } catch (err) {
           if (retryCount < maxRetries && err instanceof Error && err.message.includes('timed out')) {
@@ -110,7 +109,7 @@ export function SendButton({
           <div className="h-2 w-full overflow-hidden rounded-full bg-amber-200">
             <div
               className="h-full bg-amber-600 transition-all duration-300"
-              style={{ width: `${(progress.sent / progress.total) * 100}%` }}
+              style={{ width: `${progress.total > 0 ? (progress.sent / progress.total) * 100 : 0}%` }}
             />
           </div>
         </div>

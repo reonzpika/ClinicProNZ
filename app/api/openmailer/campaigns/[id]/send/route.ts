@@ -1,5 +1,5 @@
 import { getDb } from 'database/client';
-import { and, count, eq } from 'drizzle-orm';
+import { and, count, eq, inArray, sql } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -46,7 +46,15 @@ export async function POST(
   }
 
   // Phase 1: Initialize queue if campaign is in draft
-  if (campaign.status === 'draft') {
+  // Check if already initialized (idempotent - safe to retry)
+  const existingEmails = await db
+    .select({ count: count() })
+    .from(openmailerEmails)
+    .where(eq(openmailerEmails.campaignId, campaignId));
+  
+  const alreadyInitialized = (existingEmails[0]?.count ?? 0) > 0;
+
+  if (campaign.status === 'draft' && !alreadyInitialized) {
     const subscribers = await db
       .select()
       .from(openmailerSubscribers)
@@ -59,29 +67,36 @@ export async function POST(
       );
     }
 
-    // Create tracking links once
+    // Create tracking links once (check for duplicates) - BULK INSERT
     const urls = extractUrlsFromHtml(campaign.bodyHtml);
-    for (const url of urls) {
-      const linkId = crypto.randomUUID();
-      const shortCode = nanoid(10);
-      await db.insert(openmailerLinks).values({
-        id: linkId,
+    const existingLinks = await db
+      .select()
+      .from(openmailerLinks)
+      .where(eq(openmailerLinks.campaignId, campaignId));
+    const existingUrls = new Set(existingLinks.map(l => l.url));
+
+    const newLinks = urls
+      .filter(url => !existingUrls.has(url))
+      .map(url => ({
+        id: crypto.randomUUID(),
         campaignId,
         url,
-        shortCode,
-      });
+        shortCode: nanoid(10),
+      }));
+
+    if (newLinks.length > 0) {
+      await db.insert(openmailerLinks).values(newLinks);
     }
 
-    // Create all email records as pending
-    for (const sub of active) {
-      const emailId = crypto.randomUUID();
-      await db.insert(openmailerEmails).values({
-        id: emailId,
-        campaignId,
-        subscriberId: sub.id,
-        status: 'pending',
-      });
-    }
+    // Create all email records as pending - BULK INSERT (much faster, atomic)
+    const emailRecords = active.map(sub => ({
+      id: crypto.randomUUID(),
+      campaignId,
+      subscriberId: sub.id,
+      status: 'pending' as const,
+    }));
+
+    await db.insert(openmailerEmails).values(emailRecords);
 
     // Set campaign to sending state
     await db
@@ -92,9 +107,93 @@ export async function POST(
         updatedAt: new Date(),
       })
       .where(eq(openmailerCampaigns.id, campaignId));
+  } else if (campaign.status === 'draft' && alreadyInitialized) {
+    // Partial initialization occurred - just update status to 'sending'
+    const emailCount = existingEmails[0]?.count ?? 0;
+    await db
+      .update(openmailerCampaigns)
+      .set({
+        totalRecipients: emailCount,
+        status: 'sending',
+        updatedAt: new Date(),
+      })
+      .where(eq(openmailerCampaigns.id, campaignId));
   }
 
   // Phase 2: Process next batch of pending emails
+  
+  // SAFEGUARD 1: Reset stuck 'processing' emails (timeout recovery)
+  // If emails have been 'processing' for >5 minutes, assume timeout and reset to 'pending'
+  await db
+    .update(openmailerEmails)
+    .set({ status: 'pending' })
+    .where(
+      and(
+        eq(openmailerEmails.campaignId, campaignId),
+        eq(openmailerEmails.status, 'processing'),
+        sql`created_at < NOW() - INTERVAL '5 minutes'`,
+      ),
+    );
+
+  // Use PostgreSQL's FOR UPDATE SKIP LOCKED to prevent race conditions
+  // This atomically locks rows so concurrent requests get different batches
+  const claimedEmails = await db.execute<{ id: string }>(sql`
+    UPDATE ${openmailerEmails}
+    SET status = 'processing'
+    WHERE id IN (
+      SELECT id FROM ${openmailerEmails}
+      WHERE campaign_id = ${campaignId}
+        AND status = 'pending'
+      LIMIT ${BATCH_SIZE}
+      FOR UPDATE SKIP LOCKED
+    )
+    RETURNING id
+  `);
+
+  if (claimedEmails.rows.length === 0) {
+    // No emails claimed - either done or another request is processing
+    // Calculate final count and mark campaign as complete
+    const countResult = await db
+      .select({ value: count() })
+      .from(openmailerEmails)
+      .where(
+        and(
+          eq(openmailerEmails.campaignId, campaignId),
+          eq(openmailerEmails.status, 'sent'),
+        ),
+      );
+    const finalSentCount = countResult[0]?.value ?? 0;
+
+    const [campaign] = await db
+      .select()
+      .from(openmailerCampaigns)
+      .where(eq(openmailerCampaigns.id, campaignId))
+      .limit(1);
+
+    if (!campaign) {
+      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    }
+
+    // Update with final count and mark as sent
+    await db
+      .update(openmailerCampaigns)
+      .set({
+        status: 'sent',
+        sentAt: new Date(),
+        totalSent: finalSentCount,
+        updatedAt: new Date(),
+      })
+      .where(eq(openmailerCampaigns.id, campaignId));
+
+    return NextResponse.json({
+      sent: finalSentCount,
+      total: campaign.totalRecipients,
+      continue: false,
+    });
+  }
+
+  // Fetch subscriber details for the claimed emails
+  const claimedIds = claimedEmails.rows.map(row => row.id);
   const pendingEmails = await db
     .select({
       emailId: openmailerEmails.id,
@@ -108,13 +207,7 @@ export async function POST(
       openmailerSubscribers,
       eq(openmailerEmails.subscriberId, openmailerSubscribers.id),
     )
-    .where(
-      and(
-        eq(openmailerEmails.campaignId, campaignId),
-        eq(openmailerEmails.status, 'pending'),
-      ),
-    )
-    .limit(BATCH_SIZE);
+    .where(inArray(openmailerEmails.id, claimedIds));
 
   if (pendingEmails.length === 0) {
     // No more emails to send - calculate final count and mark campaign as sent
