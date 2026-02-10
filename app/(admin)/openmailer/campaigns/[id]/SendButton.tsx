@@ -11,6 +11,18 @@ export function SendButton({
 }) {
   const [loading, setLoading] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  const [progress, setProgress] = useState<{ sent: number; total: number } | null>(null);
+
+  async function sendBatch(): Promise<{ sent: number; total: number; continue: boolean }> {
+    const res = await fetch(`/api/openmailer/campaigns/${campaignId}/send`, {
+      method: 'POST',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || res.statusText);
+    }
+    return res.json();
+  }
 
   async function handleSend() {
     if (!confirm) {
@@ -18,16 +30,18 @@ export function SendButton({
       return;
     }
     setLoading(true);
+    setProgress(null);
     try {
-      const res = await fetch(`/api/openmailer/campaigns/${campaignId}/send`, {
-        method: 'POST',
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || res.statusText);
+      let shouldContinue = true;
+      while (shouldContinue) {
+        const data = await sendBatch();
+        setProgress({ sent: data.sent, total: data.total });
+        shouldContinue = data.continue;
+        if (shouldContinue) {
+          await new Promise(r => setTimeout(r, 1000));
+        }
       }
-      const data = await res.json();
-      alert(`Sent ${data.sent} of ${data.total} emails.`);
+      alert(`Campaign sent successfully! ${progress?.sent} of ${progress?.total} emails delivered.`);
       window.location.reload();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Send failed');
@@ -50,6 +64,26 @@ export function SendButton({
         </p>
       )
 : null}
+      {progress && (
+        <div className="mb-3">
+          <div className="mb-1 flex justify-between text-sm text-amber-900">
+            <span>Sending emails...</span>
+            <span className="font-semibold">
+              {progress.sent}
+              {' '}
+              /
+              {' '}
+              {progress.total}
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-amber-200">
+            <div
+              className="h-full bg-amber-600 transition-all duration-300"
+              style={{ width: `${(progress.sent / progress.total) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
       <button
         type="button"
         onClick={handleSend}
