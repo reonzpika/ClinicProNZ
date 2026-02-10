@@ -1,27 +1,30 @@
 'use client';
 
-import { useCallback, useMemo } from 'react';
-import {
-  ReactFlow,
-  Node,
-  Edge,
-  Controls,
-  Background,
-  MiniMap,
-  useNodesState,
-  useEdgesState,
-  Handle,
-  Position,
-} from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
+import type {
+  Edge,
+  Node,
+} from '@xyflow/react';
+import {
+  Background,
+  Controls,
+  Handle,
+  MiniMap,
+  Position,
+  ReactFlow,
+  useEdgesState,
+  useNodesState,
+} from '@xyflow/react';
+import { useCallback, useMemo } from 'react';
+
 // Custom node types (extends Record so Node<DecisionNodeData> satisfies React Flow's constraint)
-interface DecisionNodeData extends Record<string, unknown> {
+type DecisionNodeData = {
   label: string;
   zone?: 'red' | 'amber' | 'green';
   action?: 'openChecker';
   description?: string;
-}
+} & Record<string, unknown>;
 
 // Custom Decision Node Component
 function DecisionNode({ data }: { data: DecisionNodeData }) {
@@ -37,24 +40,24 @@ function DecisionNode({ data }: { data: DecisionNodeData }) {
 
   return (
     <div
-      className={`px-6 py-4 rounded-lg border-2 ${baseStyle} min-w-[200px] max-w-[300px] shadow-md hover:shadow-lg transition-shadow`}
+      className={`rounded-lg border-2 px-6 py-4 ${baseStyle} min-w-[200px] max-w-[300px] shadow-md transition-shadow hover:shadow-lg`}
     >
-      <Handle type="target" position={Position.Top} className="w-3 h-3" />
-      <div className="font-semibold text-center mb-1">{data.label}</div>
+      <Handle type="target" position={Position.Top} className="size-3" />
+      <div className="mb-1 text-center font-semibold">{data.label}</div>
       {data.description && (
-        <div className="text-xs text-center mt-2 opacity-80">
+        <div className="mt-2 text-center text-xs opacity-80">
           {data.description}
         </div>
       )}
-      <Handle type="source" position={Position.Bottom} className="w-3 h-3" />
+      <Handle type="source" position={Position.Bottom} className="size-3" />
     </div>
   );
 }
 
 // Props interface
-interface InteractiveFlowchartProps {
+type InteractiveFlowchartProps = {
   onOpenChecker?: (section?: 'green' | 'amber' | 'red') => void;
-}
+};
 
 export function InteractiveFlowchart({ onOpenChecker }: InteractiveFlowchartProps) {
   // Node definitions
@@ -286,7 +289,7 @@ export function InteractiveFlowchart({ onOpenChecker }: InteractiveFlowchartProp
   );
 
   return (
-    <div className="w-full h-[800px] bg-gray-50 border border-border rounded-lg">
+    <div className="h-[800px] w-full rounded-lg border border-border bg-gray-50">
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -304,14 +307,20 @@ export function InteractiveFlowchart({ onOpenChecker }: InteractiveFlowchartProp
         }}
       >
         <Background color="#e5e7eb" gap={16} />
-        <Controls className="bg-white border border-border rounded-lg shadow-md" />
+        <Controls className="rounded-lg border border-border bg-white shadow-md" />
         <MiniMap
-          className="bg-white border border-border rounded-lg shadow-md"
+          className="rounded-lg border border-border bg-white shadow-md"
           nodeColor={(node) => {
             const data = node.data as DecisionNodeData;
-            if (data.zone === 'red') return '#fecaca';
-            if (data.zone === 'amber') return '#fde68a';
-            if (data.zone === 'green') return '#bbf7d0';
+            if (data.zone === 'red') {
+ return '#fecaca';
+}
+            if (data.zone === 'amber') {
+ return '#fde68a';
+}
+            if (data.zone === 'green') {
+ return '#bbf7d0';
+}
             return '#e5e7eb';
           }}
         />

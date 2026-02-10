@@ -4,8 +4,8 @@
  *
  * Run from repo root: npx tsx scripts/migrate-traffic-light-to-structured.ts
  */
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const repoRoot = process.cwd();
 const checkerPath = path.join(
@@ -14,12 +14,14 @@ const checkerPath = path.join(
   'features',
   '12-month-prescriptions',
   'lib',
-  'traffic-light-checker.ts'
+  'traffic-light-checker.ts',
 );
 const raw = fs.readFileSync(checkerPath, 'utf-8');
-const match = raw.match(/export const TRAFFIC_LIGHT_CONTENT: string = `([\s\S]*?)`;/m);
+const match = raw.match(/export const TRAFFIC_LIGHT_CONTENT: string = `([\s\S]*?)`;/);
 const captured = match?.[1];
-if (captured === undefined) throw new Error('Could not extract TRAFFIC_LIGHT_CONTENT from checker file');
+if (captured === undefined) {
+ throw new Error('Could not extract TRAFFIC_LIGHT_CONTENT from checker file');
+}
 const md = captured.trim();
 
 function slugify(text: string): string {
@@ -34,32 +36,46 @@ function slugify(text: string): string {
 }
 
 function parseTable(segment: string): { headers: string[]; rows: string[][] } | null {
-  const lines = segment.split('\n').filter((l) => l.includes('|'));
-  if (lines.length < 2) return null;
+  const lines = segment.split('\n').filter(l => l.includes('|'));
+  if (lines.length < 2) {
+ return null;
+}
   const parseRow = (line: string) =>
     line
       .split('|')
-      .map((c) => c.trim())
+      .map(c => c.trim())
       .filter((_, i, arr) => i > 0 && i < arr.length - 1);
   const firstLine = lines[0];
   const sep = lines[1];
-  if (firstLine === undefined || sep === undefined) return null;
+  if (firstLine === undefined || sep === undefined) {
+ return null;
+}
   const headers = parseRow(firstLine);
   const isSeparator = /^[\s|\-]+$/.test(sep);
   const dataLines = isSeparator ? lines.slice(2) : lines.slice(1);
   const rows = dataLines.map(parseRow);
-  if (rows.some((r) => r.length !== headers.length)) return null;
+  if (rows.some(r => r.length !== headers.length)) {
+ return null;
+}
   return { headers, rows };
 }
 
 function classifySegment(segment: string): 'table' | 'list' | 'hr' | 'paragraph' {
   const t = segment.trim();
-  if (!t) return 'hr';
-  if (/^---+$/.test(t) || t === '---') return 'hr';
+  if (!t) {
+ return 'hr';
+}
+  if (/^-{3,}$/.test(t) || t === '---') {
+ return 'hr';
+}
   const lines = t.split('\n');
-  if (lines.some((l) => l.includes('|'))) return 'table';
+  if (lines.some(l => l.includes('|'))) {
+ return 'table';
+}
   const first = lines[0];
-  if (first?.trimStart().startsWith('-')) return 'list';
+  if (first?.trimStart().startsWith('-')) {
+ return 'list';
+}
   return 'paragraph';
 }
 
@@ -72,7 +88,7 @@ type Block =
 
 function parseBlocks(content: string): Block[] {
   const blocks: Block[] = [];
-  const segments = content.split(/\n---+\s*\n/).map((s) => s.trim()).filter(Boolean);
+  const segments = content.split(/\n-{3,}\s*\n/).map(s => s.trim()).filter(Boolean);
   for (const seg of segments) {
     const kind = classifySegment(seg);
     if (kind === 'hr') {
@@ -81,8 +97,11 @@ function parseBlocks(content: string): Block[] {
     }
     if (kind === 'table') {
       const t = parseTable(seg);
-      if (t) blocks.push({ type: 'table', headers: t.headers, rows: t.rows });
-      else blocks.push({ type: 'paragraph', content: seg });
+      if (t) {
+ blocks.push({ type: 'table', headers: t.headers, rows: t.rows });
+} else {
+ blocks.push({ type: 'paragraph', content: seg });
+}
       continue;
     }
     if (kind === 'list') {
@@ -105,14 +124,16 @@ function parseSubsections(content: string): Block[] {
   }
   for (let i = 1; i < parts.length; i++) {
     const chunk = parts[i];
-    if (chunk === undefined) continue;
+    if (chunk === undefined) {
+ continue;
+}
     const lineEnd = chunk.indexOf('\n');
     const firstLine = lineEnd >= 0 ? chunk.slice(0, lineEnd) : chunk;
     const rest = lineEnd >= 0 ? chunk.slice(lineEnd + 1) : '';
-    let title = firstLine.trim();
+    const title = firstLine.trim();
     let subtitle: string | undefined;
     let body = rest;
-    const subMatch = rest.match(/^\s*\*\(([^)]*)\)\*\s*\n?/);
+    const subMatch = rest.match(/^\s*\*\(([^)]*)\)\*\s*/);
     if (subMatch && subMatch[0] !== undefined) {
       subtitle = subMatch[1];
       body = rest.slice(subMatch[0].length);
@@ -131,11 +152,15 @@ const sectionSplits = md.split(/\n## /).filter(Boolean);
 let amberCount = 0;
 for (let i = 0; i < sectionSplits.length; i++) {
   const chunk = sectionSplits[i];
-  if (chunk === undefined) continue;
+  if (chunk === undefined) {
+ continue;
+}
   const firstNewline = chunk.indexOf('\n');
   const titleLine = firstNewline >= 0 ? chunk.slice(0, firstNewline).trim() : chunk.trim();
   const body = firstNewline >= 0 ? chunk.slice(firstNewline + 1) : '';
-  if (!titleLine) continue;
+  if (!titleLine) {
+ continue;
+}
   if (i === 0 && !titleLine.startsWith('🟢') && !titleLine.startsWith('🟡') && !titleLine.startsWith('🔴')) {
     continue;
   }
@@ -170,7 +195,7 @@ function emitBlock(b: Block): string {
     case 'list':
       return `{ type: 'list', content: ${escapeForTs(b.content)} }`;
     case 'table':
-      return `{ type: 'table', headers: [${b.headers.map(escapeForTs).join(', ')}], rows: [${b.rows.map((r) => `[${r.map(escapeForTs).join(', ')}]`).join(', ')}] }`;
+      return `{ type: 'table', headers: [${b.headers.map(escapeForTs).join(', ')}], rows: [${b.rows.map(r => `[${r.map(escapeForTs).join(', ')}]`).join(', ')}] }`;
     case 'hr':
       return `{ type: 'hr' }`;
     case 'subsection':
@@ -193,7 +218,7 @@ import type { TrafficLightDocument } from './traffic-light-types';
 export const TRAFFIC_LIGHT_DOCUMENT: TrafficLightDocument = {
   updated: ${updated ? escapeForTs(updated) : 'undefined'},
   sections: [
-${sections.map((s) => '  ' + emitSection(s)).join(',\n')}
+${sections.map(s => `  ${emitSection(s)}`).join(',\n')}
   ],
 };
 `;
@@ -204,7 +229,7 @@ const outPath = path.join(
   'features',
   '12-month-prescriptions',
   'lib',
-  'traffic-light-data.ts'
+  'traffic-light-data.ts',
 );
 fs.writeFileSync(outPath, outTs, 'utf-8');
 console.log('Wrote', outPath);

@@ -4,7 +4,17 @@
 
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: Resend | null = null;
+function getResendClient(): Resend {
+  if (!resend) {
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error('RESEND_API_KEY environment variable is not set');
+    }
+    resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  return resend;
+}
+
 const TRACKING_BASE
   = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
 
@@ -54,12 +64,13 @@ export function replaceLinksWithTracking(
 export function extractUrlsFromHtml(html: string): string[] {
   const seen = new Set<string>();
   const re = /href\s*=\s*["']([^"']+)["']/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(html)) !== null) {
+  let m: RegExpExecArray | null = re.exec(html);
+  while (m !== null) {
     const url = m[1]?.trim();
     if (url && !url.startsWith('mailto:') && !url.startsWith('#')) {
       seen.add(url);
     }
+    m = re.exec(html);
   }
   return Array.from(seen);
 }
@@ -80,7 +91,8 @@ export async function sendOpenmailerEmail(
   params: SendOpenmailerEmailParams,
 ): Promise<{ success: true; messageId: string } | { success: false; error: string }> {
   try {
-    const { data, error } = await resend.emails.send({
+    const client = getResendClient();
+    const { data, error } = await client.emails.send({
       from: params.from,
       to: params.to,
       subject: params.subject,

@@ -1,5 +1,5 @@
 import { getDb } from 'database/client';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -108,8 +108,12 @@ export async function POST(
       openmailerSubscribers,
       eq(openmailerEmails.subscriberId, openmailerSubscribers.id),
     )
-    .where(eq(openmailerEmails.campaignId, campaignId))
-    .where(eq(openmailerEmails.status, 'pending'))
+    .where(
+      and(
+        eq(openmailerEmails.campaignId, campaignId),
+        eq(openmailerEmails.status, 'pending'),
+      ),
+    )
     .limit(BATCH_SIZE);
 
   if (pendingEmails.length === 0) {
@@ -128,6 +132,10 @@ export async function POST(
       .from(openmailerCampaigns)
       .where(eq(openmailerCampaigns.id, campaignId))
       .limit(1);
+
+    if (!updated) {
+      return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+    }
 
     return NextResponse.json({
       sent: updated.totalSent,
@@ -197,6 +205,10 @@ export async function POST(
     .from(openmailerCampaigns)
     .where(eq(openmailerCampaigns.id, campaignId))
     .limit(1);
+
+  if (!updated) {
+    return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
+  }
 
   const newTotalSent = updated.totalSent + batchSent;
   await db

@@ -6,22 +6,20 @@
 
 import { Resend } from 'resend';
 
-// Check if API key exists and log for debugging
-const apiKey = process.env.RESEND_API_KEY;
-console.log('[email-service] RESEND_API_KEY exists:', !!apiKey);
-console.log('[email-service] RESEND_API_KEY length:', apiKey?.length ?? 0);
-console.log('[email-service] RESEND_API_KEY prefix:', apiKey?.substring(0, 7) ?? 'none');
-
-const resend = new Resend(apiKey);
+let resend: Resend | null = null;
+function getResendClient(): Resend {
+  if (!resend) {
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      throw new Error('RESEND_API_KEY environment variable is not set');
+    }
+    resend = new Resend(apiKey);
+  }
+  return resend;
+}
 
 const FROM_EMAIL = 'ClinicPro <ryo@clinicpro.co.nz>';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
-
-console.log('[email-service] Configuration:', {
-  FROM_EMAIL,
-  APP_URL,
-  hasApiKey: !!apiKey,
-});
 
 export type EmailData = {
   email: string;
@@ -36,6 +34,7 @@ export type EmailData = {
 export async function sendWelcomeEmail(data: EmailData) {
   const { email, name, userId } = data;
 
+  // eslint-disable-next-line no-console
   console.log('[sendWelcomeEmail] Starting email send:', {
     to: email,
     name,
@@ -46,14 +45,17 @@ export async function sendWelcomeEmail(data: EmailData) {
   const desktopLink = `${APP_URL}/referral-images/desktop?u=${userId}`;
   const mobileLink = `${APP_URL}/referral-images/capture?u=${userId}`;
 
+  // eslint-disable-next-line no-console
   console.log('[sendWelcomeEmail] Generated links:', {
     desktopLink,
     mobileLink,
   });
 
   try {
+    // eslint-disable-next-line no-console
     console.log('[sendWelcomeEmail] Calling Resend API...');
-    const result = await resend.emails.send({
+    const client = getResendClient();
+    const result = await client.emails.send({
       from: FROM_EMAIL,
       to: email,
       subject: 'Your Referral Images links - 3 steps to get started',
@@ -90,6 +92,7 @@ export async function sendWelcomeEmail(data: EmailData) {
     `,
     });
 
+    // eslint-disable-next-line no-console
     console.log('[sendWelcomeEmail] Resend API response:', JSON.stringify(result, null, 2));
 
     if (result.error) {
@@ -97,6 +100,7 @@ export async function sendWelcomeEmail(data: EmailData) {
       throw new Error(`Resend error: ${JSON.stringify(result.error)}`);
     }
 
+    // eslint-disable-next-line no-console
     console.log('[sendWelcomeEmail] Email sent successfully:', result.data?.id);
     return result;
   } catch (error: any) {
@@ -116,11 +120,12 @@ export async function sendWelcomeEmail(data: EmailData) {
  */
 export async function sendCheckInEmail(data: EmailData) {
   const { email, name } = data;
+  const client = getResendClient();
 
-  return await resend.emails.send({
+  return await client.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: "How's Referral Images working for you?",
+    subject: 'How\'s Referral Images working for you?',
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
@@ -150,8 +155,9 @@ export async function sendCheckInEmail(data: EmailData) {
  */
 export async function sendLimitHitEmail(data: EmailData) {
   const { email, name } = data;
+  const client = getResendClient();
 
-  return await resend.emails.send({
+  return await client.emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: 'You\'ve hit your 10 free images this month',
@@ -188,8 +194,9 @@ export async function sendLimitHitEmail(data: EmailData) {
 export async function sendShareEncourageEmail(data: EmailData) {
   const { email, name } = data;
   const shareUrl = 'https://clinicpro.co.nz/referral-images';
+  const client = getResendClient();
 
-  return await resend.emails.send({
+  return await client.emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: 'Know someone who\'d find this useful?',
@@ -217,8 +224,9 @@ export async function sendShareEncourageEmail(data: EmailData) {
  */
 export async function sendMonthResetEmail(data: EmailData) {
   const { email, name } = data;
+  const client = getResendClient();
 
-  return await resend.emails.send({
+  return await client.emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: 'Your 10 free images have reset',
@@ -247,8 +255,9 @@ export async function sendMonthResetEmail(data: EmailData) {
  */
 export async function sendPremiumConfirmationEmail(data: EmailData) {
   const { email, name } = data;
+  const client = getResendClient();
 
-  return await resend.emails.send({
+  return await client.emails.send({
     from: FROM_EMAIL,
     to: email,
     subject: 'Thank you for supporting this project',
@@ -282,6 +291,7 @@ export async function sendPremiumConfirmationEmail(data: EmailData) {
 export async function sendMobileLinkEmail(data: EmailData & { mobileLink: string; desktopLink: string }) {
   const { email, mobileLink, desktopLink } = data;
 
+  // eslint-disable-next-line no-console
   console.log('[sendMobileLinkEmail] Starting email send:', {
     to: email,
     mobileLink,
@@ -290,8 +300,10 @@ export async function sendMobileLinkEmail(data: EmailData & { mobileLink: string
   });
 
   try {
+    // eslint-disable-next-line no-console
     console.log('[sendMobileLinkEmail] Calling Resend API...');
-    const result = await resend.emails.send({
+    const client = getResendClient();
+    const result = await client.emails.send({
       from: FROM_EMAIL,
       to: email,
       subject: 'Your Referral Images links',
@@ -353,6 +365,7 @@ export async function sendMobileLinkEmail(data: EmailData & { mobileLink: string
       `,
     });
 
+    // eslint-disable-next-line no-console
     console.log('[sendMobileLinkEmail] Resend API response:', JSON.stringify(result, null, 2));
 
     if (result.error) {
@@ -360,6 +373,7 @@ export async function sendMobileLinkEmail(data: EmailData & { mobileLink: string
       throw new Error(`Resend error: ${JSON.stringify(result.error)}`);
     }
 
+    // eslint-disable-next-line no-console
     console.log('[sendMobileLinkEmail] Email sent successfully:', result.data?.id);
     return result;
   } catch (error: any) {

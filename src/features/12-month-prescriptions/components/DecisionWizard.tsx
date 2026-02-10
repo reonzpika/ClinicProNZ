@@ -142,8 +142,7 @@ of
                       'Controlled drugs are legally excluded from 12-month prescriptions. Class B controlled drugs: max 1 month. Class C controlled drugs: max 3 months.',
                     zone: 'red',
                   },
-                )
-              }
+                )}
               className="min-w-0 flex-1 rounded-t-md px-6 py-4 text-left font-medium text-red-900 transition-colors hover:bg-red-100 md:rounded-l-md md:rounded-r-none"
             >
               <span className="text-lg">🔴 YES</span>
@@ -153,7 +152,7 @@ of
               <button
                 type="button"
                 onClick={() => onOpenChecker('red')}
-                className="min-h-[44px] flex-shrink-0 rounded-b-md px-4 py-3 text-sm font-medium text-red-700 hover:underline md:w-auto md:rounded-r-md md:rounded-l-none md:py-2 w-full"
+                className="min-h-[44px] w-full shrink-0 rounded-b-md px-4 py-3 text-sm font-medium text-red-700 hover:underline md:w-auto md:rounded-l-none md:rounded-r-md md:py-2"
               >
                 View in checker →
               </button>
@@ -348,7 +347,7 @@ of
             <button
               type="button"
               onClick={() => onOpenChecker('amber')}
-              className="min-h-[44px] flex-shrink-0 px-4 py-3 text-sm font-medium text-amber-800 hover:underline md:mt-0 md:py-2 w-full md:w-auto"
+              className="min-h-[44px] w-full shrink-0 px-4 py-3 text-sm font-medium text-amber-800 hover:underline md:mt-0 md:w-auto md:py-2"
             >
               View AMBER Table →
             </button>
