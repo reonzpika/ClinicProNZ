@@ -1,8 +1,9 @@
 'use client';
 
+import type { Components } from 'react-markdown';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { Components } from 'react-markdown';
+
 import type { Block, Section as SectionType, TrafficLightDocument as DocType } from '../lib/traffic-light-types';
 
 const proseMarkdownComponents: Components = {
@@ -37,7 +38,7 @@ function BlockRenderer({ block }: { block: Block }) {
   switch (block.type) {
     case 'paragraph':
       return (
-        <div className="mb-2 prose prose-lg max-w-none prose-p:text-text-secondary prose-strong:text-text-primary [&>p]:mb-0">
+        <div className="prose prose-lg prose-p:text-text-secondary prose-strong:text-text-primary mb-2 max-w-none [&>p]:mb-0">
           <ReactMarkdown remarkPlugins={[remarkGfm]} components={proseMarkdownComponents}>
             {block.content}
           </ReactMarkdown>
@@ -45,20 +46,20 @@ function BlockRenderer({ block }: { block: Block }) {
       );
     case 'list':
       return (
-        <div className="mt-2 mb-6 prose prose-lg max-w-none prose-ul:my-2 prose-li:text-text-secondary prose-strong:text-text-primary">
+        <div className="prose prose-lg prose-ul:my-2 prose-li:text-text-secondary prose-strong:text-text-primary mb-6 mt-2 max-w-none">
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{block.content}</ReactMarkdown>
         </div>
       );
     case 'table':
       return (
-        <div className="overflow-x-auto my-6">
-          <table className="min-w-full border border-border divide-y divide-border">
+        <div className="my-6 overflow-x-auto">
+          <table className="min-w-full divide-y divide-border border border-border">
             <thead>
               <tr>
                 {block.headers.map((h, i) => (
                   <th
                     key={i}
-                    className="px-4 py-2 text-left text-sm font-semibold text-text-primary bg-surface"
+                    className="bg-surface px-4 py-2 text-left text-sm font-semibold text-text-primary"
                   >
                     <InlineMarkdown content={h} />
                   </th>
@@ -71,7 +72,7 @@ function BlockRenderer({ block }: { block: Block }) {
                   {row.map((cell, ci) => (
                     <td
                       key={ci}
-                      className="px-4 py-2 text-sm text-text-secondary border-b border-border"
+                      className="border-b border-border px-4 py-2 text-sm text-text-secondary"
                     >
                       <InlineMarkdown content={cell} />
                     </td>
@@ -87,12 +88,16 @@ function BlockRenderer({ block }: { block: Block }) {
         <section className="mb-6">
           <h3
             id={block.id}
-            className="text-xl font-bold mt-8 mb-3 text-text-primary first:mt-0"
+            className="mb-3 mt-8 text-xl font-bold text-text-primary first:mt-0"
           >
             {block.title}
           </h3>
           {block.subtitle && (
-            <p className="mb-3 text-text-secondary italic">({block.subtitle})</p>
+            <p className="mb-3 italic text-text-secondary">
+(
+{block.subtitle}
+)
+            </p>
           )}
           <div className="space-y-2">
             {block.blocks.map((b, i) => (
@@ -110,10 +115,10 @@ function BlockRenderer({ block }: { block: Block }) {
 
 function Section({ section, isFirst }: { section: SectionType; isFirst: boolean }) {
   return (
-    <section className={isFirst ? 'first:mt-0 mt-12' : 'mt-12'}>
+    <section className={isFirst ? 'mt-12 first:mt-0' : 'mt-12'}>
       <h2
         id={section.id}
-        className="text-2xl font-bold mb-4 text-text-primary first:mt-0"
+        className="mb-4 text-2xl font-bold text-text-primary first:mt-0"
       >
         {section.title}
       </h2>
@@ -128,10 +133,13 @@ function Section({ section, isFirst }: { section: SectionType; isFirst: boolean 
 
 export function TrafficLightStructured({ document }: { document: DocType }) {
   return (
-    <div className="prose prose-lg max-w-none prose-headings:text-text-primary prose-p:text-text-secondary prose-strong:text-text-primary">
+    <div className="prose prose-lg prose-headings:text-text-primary prose-p:text-text-secondary prose-strong:text-text-primary max-w-none">
       {document.updated && (
-        <p className="text-text-secondary mb-6">
-          <strong>Updated {document.updated}</strong>
+        <p className="mb-6 text-text-secondary">
+          <strong>
+Updated
+{document.updated}
+          </strong>
         </p>
       )}
       {document.sections.map((section, i) => (

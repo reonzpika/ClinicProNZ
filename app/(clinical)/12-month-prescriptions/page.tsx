@@ -71,7 +71,7 @@ export default function TwelveMonthRxPage() {
       <section className="bg-surface px-6 py-8">
         <div className="mx-auto max-w-3xl">
           <details className="quick-start-details rounded-lg border border-border bg-white">
-            <summary className="cursor-pointer p-6 text-2xl font-bold text-text-primary list-none [&::-webkit-details-marker]:hidden">
+            <summary className="cursor-pointer list-none p-6 text-2xl font-bold text-text-primary [&::-webkit-details-marker]:hidden">
               Quick Start
             </summary>
             <div className="border-t border-border px-6 pb-6 pt-2">

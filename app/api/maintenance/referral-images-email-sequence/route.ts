@@ -67,13 +67,15 @@ export async function GET(req: NextRequest) {
           sql`${users.createdAt} >= ${fourDaysAgo}`,
           sql`${users.createdAt} < ${threeDaysAgo}`,
           sql`${users.checkInEmailSentAt} IS NULL`,
-          sql`${users.email} IS NOT NULL`
-        )
+          sql`${users.email} IS NOT NULL`,
+        ),
       );
 
     for (const row of checkInRows) {
       const email = row.email;
-      if (!email) continue;
+      if (!email) {
+ continue;
+}
 
       try {
         await sendCheckInEmail({

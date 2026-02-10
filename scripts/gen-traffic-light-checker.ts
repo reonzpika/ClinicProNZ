@@ -6,8 +6,8 @@
  *
  * Run: npx tsx scripts/gen-traffic-light-checker.ts
  */
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const repoRoot = process.cwd();
 const mdPath = path.join(
@@ -15,7 +15,7 @@ const mdPath = path.join(
   'app',
   '(clinical)',
   '12-month-prescriptions',
-  'Traffic_Light_Medication_Checker.md'
+  'Traffic_Light_Medication_Checker.md',
 );
 const content = fs.readFileSync(mdPath, 'utf-8');
 const escaped = content
@@ -28,7 +28,7 @@ const tsPath = path.join(
   'features',
   '12-month-prescriptions',
   'lib',
-  'traffic-light-checker.ts'
+  'traffic-light-checker.ts',
 );
 const tsContent = `// Content from Traffic_Light_Medication_Checker.md\nexport const TRAFFIC_LIGHT_CONTENT: string = \`${escaped}\`;\n`;
 fs.writeFileSync(tsPath, tsContent);

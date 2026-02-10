@@ -1,20 +1,22 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+
+import { cn } from '@/src/lib/utils';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from '@/src/shared/components/ui/dialog';
-import { cn } from '@/src/lib/utils';
+
 import { TrafficLightContent } from './TrafficLightContent';
 
-interface TrafficLightModalProps {
+type TrafficLightModalProps = {
   open: boolean;
   onClose: () => void;
   initialSection?: 'green' | 'amber' | 'red' | null;
-}
+};
 
 export function TrafficLightModal({
   open,
@@ -40,38 +42,38 @@ export function TrafficLightModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+    <Dialog open={open} onOpenChange={isOpen => !isOpen && onClose()}>
       <DialogContent
         className={cn(
           'flex flex-col p-0 gap-0 max-h-[90vh] h-full md:max-w-5xl',
-          'data-[state=open]:slide-in-from-bottom-[48%] data-[state=closed]:slide-out-to-bottom-[48%]'
+          'data-[state=open]:slide-in-from-bottom-[48%] data-[state=closed]:slide-out-to-bottom-[48%]',
         )}
       >
-        <DialogHeader className="p-6 pb-4 border-b border-border shrink-0">
-          <div className="flex items-center justify-between mb-4">
+        <DialogHeader className="shrink-0 border-b border-border p-6 pb-4">
+          <div className="mb-4 flex items-center justify-between">
             <DialogTitle className="text-2xl font-bold text-text-primary">
               Traffic Light Medication Checker
             </DialogTitle>
           </div>
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex flex-wrap gap-3">
             <button
               type="button"
               onClick={() => scrollToSection('green')}
-              className="px-4 py-2 rounded-lg bg-green-100 text-green-800 hover:bg-green-200 transition-colors font-medium"
+              className="rounded-lg bg-green-100 px-4 py-2 font-medium text-green-800 transition-colors hover:bg-green-200"
             >
               GREEN
             </button>
             <button
               type="button"
               onClick={() => scrollToSection('amber')}
-              className="px-4 py-2 rounded-lg bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors font-medium"
+              className="rounded-lg bg-amber-100 px-4 py-2 font-medium text-amber-800 transition-colors hover:bg-amber-200"
             >
               AMBER
             </button>
             <button
               type="button"
               onClick={() => scrollToSection('red')}
-              className="px-4 py-2 rounded-lg bg-red-100 text-red-800 hover:bg-red-200 transition-colors font-medium"
+              className="rounded-lg bg-red-100 px-4 py-2 font-medium text-red-800 transition-colors hover:bg-red-200"
             >
               RED
             </button>

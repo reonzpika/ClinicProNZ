@@ -11,6 +11,32 @@ export function SendButton({
 }) {
   const [loading, setLoading] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  const [progress, setProgress] = useState<{ sent: number; total: number } | null>(null);
+
+  async function sendBatch(): Promise<{ sent: number; total: number; continue: boolean }> {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s client timeout
+
+    try {
+      const res = await fetch(`/api/openmailer/campaigns/${campaignId}/send`, {
+        method: 'POST',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || res.statusText);
+      }
+      return res.json();
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw new Error('Request timed out - batch may have partially completed. Retrying...');
+      }
+      throw err;
+    }
+  }
 
   async function handleSend() {
     if (!confirm) {
@@ -18,16 +44,34 @@ export function SendButton({
       return;
     }
     setLoading(true);
+    setProgress(null);
     try {
-      const res = await fetch(`/api/openmailer/campaigns/${campaignId}/send`, {
-        method: 'POST',
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || res.statusText);
+      let shouldContinue = true;
+      let retryCount = 0;
+      const maxRetries = 3;
+
+      while (shouldContinue) {
+        try {
+          const data = await sendBatch();
+          setProgress({ sent: data.sent, total: data.total });
+          shouldContinue = data.continue;
+          retryCount = 0; // Reset retry count on success
+
+          if (shouldContinue) {
+            // Wait 1 second between successful batches
+            await new Promise(r => setTimeout(r, 1000));
+          }
+        } catch (err) {
+          if (retryCount < maxRetries && err instanceof Error && err.message.includes('timed out')) {
+            retryCount++;
+            console.warn(`Batch timeout, retry ${retryCount}/${maxRetries}`);
+            await new Promise(r => setTimeout(r, 2000)); // Wait 2s before retry
+            continue; // Retry the batch
+          }
+          throw err; // Non-timeout error or max retries exceeded
+        }
       }
-      const data = await res.json();
-      alert(`Sent ${data.sent} of ${data.total} emails.`);
+      alert(`Campaign sent successfully! ${progress?.sent} of ${progress?.total} emails delivered.`);
       window.location.reload();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Send failed');
@@ -50,6 +94,26 @@ export function SendButton({
         </p>
       )
 : null}
+      {progress && (
+        <div className="mb-3">
+          <div className="mb-1 flex justify-between text-sm text-amber-900">
+            <span>Sending emails...</span>
+            <span className="font-semibold">
+              {progress.sent}
+              {' '}
+              /
+              {' '}
+              {progress.total}
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-amber-200">
+            <div
+              className="h-full bg-amber-600 transition-all duration-300"
+              style={{ width: `${progress.total > 0 ? (progress.sent / progress.total) * 100 : 0}%` }}
+            />
+          </div>
+        </div>
+      )}
       <button
         type="button"
         onClick={handleSend}

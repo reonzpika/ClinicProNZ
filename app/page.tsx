@@ -104,19 +104,19 @@ export default function HomePage() {
           </h2>
           <ReferralImagesHomeCard variant="primary" />
 
-          <div className="rounded-lg border border-border bg-white p-5 transition-shadow hover:shadow-md opacity-75">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="rounded-lg border border-border bg-white p-5 opacity-75 transition-shadow hover:shadow-md">
+            <div className="mb-2 flex items-center gap-2">
               <h3 className="text-2xl font-normal text-text-primary">
                 12-Month Prescriptions
               </h3>
-              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded font-medium">
+              <span className="rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700">
                 Coming Soon
               </span>
             </div>
-            <p className="text-text-secondary mb-2">
+            <p className="mb-2 text-text-secondary">
               Clinical decision tools for extended prescriptions. Flowchart + medication checker.
             </p>
-            <p className="text-text-secondary text-sm italic">
+            <p className="text-sm italic text-text-secondary">
               Currently in development
             </p>
           </div>

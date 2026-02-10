@@ -25,10 +25,12 @@ summary: "Full-stack Next.js SaaS application providing AI-assisted medical scri
 
 ## Next Session: Pick Up Here
 
-**PHO Email Campaign Ready**: Follow `QUICKSTART-PHO-CAMPAIGN.md` to:
-1. Import 8 new PHO contacts
+**PHO Email Campaign Ready (Batch Sending Fixed)**: Follow `QUICKSTART-PHO-CAMPAIGN.md` to:
+1. Import 8 new PHO contacts (if not already done)
 2. Send test email to ryo@clinicpro.co.nz
 3. Send production campaign to ~36 PHOs promoting referral images tool
+
+Campaign sending now works reliably with batch processing (no timeout issues).
 
 Otherwise, maintenance only. Prioritise Medtech Phase 1D validation and customer work.
 
@@ -43,6 +45,7 @@ Otherwise, maintenance only. Prioritise Medtech Phase 1D validation and customer
 - ✅ **Features**: Core features in production use
 
 ### Recent Updates
+- **2026-02-10**: OpenMailer Batch Sending — Fixed campaign sending timeout issue (Vercel 10s limit); implemented batch processing (10 emails per request) with progress bar; campaign now completes successfully for 36+ recipients.
 - **2026-02-09**: PHO Email Campaign — Campaign infrastructure ready; 8 new PHO contacts added; test and production campaigns ready to send; promotes referral images tool to ~36 NZ PHOs.
 - **2026-02-08**: Referral Images Email 2 — Day 3 check-in email implemented (feedback-focused, sent to all users); Email 3 (value reinforcement) removed from sequence.
 - **2026-02-01**: AI Scribe landing — `/ai-scribe` now shows the full ClinicPro landing (same as `/landing-page`); minimal "Open AI Scribe" page removed; feature not public from that URL.

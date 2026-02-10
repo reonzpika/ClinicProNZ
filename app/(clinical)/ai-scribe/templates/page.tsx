@@ -290,12 +290,12 @@ export default function TemplatesPage() {
                                 setSelectedTemplate(template);
                                 setIsEditing(true);
                               }}
-                            onDelete={handleDelete}
-                            onCopy={handleCopy}
-                            userDefaultTemplateId={settings?.favouriteTemplateId || userDefaultTemplateId}
-                            onSetDefault={handleSetDefault}
-                            onReorder={handleReorder}
-                            onCreateNew={() => {
+                              onDelete={handleDelete}
+                              onCopy={handleCopy}
+                              userDefaultTemplateId={settings?.favouriteTemplateId || userDefaultTemplateId}
+                              onSetDefault={handleSetDefault}
+                              onReorder={handleReorder}
+                              onCreateNew={() => {
                               setSelectedTemplate(null);
                               setIsEditing(true);
                             }}
