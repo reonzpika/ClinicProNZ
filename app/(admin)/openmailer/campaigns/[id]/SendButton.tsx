@@ -14,14 +14,28 @@ export function SendButton({
   const [progress, setProgress] = useState<{ sent: number; total: number } | null>(null);
 
   async function sendBatch(): Promise<{ sent: number; total: number; continue: boolean }> {
-    const res = await fetch(`/api/openmailer/campaigns/${campaignId}/send`, {
-      method: 'POST',
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || res.statusText);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s client timeout
+
+    try {
+      const res = await fetch(`/api/openmailer/campaigns/${campaignId}/send`, {
+        method: 'POST',
+        signal: controller.signal,
+      });
+      clearTimeout(timeoutId);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || res.statusText);
+      }
+      return res.json();
+    } catch (err) {
+      clearTimeout(timeoutId);
+      if (err instanceof Error && err.name === 'AbortError') {
+        throw new Error('Request timed out - batch may have partially completed. Retrying...');
+      }
+      throw err;
     }
-    return res.json();
   }
 
   async function handleSend() {
@@ -33,12 +47,29 @@ export function SendButton({
     setProgress(null);
     try {
       let shouldContinue = true;
+      let retryCount = 0;
+      const maxRetries = 3;
+
       while (shouldContinue) {
-        const data = await sendBatch();
-        setProgress({ sent: data.sent, total: data.total });
-        shouldContinue = data.continue;
-        if (shouldContinue) {
-          await new Promise(r => setTimeout(r, 1000));
+        try {
+          const data = await sendBatch();
+          setProgress({ sent: data.sent, total: data.total });
+          shouldContinue = data.continue;
+          retryCount = 0; // Reset retry count on success
+
+          if (shouldContinue) {
+            // Exponential backoff: 1s, 2s, 4s, 8s...
+            const delay = Math.min(1000 * Math.pow(2, retryCount), 8000);
+            await new Promise(r => setTimeout(r, delay));
+          }
+        } catch (err) {
+          if (retryCount < maxRetries && err instanceof Error && err.message.includes('timed out')) {
+            retryCount++;
+            console.warn(`Batch timeout, retry ${retryCount}/${maxRetries}`);
+            await new Promise(r => setTimeout(r, 2000)); // Wait 2s before retry
+            continue; // Retry the batch
+          }
+          throw err; // Non-timeout error or max retries exceeded
         }
       }
       alert(`Campaign sent successfully! ${progress?.sent} of ${progress?.total} emails delivered.`);

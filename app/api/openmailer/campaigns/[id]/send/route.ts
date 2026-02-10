@@ -1,5 +1,5 @@
 import { getDb } from 'database/client';
-import { and, eq } from 'drizzle-orm';
+import { and, count, eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
@@ -25,7 +25,7 @@ function isAdminAuth(req: NextRequest): boolean {
   return req.headers.get('x-user-tier') === 'admin';
 }
 
-const BATCH_SIZE = 10;
+const BATCH_SIZE = 8; // Reduced from 10 to stay well under 10s timeout
 
 export async function POST(
   request: NextRequest,
@@ -117,29 +117,42 @@ export async function POST(
     .limit(BATCH_SIZE);
 
   if (pendingEmails.length === 0) {
-    // No more emails to send - mark campaign as sent
-    await db
-      .update(openmailerCampaigns)
-      .set({
-        status: 'sent',
-        sentAt: new Date(),
-        updatedAt: new Date(),
-      })
-      .where(eq(openmailerCampaigns.id, campaignId));
+    // No more emails to send - calculate final count and mark campaign as sent
+    const countResult = await db
+      .select({ value: count() })
+      .from(openmailerEmails)
+      .where(
+        and(
+          eq(openmailerEmails.campaignId, campaignId),
+          eq(openmailerEmails.status, 'sent'),
+        ),
+      );
+    const finalSentCount = countResult[0]?.value ?? 0;
 
-    const [updated] = await db
+    const [campaign] = await db
       .select()
       .from(openmailerCampaigns)
       .where(eq(openmailerCampaigns.id, campaignId))
       .limit(1);
 
-    if (!updated) {
+    if (!campaign) {
       return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
     }
 
+    // Update with final count and mark as sent
+    await db
+      .update(openmailerCampaigns)
+      .set({
+        status: 'sent',
+        sentAt: new Date(),
+        totalSent: finalSentCount,
+        updatedAt: new Date(),
+      })
+      .where(eq(openmailerCampaigns.id, campaignId));
+
     return NextResponse.json({
-      sent: updated.totalSent,
-      total: updated.totalRecipients,
+      sent: finalSentCount,
+      total: campaign.totalRecipients,
       continue: false,
     });
   }
@@ -199,7 +212,19 @@ export async function POST(
     await new Promise(r => setTimeout(r, 50));
   }
 
-  // Update campaign total sent
+  // Calculate totalSent from actual database state (resilient to timeouts)
+  const countResult = await db
+    .select({ value: count() })
+    .from(openmailerEmails)
+    .where(
+      and(
+        eq(openmailerEmails.campaignId, campaignId),
+        eq(openmailerEmails.status, 'sent'),
+      ),
+    );
+  const actualTotalSent = countResult[0]?.value ?? 0;
+
+  // Update campaign with actual count
   const [updated] = await db
     .select()
     .from(openmailerCampaigns)
@@ -210,17 +235,16 @@ export async function POST(
     return NextResponse.json({ error: 'Campaign not found' }, { status: 404 });
   }
 
-  const newTotalSent = updated.totalSent + batchSent;
   await db
     .update(openmailerCampaigns)
     .set({
-      totalSent: newTotalSent,
+      totalSent: actualTotalSent,
       updatedAt: new Date(),
     })
     .where(eq(openmailerCampaigns.id, campaignId));
 
   return NextResponse.json({
-    sent: newTotalSent,
+    sent: actualTotalSent,
     total: updated.totalRecipients,
     continue: true,
   });
