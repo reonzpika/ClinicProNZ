@@ -1,19 +1,19 @@
+import { getDb } from 'database/client';
 import { and, desc, eq, gt } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { imageToolUploads, imageToolUsage, users } from '@/db/schema';
-import { generateFilename, calculateLimit, getCurrentMonth, getMonthFromDate } from '@/src/lib/services/referral-images/utils';
-import { getDb } from 'database/client';
 import { generateImageToolPresignedDownload } from '@/src/lib/image-tool/s3';
+import { calculateLimit, generateFilename, getCurrentMonth, getMonthFromDate } from '@/src/lib/services/referral-images/utils';
 
 export const runtime = 'nodejs';
 
-interface RouteParams {
+type RouteParams = {
   params: Promise<{
     userId: string;
   }>;
-}
+};
 
 /**
  * GET /api/referral-images/status/[userId]
@@ -50,7 +50,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     if (!user) {
       return NextResponse.json(
         { error: 'User not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -67,8 +67,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
       .where(
         and(
           eq(imageToolUsage.userId, userId),
-          eq(imageToolUsage.month, currentMonth)
-        )
+          eq(imageToolUsage.month, currentMonth),
+        ),
       )
       .limit(1);
 
@@ -95,8 +95,8 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
       .where(
         and(
           eq(imageToolUploads.userId, userId),
-          gt(imageToolUploads.expiresAt, now)
-        )
+          gt(imageToolUploads.expiresAt, now),
+        ),
       )
       .orderBy(desc(imageToolUploads.createdAt))
       .limit(50);
@@ -123,7 +123,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
             description: row.description || undefined,
           },
         };
-      })
+      }),
     );
 
     return NextResponse.json({
@@ -138,7 +138,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     console.error('[referral-images/status] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch status' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

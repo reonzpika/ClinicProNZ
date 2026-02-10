@@ -1,28 +1,29 @@
 'use client';
 
-import { useState } from 'react';
 import { Copy, Mail, MessageSquare } from 'lucide-react';
+import { useState } from 'react';
 
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/src/shared/components/ui/dialog';
+
 import { trackShare } from './trackShare';
 
-const SHARE_TEXT =
-  'Photo to desktop in 30 seconds. Always JPEG, auto-resized. Saves >10 minutes per referral. Free for GPs.';
+const SHARE_TEXT
+  = 'Photo to desktop in 30 seconds. Always JPEG, auto-resized. Saves >10 minutes per referral. Free for GPs.';
 
-export interface ShareModalProps {
+export type ShareModalProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   shareUrl: string;
   location: string;
   userId: string;
   onShareComplete?: () => void;
-}
+};
 
 export function ShareModal({
   open,
@@ -56,7 +57,7 @@ export function ShareModal({
   const handleEmail = () => {
     const subject = encodeURIComponent('Tool for referral photos (saves >10 min)');
     const body = encodeURIComponent(
-      `Hi,\n\nI just started using ClinicPro for referral photos - it's been a game-changer. No more emailing photos to myself, resizing, re-uploading. Photo to desktop in 30 seconds, always as JPEG. Saves me >10 minutes per referral. Free to use, built by a NZ GP.\n\nTry it: ${shareUrl}\n\nCheers`
+      `Hi,\n\nI just started using ClinicPro for referral photos - it's been a game-changer. No more emailing photos to myself, resizing, re-uploading. Photo to desktop in 30 seconds, always as JPEG. Saves me >10 minutes per referral. Free to use, built by a NZ GP.\n\nTry it: ${shareUrl}\n\nCheers`,
     );
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
     trackShare(userId, location, 'email');
@@ -77,17 +78,17 @@ export function ShareModal({
           <button
             type="button"
             onClick={handleWhatsApp}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition-colors hover:bg-muted"
           >
-            <MessageSquare className="w-4 h-4" />
+            <MessageSquare className="size-4" />
             WhatsApp
           </button>
           <button
             type="button"
             onClick={handleEmail}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition-colors hover:bg-muted"
           >
-            <Mail className="w-4 h-4" />
+            <Mail className="size-4" />
             Email
           </button>
         </div>
@@ -97,19 +98,21 @@ export function ShareModal({
             type="text"
             readOnly
             value={shareUrl}
-            className="flex-1 px-3 py-2 bg-muted border border-border rounded-lg font-mono text-sm"
-            onClick={(e) => (e.target as HTMLInputElement).select()}
+            className="flex-1 rounded-lg border border-border bg-muted px-3 py-2 font-mono text-sm"
+            onClick={e => (e.target as HTMLInputElement).select()}
           />
           <button
             type="button"
             onClick={handleCopy}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors flex items-center gap-2 whitespace-nowrap"
+            className="flex items-center gap-2 whitespace-nowrap rounded-lg bg-primary px-4 py-2 text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            {copied ? (
+            {copied
+? (
               <>Copied</>
-            ) : (
+            )
+: (
               <>
-                <Copy className="w-4 h-4" />
+                <Copy className="size-4" />
                 Copy
               </>
             )}
@@ -119,7 +122,7 @@ export function ShareModal({
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors"
+            className="rounded-lg border border-border px-4 py-2 transition-colors hover:bg-muted"
           >
             Close
           </button>

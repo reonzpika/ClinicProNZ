@@ -1,9 +1,8 @@
-import { NextResponse } from 'next/server';
-import Stripe from 'stripe';
-
 import { getDb } from 'database/client';
 import { users } from 'database/schema';
 import { eq } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
 
 export const runtime = 'nodejs';
 
@@ -97,12 +96,12 @@ export async function POST(req: Request) {
       cancel_url: `${origin}/referral-images/capture?u=${userId}`,
       metadata: {
         product: 'referral_images',
-        userId: userId,
+        userId,
       },
       payment_intent_data: {
         metadata: {
           product: 'referral_images',
-          userId: userId,
+          userId,
         },
       },
       billing_address_collection: 'required',
@@ -116,8 +115,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ checkoutUrl: session.url });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    const stripeError =
-      error && typeof error === 'object' && 'type' in error
+    const stripeError
+      = error && typeof error === 'object' && 'type' in error
         ? { type: (error as { type: string }).type, code: (error as { code?: string }).code, message }
         : null;
     console.error('[referral-images/upgrade/checkout] Error:', message, stripeError ?? error);

@@ -23,12 +23,12 @@ console.log('[email-service] Configuration:', {
   hasApiKey: !!apiKey,
 });
 
-export interface EmailData {
+export type EmailData = {
   email: string;
   name?: string;
   userId?: string;
   [key: string]: any;
-}
+};
 
 /**
  * Email 1: Welcome (Day 0, immediate after signup)
@@ -91,7 +91,7 @@ export async function sendWelcomeEmail(data: EmailData) {
     });
 
     console.log('[sendWelcomeEmail] Resend API response:', JSON.stringify(result, null, 2));
-    
+
     if (result.error) {
       console.error('[sendWelcomeEmail] Resend returned error:', result.error);
       throw new Error(`Resend error: ${JSON.stringify(result.error)}`);
@@ -154,7 +154,7 @@ export async function sendLimitHitEmail(data: EmailData) {
   return await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: "You've hit your 10 free images this month",
+    subject: 'You\'ve hit your 10 free images this month',
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
@@ -192,7 +192,7 @@ export async function sendShareEncourageEmail(data: EmailData) {
   return await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: "Know someone who'd find this useful?",
+    subject: 'Know someone who\'d find this useful?',
     html: `
       <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Hi ${name || 'there'},</h2>
@@ -354,7 +354,7 @@ export async function sendMobileLinkEmail(data: EmailData & { mobileLink: string
     });
 
     console.log('[sendMobileLinkEmail] Resend API response:', JSON.stringify(result, null, 2));
-    
+
     if (result.error) {
       console.error('[sendMobileLinkEmail] Resend returned error:', result.error);
       throw new Error(`Resend error: ${JSON.stringify(result.error)}`);

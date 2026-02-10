@@ -24,13 +24,13 @@ export async function POST(req: NextRequest) {
     if (!userId || typeof userId !== 'string') {
       return NextResponse.json(
         { error: 'userId is required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
     if (!location || typeof location !== 'string') {
       return NextResponse.json(
         { error: 'location is required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     console.error('[referral-images/share/track] Error:', error);
     return NextResponse.json(
       { error: 'Failed to track share' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

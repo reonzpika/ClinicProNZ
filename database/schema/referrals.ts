@@ -15,10 +15,10 @@ export const referrals = pgTable(
     createdAt: timestamp('created_at').defaultNow().notNull(),
     signupAt: timestamp('signup_at'),
   },
-  (table) => ({
+  table => ({
     referrerIdx: index('referrals_referrer_idx').on(table.referrerId),
     codeIdx: index('referrals_code_idx').on(table.referralCode),
-  })
+  }),
 );
 
 export type Referral = typeof referrals.$inferSelect;

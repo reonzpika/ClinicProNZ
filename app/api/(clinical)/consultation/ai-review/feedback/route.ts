@@ -1,11 +1,11 @@
 // app/api/(clinical)/consultation/ai-review/feedback/route.ts
 
-import { NextResponse } from 'next/server';
-import { and, desc, eq, isNull } from 'drizzle-orm';
-
-import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 import { getDb } from 'database/client';
+import { and, desc, eq, isNull } from 'drizzle-orm';
+import { NextResponse } from 'next/server';
+
 import { aiSuggestions } from '@/db/schema';
+import { extractRBACContext } from '@/src/lib/rbac-enforcer';
 
 export async function POST(req: Request) {
   try {
@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     if (!feedback || !['helpful', 'not_helpful'].includes(feedback)) {
       return NextResponse.json(
         { error: 'Invalid feedback type' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     if (!context.userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -40,8 +40,8 @@ export async function POST(req: Request) {
           eq(aiSuggestions.userId, context.userId),
           eq(aiSuggestions.reviewType, reviewType),
           sessionId ? eq(aiSuggestions.sessionId, sessionId) : isNull(aiSuggestions.sessionId),
-          isNull(aiSuggestions.userFeedback)
-        )
+          isNull(aiSuggestions.userFeedback),
+        ),
       )
       .orderBy(desc(aiSuggestions.createdAt))
       .limit(1);
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     if (!row) {
       return NextResponse.json(
         { error: 'No recent suggestion found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -61,12 +61,11 @@ export async function POST(req: Request) {
       .where(eq(aiSuggestions.id, row.id));
 
     return NextResponse.json({ success: true });
-
   } catch (error) {
     console.error('Feedback save error:', error);
     return NextResponse.json(
       { error: 'Failed to save feedback' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

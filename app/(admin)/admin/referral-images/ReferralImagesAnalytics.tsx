@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 
-interface SharesData {
+type SharesData = {
   totalShares: number;
   referralSignups: number;
   conversionRate: string;
   sharesByMethod: { method: string; count: number }[];
   sharesByLocation: { location: string; count: number }[];
-}
+};
 
 export function ReferralImagesAnalytics() {
   const [data, setData] = useState<SharesData | null>(null);
@@ -18,11 +18,13 @@ export function ReferralImagesAnalytics() {
   useEffect(() => {
     fetch('/api/referral-images/analytics/shares')
       .then((res) => {
-        if (!res.ok) throw new Error('Failed to fetch');
+        if (!res.ok) {
+ throw new Error('Failed to fetch');
+}
         return res.json();
       })
       .then(setData)
-      .catch((err) => setError(err.message || 'Failed to load analytics'))
+      .catch(err => setError(err.message || 'Failed to load analytics'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -42,7 +44,9 @@ export function ReferralImagesAnalytics() {
     );
   }
 
-  if (!data) return null;
+  if (!data) {
+ return null;
+}
 
   return (
     <div className="space-y-6">
@@ -57,16 +61,21 @@ export function ReferralImagesAnalytics() {
         </div>
         <div className="rounded-lg border border-gray-200 bg-white p-6">
           <p className="text-sm font-medium text-gray-500">Conversion Rate</p>
-          <p className="mt-1 text-2xl font-semibold text-gray-900">{data.conversionRate}%</p>
+          <p className="mt-1 text-2xl font-semibold text-gray-900">
+{data.conversionRate}
+%
+          </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Shares by Method</h2>
-          {data.sharesByMethod.length === 0 ? (
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">Shares by Method</h2>
+          {data.sharesByMethod.length === 0
+? (
             <p className="text-sm text-gray-500">No share completions yet</p>
-          ) : (
+          )
+: (
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
@@ -75,7 +84,7 @@ export function ReferralImagesAnalytics() {
                 </tr>
               </thead>
               <tbody>
-                {data.sharesByMethod.map((row) => (
+                {data.sharesByMethod.map(row => (
                   <tr key={row.method} className="border-b border-gray-100">
                     <td className="py-2 text-gray-900">{row.method}</td>
                     <td className="py-2 text-right text-gray-600">{row.count}</td>
@@ -87,10 +96,12 @@ export function ReferralImagesAnalytics() {
         </div>
 
         <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Shares by Location</h2>
-          {data.sharesByLocation.length === 0 ? (
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">Shares by Location</h2>
+          {data.sharesByLocation.length === 0
+? (
             <p className="text-sm text-gray-500">No share events yet</p>
-          ) : (
+          )
+: (
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-200">
@@ -99,7 +110,7 @@ export function ReferralImagesAnalytics() {
                 </tr>
               </thead>
               <tbody>
-                {data.sharesByLocation.map((row) => (
+                {data.sharesByLocation.map(row => (
                   <tr key={row.location} className="border-b border-gray-100">
                     <td className="py-2 text-gray-900">{row.location}</td>
                     <td className="py-2 text-right text-gray-600">{row.count}</td>

@@ -24,12 +24,12 @@ export function ReferralImagesHomeCard({ variant = 'default' }: ReferralImagesHo
     >
       {isPrimary && (
         <div
-          className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent pointer-events-none"
+          className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent"
           aria-hidden
         />
       )}
       <div className="relative z-10">
-        <div className="flex items-center gap-3 mb-3">
+        <div className="mb-3 flex items-center gap-3">
           <h2
             className={`font-semibold text-text-primary ${
               isPrimary ? 'text-3xl md:text-4xl' : 'text-lg'
@@ -40,18 +40,18 @@ export function ReferralImagesHomeCard({ variant = 'default' }: ReferralImagesHo
           <span className="text-sm font-medium text-text-secondary">Live • Free for GPs</span>
         </div>
 
-        <p className={`text-text-secondary mb-6 ${isPrimary ? 'text-lg' : 'text-sm'}`}>
+        <p className={`mb-6 text-text-secondary ${isPrimary ? 'text-lg' : 'text-sm'}`}>
           Photo to desktop in 30 seconds. Saves &gt;10 minutes per referral.
         </p>
 
         <Button
           asChild
           variant="outline"
-          className="w-full border-primary text-primary hover:bg-primary/10 hover:scale-[1.02] transition-all"
+          className="w-full border-primary text-primary transition-all hover:scale-[1.02] hover:bg-primary/10"
         >
           <Link href="/referral-images" className="inline-flex items-center justify-center">
             {isLoaded && userId ? 'Open' : 'Start Free'}
-            <ChevronRight className="ml-2 h-5 w-5" aria-hidden />
+            <ChevronRight className="ml-2 size-5" aria-hidden />
           </Link>
         </Button>
       </div>

@@ -45,7 +45,7 @@ export default function ContactPage() {
         </div>
 
         {/* Footer - matches homepage */}
-        <footer className="py-12 bg-background text-center">
+        <footer className="bg-background py-12 text-center">
           <Container size="md">
             <p className="mb-2 font-medium text-text-primary">Questions?</p>
             <a

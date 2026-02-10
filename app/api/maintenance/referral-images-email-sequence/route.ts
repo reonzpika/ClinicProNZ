@@ -1,17 +1,19 @@
-import { and, eq, or, isNull, ne, sql } from 'drizzle-orm';
+import { getDb } from 'database/client';
+import { and, eq, isNull, ne, or, sql } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { imageToolUsage, users } from '@/db/schema';
 import { sendCheckInEmail, sendMonthResetEmail, sendShareEncourageEmail } from '@/src/lib/services/referral-images/email-service';
 import { getCurrentMonth } from '@/src/lib/services/referral-images/utils';
-import { getDb } from 'database/client';
 
 export const runtime = 'nodejs';
 
 function isAuthorized(req: NextRequest, url: URL): boolean {
   const secret = (process.env.CRON_SECRET as string) || '';
-  if (!secret) return false;
+  if (!secret) {
+ return false;
+}
 
   const token = url.searchParams.get('token') || '';
   const isVercelCron = req.headers.get('x-vercel-cron') === '1';
@@ -106,8 +108,8 @@ export async function GET(req: NextRequest) {
           sql`${imageToolUsage.limitHitEmailSentAt} >= ${sixDaysAgo}`,
           sql`${imageToolUsage.limitHitEmailSentAt} < ${fiveDaysAgo}`,
           sql`${imageToolUsage.shareEncourageEmailSentAt} IS NULL`,
-          eq(users.imageTier, 'free')
-        )
+          eq(users.imageTier, 'free'),
+        ),
       );
 
     for (const row of shareEncourageRows) {
@@ -134,8 +136,8 @@ export async function GET(req: NextRequest) {
             .where(
               and(
                 eq(imageToolUsage.userId, row.userId),
-                eq(imageToolUsage.month, row.month)
-              )
+                eq(imageToolUsage.month, row.month),
+              ),
             );
           shareEncourageSent++;
         }
@@ -146,8 +148,8 @@ export async function GET(req: NextRequest) {
 
     // Email 6: Month Reset (new month, free tier, had usage last month, not yet sent for this month)
     const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const prevMonth =
-      String(prevMonthDate.getFullYear()) + '-' + String(prevMonthDate.getMonth() + 1).padStart(2, '0');
+    const prevMonth
+      = `${String(prevMonthDate.getFullYear())}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`;
 
     const monthResetCandidates = await db
       .select({
@@ -163,19 +165,23 @@ export async function GET(req: NextRequest) {
           eq(imageToolUsage.month, prevMonth),
           or(
             isNull(users.lastMonthResetEmailFor),
-            ne(users.lastMonthResetEmailFor, currentMonth)
-          )
-        )
+            ne(users.lastMonthResetEmailFor, currentMonth),
+          ),
+        ),
       );
 
     // Dedupe by userId (user could have multiple usage rows)
     const seen = new Set<string>();
     for (const row of monthResetCandidates) {
-      if (seen.has(row.userId)) continue;
+      if (seen.has(row.userId)) {
+ continue;
+}
       seen.add(row.userId);
 
       const email = row.email;
-      if (!email) continue;
+      if (!email) {
+ continue;
+}
 
       try {
         await sendMonthResetEmail({

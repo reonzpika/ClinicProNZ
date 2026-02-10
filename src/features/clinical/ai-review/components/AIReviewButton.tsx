@@ -1,10 +1,12 @@
 'use client';
 
-import { useRef, useState } from 'react';
 import { Sparkles } from 'lucide-react';
-import { AIReviewModal } from './AIReviewModal';
-import { Button } from '@/src/shared/components/ui/button';
+import { useRef, useState } from 'react';
+
 import { useConsultationStores } from '@/src/hooks/useConsultationStores';
+import { Button } from '@/src/shared/components/ui/button';
+
+import { AIReviewModal } from './AIReviewModal';
 
 export function AIReviewButton() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,20 +23,24 @@ export function AIReviewButton() {
   } = useConsultationStores();
 
   const hasSoapContent = Boolean(
-    problemsText?.trim() ||
-      objectiveText?.trim() ||
-      assessmentText?.trim() ||
-      planText?.trim(),
+    problemsText?.trim()
+    || objectiveText?.trim()
+    || assessmentText?.trim()
+    || planText?.trim(),
   );
   const hasGeneratedNotes = Boolean(generatedNotes?.trim());
   const hasContent = hasSoapContent || hasGeneratedNotes;
 
   const handleModuleSelect = (moduleType: string) => {
-    if (isGenerating) return;
+    if (isGenerating) {
+ return;
+}
     setIsGenerating(true);
     setSelectedModule(moduleType);
     setIsOpen(true);
-    if (generatingTimeoutRef.current) clearTimeout(generatingTimeoutRef.current);
+    if (generatingTimeoutRef.current) {
+ clearTimeout(generatingTimeoutRef.current);
+}
     generatingTimeoutRef.current = setTimeout(() => setIsGenerating(false), 30000);
   };
 

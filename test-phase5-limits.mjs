@@ -1,14 +1,15 @@
 /**
  * Test script for Phase 5: Freemium Limits Testing
- * 
+ *
  * This script helps set up database states for testing:
  * 1. Reset user to free tier
  * 2. Set usage to specific levels (5, 10, 20, 30)
  * 3. Reset grace unlocks
  */
 
-import { neon } from '@neondatabase/serverless';
 import 'dotenv/config';
+
+import { neon } from '@neondatabase/serverless';
 
 const TEST_USER_ID = 'user_38zrWisMx2mGMw0pxAw9mYqWGgv';
 const CURRENT_MONTH = '2026-01';
@@ -17,19 +18,19 @@ const sql = neon(process.env.DATABASE_URL);
 
 async function resetToFreeTier() {
   console.log('\n🔄 Resetting user to FREE tier...');
-  
+
   await sql`
     UPDATE users 
     SET image_tier = 'free'
     WHERE id = ${TEST_USER_ID}
   `;
-  
+
   console.log('✅ User reset to FREE tier');
 }
 
 async function setUsage(imageCount, graceUnlocks = 0) {
   console.log(`\n📊 Setting usage to: ${imageCount} images, ${graceUnlocks} grace unlocks used`);
-  
+
   // Upsert usage record (delete + insert)
   await sql`
     INSERT INTO image_tool_usage (user_id, month, image_count, grace_unlocks_used, created_at, updated_at)
@@ -40,7 +41,7 @@ async function setUsage(imageCount, graceUnlocks = 0) {
       grace_unlocks_used = ${graceUnlocks},
       updated_at = NOW()
   `;
-  
+
   console.log(`✅ Usage set to ${imageCount} images, ${graceUnlocks} grace unlocks`);
 }
 
@@ -66,29 +67,29 @@ async function setPremiumTier() {
 
 async function showCurrentState() {
   console.log('\n📋 Current User State:');
-  
+
   const user = await sql`
     SELECT image_tier, created_at 
     FROM users 
     WHERE id = ${TEST_USER_ID}
     LIMIT 1
   `;
-  
+
   if (!user.length) {
     console.log('❌ User not found!');
     return;
   }
-  
+
   console.log(`   Tier: ${user[0].image_tier || 'free'}`);
   console.log(`   Created: ${user[0].created_at}`);
-  
+
   const usage = await sql`
     SELECT image_count, grace_unlocks_used
     FROM image_tool_usage
     WHERE user_id = ${TEST_USER_ID} AND month = ${CURRENT_MONTH}
     LIMIT 1
   `;
-  
+
   if (usage.length) {
     console.log(`   Images: ${usage[0].image_count}`);
     console.log(`   Grace Unlocks Used: ${usage[0].grace_unlocks_used}`);
@@ -107,7 +108,7 @@ switch (command) {
     await showCurrentState();
     console.log('\n✨ Ready to test from clean state (0/5 images)');
     break;
-    
+
   case 'limit':
     // Set to limit (5/5 for free tier, first month)
     await resetToFreeTier();
@@ -115,7 +116,7 @@ switch (command) {
     await showCurrentState();
     console.log('\n✨ Ready to test limit reached (5/5 images)');
     break;
-    
+
   case 'grace1':
     // After first grace unlock (5/15)
     await resetToFreeTier();
@@ -123,7 +124,7 @@ switch (command) {
     await showCurrentState();
     console.log('\n✨ Ready to test after grace unlock #1 (5/15 images)');
     break;
-    
+
   case 'grace2':
     // After second grace unlock (5/25)
     await resetToFreeTier();
@@ -131,7 +132,7 @@ switch (command) {
     await showCurrentState();
     console.log('\n✨ Ready to test after grace unlock #2 (5/25 images)');
     break;
-    
+
   case 'maxgrace':
     // Hit limit with max grace (25/25)
     await resetToFreeTier();
@@ -171,7 +172,7 @@ switch (command) {
   case 'status':
     await showCurrentState();
     break;
-    
+
   default:
     console.log(`
 📖 Usage:

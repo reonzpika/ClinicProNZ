@@ -12,13 +12,13 @@ const RESEND_EVENTS = [
 
 type ResendEventType = (typeof RESEND_EVENTS)[number];
 
-interface ResendWebhookData {
+type ResendWebhookData = {
   email_id?: string;
   to?: string[];
   from?: string;
   subject?: string;
   [key: string]: unknown;
-}
+};
 
 /**
  * POST /api/webhooks/resend

@@ -25,7 +25,12 @@ summary: "Full-stack Next.js SaaS application providing AI-assisted medical scri
 
 ## Next Session: Pick Up Here
 
-Maintenance only. If you touch ClinicPro this week, keep it to stability fixes; prioritise Medtech Phase 1D validation and customer work.
+**PHO Email Campaign Ready**: Follow `QUICKSTART-PHO-CAMPAIGN.md` to:
+1. Import 8 new PHO contacts
+2. Send test email to ryo@clinicpro.co.nz
+3. Send production campaign to ~36 PHOs promoting referral images tool
+
+Otherwise, maintenance only. Prioritise Medtech Phase 1D validation and customer work.
 
 ---
 
@@ -38,6 +43,7 @@ Maintenance only. If you touch ClinicPro this week, keep it to stability fixes; 
 - ✅ **Features**: Core features in production use
 
 ### Recent Updates
+- **2026-02-09**: PHO Email Campaign — Campaign infrastructure ready; 8 new PHO contacts added; test and production campaigns ready to send; promotes referral images tool to ~36 NZ PHOs.
 - **2026-02-08**: Referral Images Email 2 — Day 3 check-in email implemented (feedback-focused, sent to all users); Email 3 (value reinforcement) removed from sequence.
 - **2026-02-01**: AI Scribe landing — `/ai-scribe` now shows the full ClinicPro landing (same as `/landing-page`); minimal "Open AI Scribe" page removed; feature not public from that URL.
 - **2026-01-31**: Referral Images filename and overlay — Filenames now use date+time (no random ID); desktop card label shows side + description and full filename on hover.
