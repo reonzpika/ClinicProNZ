@@ -1,5 +1,74 @@
 # Project Log - ClinicPro SaaS
 
+## 2026-02-10 Mon
+### OpenMailer: Campaign batch sending implementation
+
+**Context**: PHO email campaign was failing after sending only 10 emails due to Vercel's serverless function timeout (10 seconds on free/hobby tier). With 36 emails × ~300ms per send = ~11 seconds, the function was killed mid-send, leaving campaign stuck in "sending" status.
+
+**Root Cause**: Vercel free tier has 10-second timeout for serverless functions. Not a Resend API limit.
+
+### Progress
+- ✅ **Refactored send route** (`app/api/openmailer/campaigns/[id]/send/route.ts`):
+  - Implements two-phase approach:
+    - **Phase 1 (Initialize)**: If campaign is 'draft', create all email records as 'pending', create tracking links once, set campaign to 'sending'
+    - **Phase 2 (Process Batch)**: Query next 10 pending emails, send them, update statuses, return progress + continue flag
+  - Each request processes max 10 emails (~3-4 seconds), well under 10s timeout
+  - Returns `{ sent, total, continue }` to indicate whether more batches needed
+- ✅ **Updated SendButton** (`app/(admin)/openmailer/campaigns/[id]/SendButton.tsx`):
+  - Implements polling loop: calls send endpoint repeatedly while `continue: true`
+  - Displays real-time progress bar showing `sent / total`
+  - 1-second delay between batches for rate limiting
+- ✅ **Fixed Drizzle query syntax**: Changed from chained `.where()` calls to `and()` operator for multiple conditions
+- ✅ **Added null checks**: Added campaign existence checks to prevent TypeScript errors
+- ✅ **Lazy-loaded Resend client**: Fixed build-time errors by deferring Resend initialization until runtime (applied to both OpenMailer and referral-images email services)
+
+### Technical Implementation
+**Batch Processing Pattern**:
+```
+User clicks "Send" 
+→ Phase 1: Create queue (all emails as pending)
+→ Phase 2: Process batch of 10 → Update progress
+→ Frontend polls → Process next batch
+→ Repeat until no pending emails
+→ Mark campaign as 'sent'
+```
+
+**Database Schema** (existing):
+- `openmailerEmails.status`: 'pending' | 'sent' | 'failed' | 'bounced'
+- Campaign progress tracked via `totalSent` counter
+
+**Build Issues Fixed**:
+- Resend client initialization moved from module-level to lazy getter function
+- Prevents "Missing API key" errors during `next build` when env vars unavailable
+- Applied pattern to both `src/lib/openmailer/email.ts` and `src/lib/services/referral-images/email-service.ts`
+
+### Decisions
+- Batch size: 10 emails per request (conservative; ~3-4s per batch)
+- Frontend drives polling (simple backend, easy to pause/resume)
+- Queue approach allows resumption if interrupted
+- Progress bar shows real-time feedback to user
+
+### Evidence
+- Commits:
+  - `2cdc7e9e`: Initial batch processing implementation
+  - `2fd4879f`: TypeScript fixes and Resend lazy loading
+- Branch: `cursor/campaign-batch-sending-54b1`
+- Files modified:
+  - `app/api/openmailer/campaigns/[id]/send/route.ts`
+  - `app/(admin)/openmailer/campaigns/[id]/SendButton.tsx`
+  - `src/lib/openmailer/email.ts`
+  - `src/lib/services/referral-images/email-service.ts`
+
+### Next Steps
+- Test campaign with full 36-email list in production
+- Monitor batch timing and adjust BATCH_SIZE if needed
+- Consider adding pause/cancel functionality for long campaigns
+
+### Blockers Encountered
+- Vercel serverless timeout (10s on free tier) — Resolved via batching
+- Build-time Resend initialization errors — Resolved via lazy loading
+- Drizzle ORM chained .where() syntax error — Resolved via and() operator
+
 ## 2026-02-01 Sun
 ### AI Scribe: /ai-scribe shows full landing page (feature not public)
 
