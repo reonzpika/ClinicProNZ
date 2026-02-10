@@ -18,14 +18,14 @@ export async function GET() {
     const user = await clerk.users.getUser(userId);
 
     const metadataFromClaims = (sessionClaims as { metadata?: unknown })?.metadata;
-    const tierFromClaims =
-      typeof metadataFromClaims === 'object' &&
-      metadataFromClaims !== null &&
-      'tier' in metadataFromClaims
+    const tierFromClaims
+      = typeof metadataFromClaims === 'object'
+        && metadataFromClaims !== null
+        && 'tier' in metadataFromClaims
         ? (metadataFromClaims as { tier?: string }).tier
         : undefined;
-    const currentTier =
-      typeof tierFromClaims === 'string' ? tierFromClaims : 'no tier set';
+    const currentTier
+      = typeof tierFromClaims === 'string' ? tierFromClaims : 'no tier set';
 
     return NextResponse.json({
       userId,
@@ -42,7 +42,7 @@ export async function GET() {
         error: 'Failed to fetch session data',
         details: error instanceof Error ? error.message : String(error),
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

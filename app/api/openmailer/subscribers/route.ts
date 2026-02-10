@@ -1,6 +1,7 @@
 import { getDb } from 'database/client';
 import { eq } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { openmailerSubscribers } from '@/db/schema';
 import { isAdminAuth } from '@/src/lib/openmailer/auth';

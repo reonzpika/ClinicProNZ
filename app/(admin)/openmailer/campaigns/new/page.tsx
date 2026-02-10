@@ -51,7 +51,7 @@ export default function OpenmailerNewCampaignPage() {
           <input
             type="text"
             value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
             className="w-full rounded border border-gray-300 px-3 py-2"
             placeholder="e.g. PHO Outreach – Feb 2026"
             required
@@ -64,7 +64,7 @@ export default function OpenmailerNewCampaignPage() {
           <input
             type="text"
             value={form.subject}
-            onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
+            onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
             className="w-full rounded border border-gray-300 px-3 py-2"
             placeholder="e.g. Free tool for referral photos"
             required
@@ -72,11 +72,19 @@ export default function OpenmailerNewCampaignPage() {
         </div>
         <div>
           <label className="mb-2 block text-sm font-medium text-gray-700">
-            Email body (HTML). Use {'{{organization}}'} and {'{{unsubscribe_url}}'} for merge fields.
+            Email body (HTML). Use
+{' '}
+{'{{organization}}'}
+{' '}
+and
+{' '}
+{'{{unsubscribe_url}}'}
+{' '}
+for merge fields.
           </label>
           <textarea
             value={form.bodyHtml}
-            onChange={(e) => setForm((f) => ({ ...f, bodyHtml: e.target.value }))}
+            onChange={e => setForm(f => ({ ...f, bodyHtml: e.target.value }))}
             className="w-full rounded border border-gray-300 px-3 py-2 font-mono text-sm"
             rows={20}
             placeholder="Paste HTML…"
@@ -91,7 +99,7 @@ export default function OpenmailerNewCampaignPage() {
             <input
               type="text"
               value={form.fromName}
-              onChange={(e) => setForm((f) => ({ ...f, fromName: e.target.value }))}
+              onChange={e => setForm(f => ({ ...f, fromName: e.target.value }))}
               className="w-full rounded border border-gray-300 px-3 py-2"
             />
           </div>
@@ -102,7 +110,7 @@ export default function OpenmailerNewCampaignPage() {
             <input
               type="email"
               value={form.fromEmail}
-              onChange={(e) => setForm((f) => ({ ...f, fromEmail: e.target.value }))}
+              onChange={e => setForm(f => ({ ...f, fromEmail: e.target.value }))}
               className="w-full rounded border border-gray-300 px-3 py-2"
             />
           </div>
@@ -113,7 +121,7 @@ export default function OpenmailerNewCampaignPage() {
           </label>
           <select
             value={form.listName}
-            onChange={(e) => setForm((f) => ({ ...f, listName: e.target.value }))}
+            onChange={e => setForm(f => ({ ...f, listName: e.target.value }))}
             className="w-full rounded border border-gray-300 px-3 py-2"
           >
             <option value="pho-contacts">pho-contacts</option>

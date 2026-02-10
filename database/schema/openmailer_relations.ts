@@ -1,4 +1,5 @@
 import { relations } from 'drizzle-orm/relations';
+
 import { openmailerCampaigns } from './openmailer_campaigns';
 import { openmailerClicks } from './openmailer_clicks';
 import { openmailerEmails } from './openmailer_emails';

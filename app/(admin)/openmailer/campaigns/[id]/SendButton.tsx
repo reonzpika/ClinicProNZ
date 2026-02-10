@@ -39,13 +39,17 @@ export function SendButton({
   return (
     <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
       <p className="mb-2 text-sm font-medium text-amber-900">
-        Send campaign &quot;{campaignName}&quot; to all subscribers in the list?
+        Send campaign &quot;
+{campaignName}
+&quot; to all subscribers in the list?
       </p>
-      {confirm ? (
+      {confirm
+? (
         <p className="mb-2 text-sm text-amber-800">
           Click again to confirm send.
         </p>
-      ) : null}
+      )
+: null}
       <button
         type="button"
         onClick={handleSend}

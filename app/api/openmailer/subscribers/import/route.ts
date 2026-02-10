@@ -1,6 +1,7 @@
 import { getDb } from 'database/client';
 import { eq } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { openmailerSubscribers } from '@/db/schema';
 
@@ -13,8 +14,10 @@ function isAdminAuth(req: NextRequest): boolean {
  * Simple CSV parse: first line = headers, rest = rows. Supports quoted fields.
  */
 function parseCsv(text: string): Record<string, string>[] {
-  const lines = text.split(/\r?\n/).filter((line) => line.trim());
-  if (lines.length < 2) return [];
+  const lines = text.split(/\r?\n/).filter(line => line.trim());
+  if (lines.length < 2) {
+ return [];
+}
   const headers = parseCsvLine(lines[0]!);
   const rows: Record<string, string>[] = [];
   for (let i = 1; i < lines.length; i++) {
@@ -41,14 +44,18 @@ function parseCsvLine(line: string): string[] {
           if (line[i] === '"') {
             val += '"';
             i++;
-          } else break;
+          } else {
+ break;
+}
         } else {
           val += line[i];
           i++;
         }
       }
       out.push(val);
-      if (line[i] === ',') i++;
+      if (line[i] === ',') {
+ i++;
+}
     } else {
       let val = '';
       while (i < line.length && line[i] !== ',') {
@@ -56,7 +63,9 @@ function parseCsvLine(line: string): string[] {
         i++;
       }
       out.push(val.trim());
-      if (line[i] === ',') i++;
+      if (line[i] === ',') {
+ i++;
+}
     }
   }
   return out;

@@ -112,7 +112,11 @@ export function SubscriberRowActions({ subscriber }: { subscriber: SubscriberRow
                 Remove subscriber?
               </AlertDialog.Title>
               <AlertDialog.Description className="mt-2 text-sm text-gray-600">
-                This will remove {subscriber.email} from the list. This action
+                This will remove
+{' '}
+{subscriber.email}
+{' '}
+from the list. This action
                 cannot be undone.
               </AlertDialog.Description>
               <div className="mt-6 flex justify-end gap-2">
@@ -166,9 +170,8 @@ export function SubscriberRowActions({ subscriber }: { subscriber: SubscriberRow
                 id={`edit-name-${subscriber.id}`}
                 type="text"
                 value={editForm.name}
-                onChange={(e) =>
-                  setEditForm((f) => ({ ...f, name: e.target.value }))
-                }
+                onChange={e =>
+                  setEditForm(f => ({ ...f, name: e.target.value }))}
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
                 placeholder="Optional"
               />
@@ -183,9 +186,8 @@ export function SubscriberRowActions({ subscriber }: { subscriber: SubscriberRow
               <select
                 id={`edit-list-${subscriber.id}`}
                 value={editForm.listName}
-                onChange={(e) =>
-                  setEditForm((f) => ({ ...f, listName: e.target.value }))
-                }
+                onChange={e =>
+                  setEditForm(f => ({ ...f, listName: e.target.value }))}
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
               >
                 <option value="pho-contacts">pho-contacts</option>
@@ -203,9 +205,8 @@ export function SubscriberRowActions({ subscriber }: { subscriber: SubscriberRow
               <select
                 id={`edit-status-${subscriber.id}`}
                 value={editForm.status}
-                onChange={(e) =>
-                  setEditForm((f) => ({ ...f, status: e.target.value }))
-                }
+                onChange={e =>
+                  setEditForm(f => ({ ...f, status: e.target.value }))}
                 className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
               >
                 <option value="active">Active</option>

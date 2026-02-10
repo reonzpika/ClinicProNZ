@@ -1,4 +1,5 @@
 import { index, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+
 import { openmailerCampaigns } from './openmailer_campaigns';
 import { openmailerSubscribers } from './openmailer_subscribers';
 
@@ -22,12 +23,12 @@ export const openmailerEmails = pgTable(
     errorMessage: text('error_message'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
+  table => [
     uniqueIndex('openmailer_emails_campaign_subscriber_idx').on(table.campaignId, table.subscriberId),
     index('openmailer_emails_campaign_id_idx').on(table.campaignId),
     index('openmailer_emails_subscriber_id_idx').on(table.subscriberId),
     index('openmailer_emails_message_id_idx').on(table.messageId),
-  ]
+  ],
 );
 
 export type OpenmailerEmail = typeof openmailerEmails.$inferSelect;

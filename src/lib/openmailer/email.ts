@@ -5,13 +5,13 @@
 import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const TRACKING_BASE =
-  process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
+const TRACKING_BASE
+  = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
 
-export interface LinkMapEntry {
+export type LinkMapEntry = {
   url: string;
   shortCode: string;
-}
+};
 
 /**
  * Injects a 1x1 tracking pixel into HTML before </body> (or appends if no body).
@@ -19,7 +19,7 @@ export interface LinkMapEntry {
 export function injectTrackingPixel(
   html: string,
   campaignId: string,
-  subscriberId: string
+  subscriberId: string,
 ): string {
   const trackingUrl = `${TRACKING_BASE}/api/openmailer/track/open?c=${encodeURIComponent(campaignId)}&s=${encodeURIComponent(subscriberId)}`;
   const pixel = `<img src="${trackingUrl}" width="1" height="1" alt="" style="display:none;" />`;
@@ -36,7 +36,7 @@ export function injectTrackingPixel(
 export function replaceLinksWithTracking(
   html: string,
   linkMap: LinkMapEntry[],
-  subscriberId: string
+  subscriberId: string,
 ): string {
   let out = html;
   for (const { url, shortCode } of linkMap) {
@@ -64,20 +64,20 @@ export function extractUrlsFromHtml(html: string): string[] {
   return Array.from(seen);
 }
 
-export interface SendOpenmailerEmailParams {
+export type SendOpenmailerEmailParams = {
   to: string;
   subject: string;
   html: string;
   text?: string;
   from: string;
   replyTo?: string;
-}
+};
 
 /**
  * Sends a single email via Resend. Caller is responsible for injecting pixel and replacing links.
  */
 export async function sendOpenmailerEmail(
-  params: SendOpenmailerEmailParams
+  params: SendOpenmailerEmailParams,
 ): Promise<{ success: true; messageId: string } | { success: false; error: string }> {
   try {
     const { data, error } = await resend.emails.send({

@@ -1,16 +1,10 @@
 'use client';
 
-import { Suspense, useEffect, useState, useRef } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Camera, Image, Upload, X, ChevronLeft, ChevronRight, Loader2, Share2, Mail, CheckCircle } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
+import { Camera, CheckCircle, ChevronLeft, ChevronRight, Image, Loader2, Mail, Share2, Upload, X } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
-import { ShareModal } from '../components/ShareModal';
-import { useShare } from '../components/useShare';
-import {
-  incrementUploadCount,
-  isSharePromptThreshold,
-} from '../components/share-prompt-threshold';
 import {
   Dialog,
   DialogContent,
@@ -19,7 +13,14 @@ import {
 } from '@/src/shared/components/ui/dialog';
 import { useToast } from '@/src/shared/components/ui/toast';
 
-interface CapturedImage {
+import {
+  incrementUploadCount,
+  isSharePromptThreshold,
+} from '../components/share-prompt-threshold';
+import { ShareModal } from '../components/ShareModal';
+import { useShare } from '../components/useShare';
+
+type CapturedImage = {
   id: string;
   dataUrl: string;
   file: File;
@@ -27,17 +28,23 @@ interface CapturedImage {
     side?: 'R' | 'L';
     description?: string;
   };
-}
+};
 
 type Screen = 'loading' | 'capture' | 'review' | 'metadata' | 'uploading' | 'success' | 'limit-reached' | 'error';
 
 type Platform = 'ios' | 'android' | 'other';
 
 function detectPlatform(): Platform {
-  if (typeof navigator === 'undefined') return 'other';
+  if (typeof navigator === 'undefined') {
+ return 'other';
+}
   const ua = navigator.userAgent;
-  if (/iPhone|iPad|iPod/.test(ua)) return 'ios';
-  if (/Android/.test(ua)) return 'android';
+  if (/iPhone|iPad|iPod/.test(ua)) {
+ return 'ios';
+}
+  if (/Android/.test(ua)) {
+ return 'android';
+}
   return 'other';
 }
 
@@ -68,23 +75,27 @@ function ReferralImagesMobilePageContent() {
   const [emailSent, setEmailSent] = useState(false);
 
   // Share URL: Always use landing page for sharing to others
-  const shareUrl =
-    typeof window !== 'undefined'
+  const shareUrl
+    = typeof window !== 'undefined'
       ? `${window.location.origin}/referral-images`
       : '';
   const { handleShare, shareModalOpen, setShareModalOpen, shareLocation } = useShare(
     userId ?? null,
-    shareUrl
+    shareUrl,
   );
   const toast = useToast();
 
   const onShareClick = async (location: string) => {
     const usedNative = await handleShare(location);
-    if (usedNative) toast.show({ title: 'Thanks for sharing!', durationMs: 3000 });
+    if (usedNative) {
+ toast.show({ title: 'Thanks for sharing!', durationMs: 3000 });
+}
   };
 
   const handleSavedPrompt = () => {
-    if (typeof window !== 'undefined') localStorage.setItem(HAS_SEEN_SAVE_PROMPT, 'true');
+    if (typeof window !== 'undefined') {
+ localStorage.setItem(HAS_SEEN_SAVE_PROMPT, 'true');
+}
     setShowSavePrompt(false);
   };
 
@@ -93,11 +104,13 @@ function ReferralImagesMobilePageContent() {
   };
 
   const sendEmailToSelf = async () => {
-    if (!userId) return;
-    
+    if (!userId) {
+ return;
+}
+
     setIsSendingEmail(true);
     setEmailSent(false);
-    
+
     try {
       const response = await fetch('/api/referral-images/send-mobile-link', {
         method: 'POST',
@@ -110,19 +123,19 @@ function ReferralImagesMobilePageContent() {
       }
 
       setEmailSent(true);
-      toast.show({ 
-        title: 'Email sent! Check your inbox', 
-        durationMs: 3000 
+      toast.show({
+        title: 'Email sent! Check your inbox',
+        durationMs: 3000,
       });
-      
+
       // Reset success message after 5 seconds
       setTimeout(() => setEmailSent(false), 5000);
     } catch (err) {
       console.error('Failed to send email:', err);
-      toast.show({ 
-        title: 'Failed to send email. Please try again.', 
+      toast.show({
+        title: 'Failed to send email. Please try again.',
         variant: 'destructive',
-        durationMs: 3000 
+        durationMs: 3000,
       });
     } finally {
       setIsSendingEmail(false);
@@ -139,7 +152,7 @@ function ReferralImagesMobilePageContent() {
 
     fetch(`/api/referral-images/status/${userId}`)
       .then(res => res.json())
-      .then(data => {
+      .then((data) => {
         setUsageStatus({
           imageCount: data.imageCount,
           limit: data.limit,
@@ -155,7 +168,9 @@ function ReferralImagesMobilePageContent() {
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    if (!files.length) return;
+    if (!files.length) {
+ return;
+}
 
     setIsProcessingFiles(true);
     // Reset input so same input can be opened again later
@@ -265,8 +280,8 @@ function ReferralImagesMobilePageContent() {
   };
 
   const updateMetadata = (metadata: { side?: 'R' | 'L'; description?: string }) => {
-    setImages(prev => prev.map((img, idx) => 
-      idx === currentMetadataIndex ? { ...img, metadata } : img
+    setImages(prev => prev.map((img, idx) =>
+      idx === currentMetadataIndex ? { ...img, metadata } : img,
     ));
   };
 
@@ -274,10 +289,12 @@ function ReferralImagesMobilePageContent() {
     if (currentMetadataIndex < images.length - 1) {
       // Carry forward metadata to next image
       const currentImage = images[currentMetadataIndex];
-      if (!currentImage) return;
+      if (!currentImage) {
+ return;
+}
       const currentMetadata = currentImage.metadata;
-      setImages(prev => prev.map((img, idx) => 
-        idx === currentMetadataIndex + 1 ? { ...img, metadata: { ...currentMetadata } } : img
+      setImages(prev => prev.map((img, idx) =>
+        idx === currentMetadataIndex + 1 ? { ...img, metadata: { ...currentMetadata } } : img,
       ));
       setCurrentMetadataIndex(prev => prev + 1);
     } else {
@@ -293,16 +310,20 @@ function ReferralImagesMobilePageContent() {
   };
 
   const handleUpload = async () => {
-    if (!userId) return;
-    
+    if (!userId) {
+ return;
+}
+
     setScreen('uploading');
     setUploadProgress(0);
 
     let successCount = 0;
-    
+
     for (let i = 0; i < images.length; i++) {
       const image = images[i];
-      if (!image) continue;
+      if (!image) {
+ continue;
+}
 
       try {
         const response = await fetch('/api/referral-images/upload', {
@@ -350,7 +371,9 @@ function ReferralImagesMobilePageContent() {
   };
 
   const handleGraceUnlock = async () => {
-    if (!userId) return;
+    if (!userId) {
+ return;
+}
 
     try {
       const response = await fetch('/api/referral-images/unlock-grace', {
@@ -363,11 +386,13 @@ function ReferralImagesMobilePageContent() {
 
       if (result.success) {
         // Unlock successful, return to capture
-        setUsageStatus(prev => prev ? {
+        setUsageStatus(prev => prev
+? {
           ...prev,
           limit: result.newLimit,
           graceUnlocksRemaining: 2 - result.graceUnlocksUsed,
-        } : null);
+        }
+: null);
         setScreen('capture');
       } else {
         setError('Failed to unlock grace images');
@@ -379,7 +404,9 @@ function ReferralImagesMobilePageContent() {
   };
 
   const handleUpgradeClick = async () => {
-    if (!userId) return;
+    if (!userId) {
+ return;
+}
 
     setUpgradeError(null);
     try {
@@ -405,9 +432,9 @@ function ReferralImagesMobilePageContent() {
   // Loading Screen
   if (screen === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+          <Loader2 className="mx-auto mb-4 size-12 animate-spin text-primary" />
           <p className="text-text-secondary">Loading...</p>
         </div>
       </div>
@@ -421,54 +448,78 @@ function ReferralImagesMobilePageContent() {
 
   if (screen === 'capture') {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="flex min-h-screen flex-col bg-background">
         {/* Processing photos overlay (gallery/camera pick) */}
         {isProcessingFiles && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-lg p-6 mx-4 flex flex-col items-center gap-4">
-              <Loader2 className="w-12 h-12 animate-spin text-primary" />
-              <p className="text-text-primary font-medium">Processing photos...</p>
+            <div className="mx-4 flex flex-col items-center gap-4 rounded-lg bg-white p-6">
+              <Loader2 className="size-12 animate-spin text-primary" />
+              <p className="font-medium text-text-primary">Processing photos...</p>
             </div>
           </div>
         )}
         {/* Save to Home Screen modal */}
         {showSavePrompt && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-sm w-full p-6 shadow-xl">
-              <div className="text-center text-4xl mb-4">📱</div>
-              <h2 className="text-xl font-bold text-text-primary mb-2 text-center">Save to Home Screen</h2>
-              <p className="text-text-secondary text-sm mb-4 text-center">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
+              <div className="mb-4 text-center text-4xl">📱</div>
+              <h2 className="mb-2 text-center text-xl font-bold text-text-primary">Save to Home Screen</h2>
+              <p className="mb-4 text-center text-sm text-text-secondary">
                 Save this page for instant access during consults. It&apos;ll work like an app - no need to find the link again.
               </p>
               {detectPlatform() === 'ios' && (
-                <ol className="list-decimal list-inside space-y-2 text-text-secondary text-sm mb-4 text-left">
-                  <li>Tap the <strong>Share button</strong> (□↑) at the bottom</li>
-                  <li>Scroll down and tap <strong>&quot;Add to Home Screen&quot;</strong></li>
-                  <li>Tap <strong>&quot;Add&quot;</strong> in the top-right</li>
+                <ol className="mb-4 list-inside list-decimal space-y-2 text-left text-sm text-text-secondary">
+                  <li>
+Tap the
+<strong>Share button</strong>
+{' '}
+(□↑) at the bottom
+                  </li>
+                  <li>
+Scroll down and tap
+<strong>&quot;Add to Home Screen&quot;</strong>
+                  </li>
+                  <li>
+Tap
+<strong>&quot;Add&quot;</strong>
+{' '}
+in the top-right
+                  </li>
                 </ol>
               )}
               {detectPlatform() === 'android' && (
-                <ol className="list-decimal list-inside space-y-2 text-text-secondary text-sm mb-4 text-left">
-                  <li>Tap the <strong>menu</strong> (⋮) in the top-right corner</li>
-                  <li>Tap <strong>&quot;Add to Home screen&quot;</strong></li>
-                  <li>Tap <strong>&quot;Add&quot;</strong></li>
+                <ol className="mb-4 list-inside list-decimal space-y-2 text-left text-sm text-text-secondary">
+                  <li>
+Tap the
+<strong>menu</strong>
+{' '}
+(⋮) in the top-right corner
+                  </li>
+                  <li>
+Tap
+<strong>&quot;Add to Home screen&quot;</strong>
+                  </li>
+                  <li>
+Tap
+<strong>&quot;Add&quot;</strong>
+                  </li>
                 </ol>
               )}
               {detectPlatform() === 'other' && (
-                <p className="text-text-secondary text-sm mb-4 text-center">
+                <p className="mb-4 text-center text-sm text-text-secondary">
                   Look for &quot;Add to Home Screen&quot; or &quot;Install App&quot; in your browser menu.
                 </p>
               )}
               <div className="flex flex-col gap-2">
                 <button
                   onClick={handleSavedPrompt}
-                  className="w-full py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium"
+                  className="w-full rounded-lg bg-primary py-3 font-medium text-white transition-colors hover:bg-primary-dark"
                 >
                   I&apos;ve Saved It
                 </button>
                 <button
                   onClick={handleRemindLater}
-                  className="w-full py-3 border border-border rounded-lg hover:bg-surface transition-colors text-text-secondary"
+                  className="w-full rounded-lg border border-border py-3 text-text-secondary transition-colors hover:bg-surface"
                 >
                   Remind Me Later
                 </button>
@@ -477,10 +528,10 @@ function ReferralImagesMobilePageContent() {
           </div>
         )}
 
-        <header className="bg-white border-b border-border">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-center">
+        <header className="border-b border-border bg-white">
+          <div className="mx-auto flex max-w-7xl items-center justify-center p-4">
             <div className="flex items-center gap-2">
-              <a href="/" className="text-xl font-bold text-text-primary hover:text-primary transition-colors">
+              <a href="/" className="text-xl font-bold text-text-primary transition-colors hover:text-primary">
                 ClinicPro
               </a>
               <span className="text-text-tertiary">/</span>
@@ -500,28 +551,32 @@ function ReferralImagesMobilePageContent() {
           onShareComplete={() => setShareModalOpen(false)}
         />
 
-        <div className="flex-1 flex items-center justify-center p-4 relative">
-          <div className="absolute top-4 right-4 flex gap-2">
+        <div className="relative flex flex-1 items-center justify-center p-4">
+          <div className="absolute right-4 top-4 flex gap-2">
             <button
               type="button"
               onClick={sendEmailToSelf}
               disabled={isSendingEmail || !userId}
-              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-text-primary bg-white"
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-text-primary transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
               title="Email me my links"
             >
-              {isSendingEmail ? (
+              {isSendingEmail
+? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin" />
                   Sending...
                 </>
-              ) : emailSent ? (
+              )
+: emailSent
+? (
                 <>
-                  <CheckCircle className="w-4 h-4 text-green-600" />
+                  <CheckCircle className="size-4 text-green-600" />
                   Sent!
                 </>
-              ) : (
+              )
+: (
                 <>
-                  <Mail className="w-4 h-4" />
+                  <Mail className="size-4" />
                   Email Me
                 </>
               )}
@@ -530,29 +585,29 @@ function ReferralImagesMobilePageContent() {
               type="button"
               onClick={() => onShareClick('capture_content')}
               disabled={!userId || !shareUrl}
-              className="shrink-0 inline-flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-text-primary bg-white"
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-text-primary transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
               title={shareUrl ? 'Share with colleagues' : 'Share'}
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="size-4" />
               Share
             </button>
           </div>
           <div className="text-center">
-            <div className="flex gap-8 justify-center items-start">
+            <div className="flex items-start justify-center gap-8">
               <button
                 onClick={handleCameraClick}
-                className="w-24 h-24 rounded-full bg-primary text-white flex flex-col items-center justify-center shadow-lg hover:bg-primary-dark transition-colors gap-2"
+                className="flex size-24 flex-col items-center justify-center gap-2 rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-dark"
                 type="button"
               >
-                <Camera className="w-10 h-10" />
+                <Camera className="size-10" />
                 <span className="text-xs font-medium">Camera</span>
               </button>
               <button
                 onClick={handleGalleryClick}
-                className="w-24 h-24 rounded-full bg-primary text-white flex flex-col items-center justify-center shadow-lg hover:bg-primary-dark transition-colors gap-2"
+                className="flex size-24 flex-col items-center justify-center gap-2 rounded-full bg-primary text-white shadow-lg transition-colors hover:bg-primary-dark"
                 type="button"
               >
-                <Image className="w-10 h-10" />
+                <Image className="size-10" />
                 <span className="text-xs font-medium">Gallery</span>
               </button>
             </div>
@@ -562,7 +617,7 @@ function ReferralImagesMobilePageContent() {
           </div>
         </div>
 
-        <div className="py-3 px-4 text-center border-t border-border bg-white">
+        <div className="border-t border-border bg-white px-4 py-3 text-center">
           <button
             type="button"
             onClick={() => setShowSavePrompt(true)}
@@ -573,7 +628,7 @@ function ReferralImagesMobilePageContent() {
         </div>
 
         {desktopLink && (
-          <footer className="py-4 px-4 text-center border-t border-border bg-white">
+          <footer className="border-t border-border bg-white p-4 text-center">
             <a href={desktopLink} className="text-sm text-primary hover:underline">
               On desktop? Switch to desktop page
             </a>
@@ -604,52 +659,56 @@ function ReferralImagesMobilePageContent() {
   // Review Screen
   if (screen === 'review') {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <div className="bg-white border-b border-border p-4 flex justify-between items-center">
+      <div className="flex min-h-screen flex-col bg-background">
+        <div className="flex items-center justify-between border-b border-border bg-white p-4">
           <button onClick={() => setScreen('capture')} className="text-text-primary">
-            <X className="w-6 h-6" />
+            <X className="size-6" />
           </button>
-          <h2 className="font-semibold">Review Photos ({images.length})</h2>
+          <h2 className="font-semibold">
+Review Photos (
+{images.length}
+)
+          </h2>
           <div className="w-6"></div>
         </div>
 
         <div className="flex-1 overflow-auto p-4">
           <div className="grid grid-cols-2 gap-4">
-            {images.map((image) => (
+            {images.map(image => (
               <div key={image.id} className="relative aspect-square">
                 <img
                   src={image.dataUrl}
                   alt="Captured"
-                  className="w-full h-full object-cover rounded-lg"
+                  className="size-full rounded-lg object-cover"
                 />
                 <button
                   onClick={() => removeImage(image.id)}
-                  className="absolute top-2 right-2 w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center"
+                  className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-red-500 text-white"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="size-5" />
                 </button>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="bg-white border-t border-border p-4 space-y-3">
+        <div className="space-y-3 border-t border-border bg-white p-4">
           <button
             onClick={handleAddMorePhotos}
-            className="w-full px-6 py-3 border border-border rounded-lg hover:bg-surface transition-colors"
+            className="w-full rounded-lg border border-border px-6 py-3 transition-colors hover:bg-surface"
           >
             Add More Photos
           </button>
           <button
             type="button"
             onClick={handleAddFromOtherSource}
-            className="w-full px-6 py-3 border border-border rounded-lg hover:bg-surface transition-colors text-text-secondary text-sm"
+            className="w-full rounded-lg border border-border px-6 py-3 text-sm text-text-secondary transition-colors hover:bg-surface"
           >
             {lastAddSource === 'camera' ? 'Add from gallery' : 'Take another photo'}
           </button>
           <button
             onClick={proceedToMetadata}
-            className="w-full px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+            className="w-full rounded-lg bg-primary px-6 py-3 text-white transition-colors hover:bg-primary-dark"
           >
             Continue
           </button>
@@ -681,16 +740,24 @@ function ReferralImagesMobilePageContent() {
   // Metadata Input Screen
   if (screen === 'metadata') {
     const currentImage = images[currentMetadataIndex];
-    if (!currentImage) return null;
+    if (!currentImage) {
+ return null;
+}
 
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <div className="bg-white border-b border-border p-4 flex justify-between items-center">
+      <div className="flex min-h-screen flex-col bg-background">
+        <div className="flex items-center justify-between border-b border-border bg-white p-4">
           <button onClick={() => setScreen('review')} className="text-text-primary">
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="size-6" />
           </button>
           <h2 className="font-semibold">
-            Image {currentMetadataIndex + 1} of {images.length}
+            Image
+{' '}
+{currentMetadataIndex + 1}
+{' '}
+of
+{' '}
+{images.length}
           </h2>
           <div className="w-6"></div>
         </div>
@@ -700,21 +767,21 @@ function ReferralImagesMobilePageContent() {
             <img
               src={currentImage.dataUrl}
               alt="Current"
-              className="w-full max-h-64 object-contain rounded-lg"
+              className="max-h-64 w-full rounded-lg object-contain"
             />
           </div>
 
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-3">
+              <label className="mb-3 block text-sm font-medium text-text-primary">
                 Side (optional):
               </label>
               <div className="grid grid-cols-3 gap-3">
                 <button
                   onClick={() => updateMetadata({ ...currentImage.metadata, side: 'R' })}
-                  className={`px-4 py-3 border-2 rounded-lg transition-all ${
+                  className={`rounded-lg border-2 px-4 py-3 transition-all ${
                     currentImage.metadata.side === 'R'
-                      ? 'border-primary bg-primary-light text-primary font-semibold'
+                      ? 'bg-primary-light border-primary font-semibold text-primary'
                       : 'border-border hover:border-primary'
                   }`}
                 >
@@ -722,9 +789,9 @@ function ReferralImagesMobilePageContent() {
                 </button>
                 <button
                   onClick={() => updateMetadata({ ...currentImage.metadata, side: 'L' })}
-                  className={`px-4 py-3 border-2 rounded-lg transition-all ${
+                  className={`rounded-lg border-2 px-4 py-3 transition-all ${
                     currentImage.metadata.side === 'L'
-                      ? 'border-primary bg-primary-light text-primary font-semibold'
+                      ? 'bg-primary-light border-primary font-semibold text-primary'
                       : 'border-border hover:border-primary'
                   }`}
                 >
@@ -732,9 +799,9 @@ function ReferralImagesMobilePageContent() {
                 </button>
                 <button
                   onClick={() => updateMetadata({ ...currentImage.metadata, side: undefined })}
-                  className={`px-4 py-3 border-2 rounded-lg transition-all ${
+                  className={`rounded-lg border-2 px-4 py-3 transition-all ${
                     !currentImage.metadata.side
-                      ? 'border-primary bg-primary-light text-primary font-semibold'
+                      ? 'bg-primary-light border-primary font-semibold text-primary'
                       : 'border-border hover:border-primary'
                   }`}
                 >
@@ -744,42 +811,44 @@ function ReferralImagesMobilePageContent() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-text-primary mb-2">
+              <label className="mb-2 block text-sm font-medium text-text-primary">
                 Description (optional):
               </label>
               <input
                 type="text"
                 value={currentImage.metadata.description || ''}
-                onChange={(e) => updateMetadata({ ...currentImage.metadata, description: e.target.value })}
+                onChange={e => updateMetadata({ ...currentImage.metadata, description: e.target.value })}
                 placeholder="e.g., wound infection, ulcer, rash"
-                className="w-full px-4 py-3 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                className="w-full rounded-lg border border-border px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
           </div>
         </div>
 
-        <div className="bg-white border-t border-border p-4 flex gap-3">
+        <div className="flex gap-3 border-t border-border bg-white p-4">
           {currentMetadataIndex > 0 && (
             <button
               onClick={handleMetadataPrevious}
-              className="flex-1 px-6 py-3 border border-border rounded-lg hover:bg-surface transition-colors flex items-center justify-center gap-2"
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border px-6 py-3 transition-colors hover:bg-surface"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="size-5" />
               Previous
             </button>
           )}
           <button
             onClick={handleMetadataNext}
-            className="flex-1 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
+            className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-white transition-colors hover:bg-primary-dark"
           >
-            {currentMetadataIndex < images.length - 1 ? (
+            {currentMetadataIndex < images.length - 1
+? (
               <>
                 Next
-                <ChevronRight className="w-5 h-5" />
+                <ChevronRight className="size-5" />
               </>
-            ) : (
+            )
+: (
               <>
-                <Upload className="w-5 h-5" />
+                <Upload className="size-5" />
                 Upload
               </>
             )}
@@ -792,17 +861,20 @@ function ReferralImagesMobilePageContent() {
   // Uploading Screen
   if (screen === 'uploading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <div className="text-center max-w-md w-full">
-          <Loader2 className="w-16 h-16 animate-spin text-primary mx-auto mb-6" />
-          <h2 className="text-2xl font-bold text-text-primary mb-4">Uploading...</h2>
-          <div className="w-full bg-surface rounded-full h-3 mb-4">
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="w-full max-w-md text-center">
+          <Loader2 className="mx-auto mb-6 size-16 animate-spin text-primary" />
+          <h2 className="mb-4 text-2xl font-bold text-text-primary">Uploading...</h2>
+          <div className="mb-4 h-3 w-full rounded-full bg-surface">
             <div
-              className="bg-primary h-3 rounded-full transition-all duration-300"
+              className="h-3 rounded-full bg-primary transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>
-          <p className="text-text-secondary">{Math.round(uploadProgress)}%</p>
+          <p className="text-text-secondary">
+{Math.round(uploadProgress)}
+%
+          </p>
         </div>
       </div>
     );
@@ -812,14 +884,19 @@ function ReferralImagesMobilePageContent() {
   if (screen === 'success') {
     return (
       <>
-        <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="flex min-h-screen items-center justify-center bg-background p-4">
           <div className="text-center">
-            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Camera className="w-10 h-10 text-green-600" />
+            <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-full bg-green-100">
+              <Camera className="size-10 text-green-600" />
             </div>
-            <h2 className="text-2xl font-bold text-text-primary mb-2">Success!</h2>
+            <h2 className="mb-2 text-2xl font-bold text-text-primary">Success!</h2>
             <p className="text-text-secondary">
-              {images.length} image{images.length !== 1 ? 's' : ''} uploaded
+              {images.length}
+{' '}
+image
+{images.length !== 1 ? 's' : ''}
+{' '}
+uploaded
             </p>
           </div>
         </div>
@@ -833,9 +910,9 @@ function ReferralImagesMobilePageContent() {
               </DialogTitle>
             </DialogHeader>
             <p className="text-text-secondary">Ready to attach to your referral.</p>
-            <div className="border-t border-border my-4" />
+            <div className="my-4 border-t border-border" />
             <p className="text-text-primary">Just saved &gt;10 minutes?</p>
-            <p className="text-sm text-text-secondary mb-4">
+            <p className="mb-4 text-sm text-text-secondary">
               Know GPs in your practice who still email photos to themselves?
             </p>
             <div className="flex flex-col gap-3">
@@ -845,16 +922,16 @@ function ReferralImagesMobilePageContent() {
                   setShowSharePromptAfterUpload(false);
                   onShareClick('capture_after_upload');
                 }}
-                className="px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
+                className="flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-white transition-colors hover:bg-primary-dark"
               >
-                <Share2 className="w-4 h-4" />
+                <Share2 className="size-4" />
                 Share ClinicPro
               </button>
-              <p className="text-xs text-text-tertiary text-center">(Takes 5 seconds)</p>
+              <p className="text-center text-xs text-text-tertiary">(Takes 5 seconds)</p>
               <button
                 type="button"
                 onClick={() => setShowSharePromptAfterUpload(false)}
-                className="px-4 py-2 border border-border rounded-lg hover:bg-surface transition-colors"
+                className="rounded-lg border border-border px-4 py-2 transition-colors hover:bg-surface"
               >
                 Close
               </button>
@@ -868,21 +945,25 @@ function ReferralImagesMobilePageContent() {
   // Limit Reached Screen
   if (screen === 'limit-reached') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <div className="max-w-md w-full bg-white rounded-lg p-8 text-center">
-          <h2 className="text-2xl font-bold text-text-primary mb-4">
-            🎉 You've captured {usageStatus?.imageCount} images this month
+      <div className="flex min-h-screen items-center justify-center bg-background p-4">
+        <div className="w-full max-w-md rounded-lg bg-white p-8 text-center">
+          <h2 className="mb-4 text-2xl font-bold text-text-primary">
+            🎉 You've captured
+{' '}
+{usageStatus?.imageCount}
+{' '}
+images this month
           </h2>
-          
-          <p className="text-text-secondary mb-6">
+
+          <p className="mb-6 text-text-secondary">
             This tool is clearly helping you!
           </p>
 
-          <div className="bg-surface rounded-lg p-6 mb-6 text-left">
-            <p className="text-sm text-text-primary mb-4">
+          <div className="mb-6 rounded-lg bg-surface p-6 text-left">
+            <p className="mb-4 text-sm text-text-primary">
               I'm a fellow GP who built this to solve our shared workflow pain. No VC funding, no corporate backing.
             </p>
-            <p className="font-semibold text-text-primary mb-3">$50 one-time gets you:</p>
+            <p className="mb-3 font-semibold text-text-primary">$50 one-time gets you:</p>
             <ul className="space-y-2 text-sm text-text-primary">
               <li className="flex items-start gap-2">
                 <span>✓</span>
@@ -902,7 +983,7 @@ function ReferralImagesMobilePageContent() {
           <div className="space-y-3">
             <button
               onClick={handleUpgradeClick}
-              className="w-full px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-semibold"
+              className="w-full rounded-lg bg-primary px-6 py-3 font-semibold text-white transition-colors hover:bg-primary-dark"
             >
               Support This Project - $50
             </button>
@@ -912,7 +993,7 @@ function ReferralImagesMobilePageContent() {
                 <p className="text-sm text-text-secondary">Or:</p>
                 <button
                   onClick={handleGraceUnlock}
-                  className="w-full px-6 py-3 border border-border rounded-lg hover:bg-surface transition-colors"
+                  className="w-full rounded-lg border border-border px-6 py-3 transition-colors hover:bg-surface"
                 >
                   Give Me 10 More Free Images
                 </button>
@@ -920,7 +1001,7 @@ function ReferralImagesMobilePageContent() {
             )}
 
             {upgradeError && (
-              <p className="text-sm text-red-600 mt-2" role="alert">
+              <p className="mt-2 text-sm text-red-600" role="alert">
                 {upgradeError}
               </p>
             )}
@@ -932,20 +1013,20 @@ function ReferralImagesMobilePageContent() {
 
   // Error Screen
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="text-center max-w-md">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <X className="w-8 h-8 text-red-600" />
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="max-w-md text-center">
+        <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-red-100">
+          <X className="size-8 text-red-600" />
         </div>
-        <h2 className="text-2xl font-bold text-text-primary mb-2">Error</h2>
-        <p className="text-text-secondary mb-6">{error || 'Something went wrong'}</p>
+        <h2 className="mb-2 text-2xl font-bold text-text-primary">Error</h2>
+        <p className="mb-6 text-text-secondary">{error || 'Something went wrong'}</p>
         <button
           onClick={() => {
             setImages([]);
             setScreen('capture');
             setError(null);
           }}
-          className="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+          className="rounded-lg bg-primary px-6 py-3 text-white transition-colors hover:bg-primary-dark"
         >
           Try Again
         </button>
@@ -957,14 +1038,14 @@ function ReferralImagesMobilePageContent() {
 export default function ReferralImagesMobilePage() {
   return (
     <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-background">
+      fallback={(
+        <div className="flex min-h-screen items-center justify-center bg-background">
           <div className="text-center">
-            <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-4" />
+            <Loader2 className="mx-auto mb-4 size-12 animate-spin text-primary" />
             <p className="text-text-secondary">Loading...</p>
           </div>
         </div>
-      }
+      )}
     >
       <ReferralImagesMobilePageContent />
     </Suspense>

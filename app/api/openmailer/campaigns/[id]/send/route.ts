@@ -1,7 +1,8 @@
 import { getDb } from 'database/client';
 import { eq } from 'drizzle-orm';
 import { nanoid } from 'nanoid';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import {
   openmailerCampaigns,
@@ -12,13 +13,13 @@ import {
 import {
   extractUrlsFromHtml,
   injectTrackingPixel,
+  type LinkMapEntry,
   replaceLinksWithTracking,
   sendOpenmailerEmail,
-  type LinkMapEntry,
 } from '@/src/lib/openmailer/email';
 
-const TRACKING_BASE =
-  process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
+const TRACKING_BASE
+  = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
 
 function isAdminAuth(req: NextRequest): boolean {
   return req.headers.get('x-user-tier') === 'admin';
@@ -26,7 +27,7 @@ function isAdminAuth(req: NextRequest): boolean {
 
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   if (!isAdminAuth(request)) {
     return NextResponse.json({ error: 'Unauthorised' }, { status: 401 });
@@ -44,7 +45,7 @@ export async function POST(
   if (campaign.status !== 'draft') {
     return NextResponse.json(
       { error: 'Campaign already sent or not in draft' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -52,11 +53,11 @@ export async function POST(
     .select()
     .from(openmailerSubscribers)
     .where(eq(openmailerSubscribers.listName, campaign.listName));
-  const active = subscribers.filter((s) => s.status === 'active');
+  const active = subscribers.filter(s => s.status === 'active');
   if (active.length === 0) {
     return NextResponse.json(
       { error: 'No active subscribers for this list' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -95,10 +96,10 @@ export async function POST(
 
     let html = replaceLinksWithTracking(campaign.bodyHtml, linkMap, sub.id);
     html = injectTrackingPixel(html, campaignId, sub.id);
-    const org =
-      (sub.metadata as Record<string, unknown> | null)?.organization as
-        | string
-        | undefined;
+    const org
+      = (sub.metadata as Record<string, unknown> | null)?.organization as
+      | string
+      | undefined;
     const unsubscribeUrl = `${TRACKING_BASE}/api/openmailer/unsubscribe?email=${encodeURIComponent(sub.email)}&list=${encodeURIComponent(campaign.listName)}`;
     html = html.replace(/\{\{organization\}\}/g, org ?? sub.name ?? '');
     html = html.replace(/\{\{unsubscribe_url\}\}/g, unsubscribeUrl);
@@ -140,7 +141,7 @@ export async function POST(
       })
       .where(eq(openmailerCampaigns.id, campaignId));
 
-    await new Promise((r) => setTimeout(r, 50));
+    await new Promise(r => setTimeout(r, 50));
   }
 
   await db

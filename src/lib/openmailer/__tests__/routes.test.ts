@@ -50,7 +50,7 @@ describe('GET /api/openmailer/track/open', () => {
     ];
     let updateCallIndex = 0;
     const updateFn = vi.fn().mockImplementation(() =>
-      updateCalls[updateCallIndex++].update()
+      updateCalls[updateCallIndex++].update(),
     );
     mockGetDb.mockReturnValue({
       select: selectChain.select,
@@ -72,7 +72,7 @@ describe('GET /api/openmailer/track/open', () => {
 
     const { GET } = await import('@/app/api/openmailer/track/open/route');
     const req = new NextRequest(
-      'http://localhost/api/openmailer/track/open?c=c1'
+      'http://localhost/api/openmailer/track/open?c=c1',
     );
     const res = await GET(req);
 
@@ -133,7 +133,7 @@ describe('GET /api/openmailer/track/click/[shortCode]', () => {
       '@/app/api/openmailer/track/click/[shortCode]/route'
     );
     const req = new NextRequest(
-      `http://localhost/api/openmailer/track/click/abc?s=sub1`
+      `http://localhost/api/openmailer/track/click/abc?s=sub1`,
     );
     const res = await GET(req, {
       params: Promise.resolve({ shortCode: 'abc' }),
@@ -167,7 +167,7 @@ describe('GET /api/openmailer/track/click/[shortCode]', () => {
       '@/app/api/openmailer/track/click/[shortCode]/route'
     );
     const req = new NextRequest(
-      'http://localhost/api/openmailer/track/click/xyz'
+      'http://localhost/api/openmailer/track/click/xyz',
     );
     const res = await GET(req, {
       params: Promise.resolve({ shortCode: 'xyz' }),
@@ -199,9 +199,10 @@ describe('POST /api/openmailer/subscribers', () => {
           name: 'Test',
           listName: 'pho-contacts',
         }),
-      }
+      },
     );
     const res = await POST(req);
+
     expect(res.status).toBe(401);
     expect(mockGetDb).not.toHaveBeenCalled();
   });
@@ -248,7 +249,7 @@ describe('POST /api/openmailer/subscribers', () => {
           name: 'New User',
           listName: 'pho-contacts',
         }),
-      }
+      },
     );
     const res = await POST(req);
     const data = await res.json();
@@ -271,6 +272,7 @@ describe('GET /api/openmailer/subscribers', () => {
     const { GET } = await import('@/app/api/openmailer/subscribers/route');
     const req = new NextRequest('http://localhost/api/openmailer/subscribers');
     const res = await GET(req);
+
     expect(res.status).toBe(401);
   });
 });

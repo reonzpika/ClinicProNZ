@@ -1,19 +1,19 @@
+import { getDb } from 'database/client';
 import { and, desc, eq } from 'drizzle-orm';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { imageToolUploads } from '@/db/schema';
-import { generateFilename } from '@/src/lib/services/referral-images/utils';
-import { getDb } from 'database/client';
 import { getImageToolObject } from '@/src/lib/image-tool/s3';
+import { generateFilename } from '@/src/lib/services/referral-images/utils';
 
 export const runtime = 'nodejs';
 
-interface RouteParams {
+type RouteParams = {
   params: Promise<{
     imageId: string;
   }>;
-}
+};
 
 /**
  * GET /api/referral-images/download/[imageId]?u=userId
@@ -29,7 +29,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   if (!userId) {
     return NextResponse.json(
       { error: 'Missing user ID (u)' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -48,8 +48,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       .where(
         and(
           eq(imageToolUploads.imageId, imageId),
-          eq(imageToolUploads.userId, userId)
-        )
+          eq(imageToolUploads.userId, userId),
+        ),
       )
       .orderBy(desc(imageToolUploads.createdAt))
       .limit(1);
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     if (!imageRow.length) {
       return NextResponse.json(
         { error: 'Image not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -65,7 +65,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     if (!image) {
       return NextResponse.json(
         { error: 'Image not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     console.error('[referral-images/download] Error:', error);
     return NextResponse.json(
       { error: 'Failed to download image' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -2,17 +2,17 @@
  * Utility functions for GP Referral Images
  */
 
-export interface ImageMetadata {
+export type ImageMetadata = {
   side?: 'R' | 'L';
   description?: string;
-}
+};
 
-export interface ImageWithMetadata {
+export type ImageWithMetadata = {
   imageId: string;
   side?: string;
   description?: string;
   createdAt: Date | string;
-}
+};
 
 /**
  * Generate meaningful filename from image metadata
@@ -50,7 +50,7 @@ export function generateFilename(image: ImageWithMetadata): string {
   const date = datePart ?? '';
   // HHmmssSSS for uniqueness (avoids same-second collisions)
   const time = timePart
-    ? timePart.replace(/[^0-9]/g, '').substring(0, 9)
+    ? timePart.replace(/\D/g, '').substring(0, 9)
     : '000000000';
   const timeCompact = time.length >= 9 ? time : time.padEnd(9, '0');
 

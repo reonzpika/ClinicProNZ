@@ -1,6 +1,7 @@
 import { getDb } from 'database/client';
 import { eq } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { openmailerCampaigns } from '@/db/schema';
 
@@ -10,7 +11,7 @@ function isAdminAuth(req: NextRequest): boolean {
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) {
   if (!isAdminAuth(request)) {
     return NextResponse.json({ error: 'Unauthorised' }, { status: 401 });

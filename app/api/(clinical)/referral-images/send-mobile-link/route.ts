@@ -21,7 +21,7 @@ export const runtime = 'nodejs';
  */
 export async function POST(req: NextRequest) {
   console.log('[referral-images/send-mobile-link] POST request received at:', new Date().toISOString());
-  
+
   try {
     const body = await req.json();
     const { userId } = body;
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       console.log('[referral-images/send-mobile-link] Invalid userId provided');
       return NextResponse.json(
         { error: 'User ID is required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       console.log('[referral-images/send-mobile-link] User not found:', userId);
       return NextResponse.json(
         { error: 'User not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
       console.log('[referral-images/send-mobile-link] User has no email address:', userId);
       return NextResponse.json(
         { error: 'User has no email address' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -74,7 +74,7 @@ export async function POST(req: NextRequest) {
       console.log('[referral-images/send-mobile-link] Mobile link not found for user:', userId);
       return NextResponse.json(
         { error: 'Mobile link not found' },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -85,11 +85,11 @@ export async function POST(req: NextRequest) {
       const { sendMobileLinkEmail } = await import(
         '@/src/lib/services/referral-images/email-service'
       );
-      
+
       const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
       const mobileLinkUrl = `${baseUrl}/referral-images/capture?u=${userId}`;
       const desktopLinkUrl = `${baseUrl}/referral-images/desktop?u=${userId}`;
-      
+
       const emailResult = await sendMobileLinkEmail({
         email: user.email,
         mobileLink: mobileLinkUrl,
@@ -112,10 +112,10 @@ export async function POST(req: NextRequest) {
         stack: emailError.stack,
         fullError: JSON.stringify(emailError, null, 2),
       });
-      
+
       return NextResponse.json(
         { error: 'Failed to send email' },
-        { status: 500 }
+        { status: 500 },
       );
     }
   } catch (error: any) {
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(
       { error: 'Failed to send mobile link' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

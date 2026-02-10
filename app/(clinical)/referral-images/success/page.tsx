@@ -1,8 +1,8 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
 import { CheckCircle } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 function ReferralImagesSuccessPageContent() {
   const searchParams = useSearchParams();
@@ -33,57 +33,61 @@ function ReferralImagesSuccessPageContent() {
   }, [sessionId, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-        <div className="flex justify-center mb-6">
-          <CheckCircle className="w-16 h-16 text-green-500" />
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-lg">
+        <div className="mb-6 flex justify-center">
+          <CheckCircle className="size-16 text-green-500" />
         </div>
 
-        <h1 className="text-2xl font-bold text-text-primary mb-4">
+        <h1 className="mb-4 text-2xl font-bold text-text-primary">
           Thank You for Your Support! 🎉
         </h1>
 
-        <p className="text-text-secondary mb-6">
+        <p className="mb-6 text-text-secondary">
           Your payment was successful. You now have:
         </p>
 
-        <div className="bg-surface rounded-lg p-6 mb-6 text-left">
+        <div className="mb-6 rounded-lg bg-surface p-6 text-left">
           <ul className="space-y-3">
             <li className="flex items-start gap-3">
-              <span className="text-green-500 font-bold">✓</span>
+              <span className="font-bold text-green-500">✓</span>
               <span>Unlimited referral images forever</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-500 font-bold">✓</span>
+              <span className="font-bold text-green-500">✓</span>
               <span>All future features automatically</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-500 font-bold">✓</span>
+              <span className="font-bold text-green-500">✓</span>
               <span>Priority early access to our upcoming Inbox AI tool</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="text-green-500 font-bold">✓</span>
+              <span className="font-bold text-green-500">✓</span>
               <span>Our deepest gratitude</span>
             </li>
           </ul>
         </div>
 
-        <p className="text-text-tertiary text-sm mb-6">
+        <p className="mb-6 text-sm text-text-tertiary">
           No more limits. No more prompts. Just capture as many images as you need.
         </p>
 
-        <p className="text-text-secondary mb-4">
-          Redirecting to capture page in {countdown} seconds...
+        <p className="mb-4 text-text-secondary">
+          Redirecting to capture page in
+{' '}
+{countdown}
+{' '}
+seconds...
         </p>
 
         <button
           onClick={() => router.push('/referral-images/capture')}
-          className="w-full px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+          className="w-full rounded-lg bg-primary px-6 py-3 text-white transition-colors hover:bg-primary-dark"
         >
           Continue to Capture
         </button>
 
-        <p className="text-text-tertiary text-sm mt-6">
+        <p className="mt-6 text-sm text-text-tertiary">
           Thank you for supporting GP-built healthcare solutions.
         </p>
       </div>
@@ -94,11 +98,11 @@ function ReferralImagesSuccessPageContent() {
 export default function ReferralImagesSuccessPage() {
   return (
     <Suspense
-      fallback={
-        <div className="min-h-screen flex items-center justify-center bg-background">
+      fallback={(
+        <div className="flex min-h-screen items-center justify-center bg-background">
           <p className="text-text-secondary">Loading...</p>
         </div>
-      }
+      )}
     >
       <ReferralImagesSuccessPageContent />
     </Suspense>

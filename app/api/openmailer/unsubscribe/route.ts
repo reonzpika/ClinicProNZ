@@ -1,6 +1,7 @@
 import { getDb } from 'database/client';
 import { and, eq } from 'drizzle-orm';
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 import { openmailerSubscribers } from '@/db/schema';
 
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
       {
         status: 400,
         headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      }
+      },
     );
   }
   const db = getDb();
@@ -23,8 +24,8 @@ export async function GET(request: NextRequest) {
     .where(
       and(
         eq(openmailerSubscribers.email, email),
-        eq(openmailerSubscribers.listName, list)
-      )
+        eq(openmailerSubscribers.listName, list),
+      ),
     )
     .limit(1);
   if (sub) {
@@ -42,6 +43,6 @@ export async function GET(request: NextRequest) {
     {
       status: 200,
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
-    }
+    },
   );
 }

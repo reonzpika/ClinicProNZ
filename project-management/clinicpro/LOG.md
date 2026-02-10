@@ -78,6 +78,90 @@
 - Local environment missing `DATABASE_URL` - Fixed with mock fallbacks for testing
 - Solution: Continue testing on computer with full `.env` configuration
 
+## 2026-02-09 Mon
+### Milestone: PHO Email Campaign Infrastructure
+
+**Objective**: Set up email campaign to all NZ PHOs promoting referral images tool
+
+**Context**: Built OpenMailer infrastructure for PHO outreach campaign. Created comprehensive setup system with API routes, CSV import, and campaign templates.
+
+### Progress
+- ✅ Created `data/pho-contacts-new.csv` with 8 new PHO contacts:
+  - Ngā Mataapuna Oranga (hello@nmo.org.nz)
+  - Arataki PHO (hello@tend.nz)
+  - Pegasus Health (info@pegasus.health.nz)
+  - Cosine Primary Care Network Trust (admin@kmc.co.nz)
+  - South Canterbury Primary and Community (2 emails)
+  - Community Care (2 emails)
+- ✅ Created `/api/openmailer/setup-pho-campaign` route with 3 actions:
+  - `import`: Add new PHO contacts to database
+  - `create-test`: Create test campaign for ryo@clinicpro.co.nz
+  - `create-production`: Create campaign for all ~36 PHO contacts (28 existing + 8 new)
+- ✅ Created comprehensive documentation:
+  - `QUICKSTART-PHO-CAMPAIGN.md` (browser and API-based workflows)
+  - `docs/pho-campaign-setup.md` (detailed technical guide)
+  - `scripts/pho-campaign-quickstart.sh` (bash automation script)
+- ✅ Embedded full email HTML template in API route with merge fields:
+  - `{{organization}}` for PHO name personalisation
+  - `{{unsubscribe_url}}` for compliance
+- ✅ Email content: Promotes referral images tool (https://clinicpro.co.nz/referral-images)
+  - Focuses on GP workflow pain point (photos from phone to desktop)
+  - Clear value prop: Auto-sized JPEG, instant transfer, 24hr auto-delete
+  - Call to action: Forward to GPs/practice managers
+- ✅ Campaign tracking enabled: Opens, clicks, bounces, unsubscribes
+
+### Technical Implementation
+- **API Route**: `/app/api/openmailer/setup-pho-campaign/route.ts`
+  - Admin-only (requires `x-user-tier: admin` header)
+  - Hardcoded new PHO contacts (no external dependencies)
+  - Returns campaign IDs and URLs for UI access
+- **CSV Format**: email,name,organization (standard OpenMailer import format)
+- **Expected Recipients**: ~36 total PHO contacts
+- **Tracking**: Automatic via OpenMailer (pixel tracking, link rewrites)
+
+### Decisions
+- **Browser-based setup recommended**: Easiest path is via OpenMailer UI at `/openmailer`
+- **API route provides automation option**: For programmatic setup or future campaigns
+- **Test-first approach**: Create test campaign, verify email, then production
+- **No environment variable changes**: All setup uses existing OpenMailer infrastructure
+
+### User Action Required
+Campaign infrastructure ready; user needs to:
+1. Import new PHO contacts (via UI or API)
+2. Create test campaign and send to ryo@clinicpro.co.nz
+3. Verify test email renders correctly
+4. Create production campaign for all 36 PHO contacts
+5. Send production campaign
+6. Monitor results at `/openmailer/campaigns/{id}`
+
+Follow `QUICKSTART-PHO-CAMPAIGN.md` for step-by-step instructions.
+
+### Evidence
+- Branch: `cursor/pho-email-campaign-d2cf`
+- Commits: 
+  - `4568e672`: "feat: add PHO email campaign setup via API route"
+  - `8c22bb64`: "docs: add PHO campaign quickstart guide and script"
+- Files created:
+  - `data/pho-contacts-new.csv`
+  - `app/api/openmailer/setup-pho-campaign/route.ts`
+  - `docs/pho-campaign-setup.md`
+  - `scripts/pho-campaign-quickstart.sh`
+  - `QUICKSTART-PHO-CAMPAIGN.md`
+
+### Blockers Encountered
+- Cloud Agent environment missing `DATABASE_URL`: Cannot execute campaign setup from cloud agent
+  - **Resolution**: Created comprehensive guides for local/production execution
+  - **Impact**: User must run setup locally or via production app where DB credentials exist
+
+### Next Steps
+- User follows QUICKSTART guide to execute campaign
+- Monitor open rates (expect 20-40% over 48 hours)
+- Monitor click rates (expect 2-5% to referral images CTA)
+- Track direct inquiries to ryo@clinicpro.co.nz
+- Document campaign results in future LOG entry
+
+---
+
 ## 2026-01-10 Fri
 ### Milestone: Start project-based logging
 - Logging has moved to per-project `LOG.md` files.

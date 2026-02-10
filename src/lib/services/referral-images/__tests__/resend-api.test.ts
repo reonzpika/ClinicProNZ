@@ -49,6 +49,7 @@ describe('Resend API', () => {
         name: 'Test',
         userId: 'u1',
       });
+
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           to: 'delivered@resend.dev',
@@ -66,6 +67,7 @@ describe('Resend API', () => {
         email: 'delivered@resend.dev',
         userId: 'u1',
       });
+
       expect(result).toHaveProperty('data');
       expect(result?.data).toHaveProperty('id');
       expect(typeof (result?.data as { id: string })?.id).toBe('string');
@@ -83,6 +85,7 @@ describe('Resend API', () => {
         name: 'Test',
         userId: 'u1',
       });
+
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           from: expect.stringMatching(/ryo@clinicpro\.co\.nz/),
@@ -96,6 +99,7 @@ describe('Resend API', () => {
         Object.assign(new Error('Domain not verified'), { statusCode: 403 }),
       );
       const sendWelcomeEmail = await getSendWelcomeEmail();
+
       await expect(
         sendWelcomeEmail({ email: 'delivered@resend.dev', userId: 'u1' }),
       ).rejects.toMatchObject({ statusCode: 403 });
@@ -111,6 +115,7 @@ describe('Resend API', () => {
         html: '<p>Test</p>',
         replyTo: 'ryo@clinicpro.co.nz',
       });
+
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({ replyTo: 'ryo@clinicpro.co.nz' }),
       );
@@ -126,6 +131,7 @@ describe('Resend API', () => {
         name: 'Test',
         userId: 'u1',
       });
+
       expect(mockSend).toHaveBeenCalledWith(
         expect.not.objectContaining({ scheduledAt: expect.anything() }),
       );
@@ -141,6 +147,7 @@ describe('Resend API', () => {
         html: '<p>Tip</p>',
         scheduledAt: 'in 2 minutes',
       });
+
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({ scheduledAt: 'in 2 minutes' }),
       );
@@ -156,6 +163,7 @@ describe('Resend API', () => {
         html: '<p>Value</p>',
         scheduledAt: 'in 5 minutes',
       });
+
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({ scheduledAt: 'in 5 minutes' }),
       );
@@ -169,6 +177,7 @@ describe('Resend API', () => {
         type: 'email.bounced',
         data: { email_id: 're_1', to: ['bounced@resend.dev'] },
       };
+
       expect(bouncePayload.type).toBe('email.bounced');
       expect(bouncePayload.data.to).toContain('bounced@resend.dev');
     });
@@ -178,6 +187,7 @@ describe('Resend API', () => {
         type: 'email.complained',
         data: { email_id: 're_1', to: ['complained@resend.dev'] },
       };
+
       expect(complaintPayload.type).toBe('email.complained');
       expect(complaintPayload.data.to).toContain('complained@resend.dev');
     });
@@ -187,6 +197,7 @@ describe('Resend API', () => {
         Object.assign(new Error('Unauthorized'), { statusCode: 401 }),
       );
       const sendWelcomeEmail = await getSendWelcomeEmail();
+
       await expect(
         sendWelcomeEmail({ email: 'delivered@resend.dev', userId: 'u1' }),
       ).rejects.toMatchObject({ statusCode: 401 });
@@ -198,6 +209,7 @@ describe('Resend API', () => {
     it('HTML sanitisation strips script tags', () => {
       const dirty = '<p>Hello</p><script>alert(1)</script><p>World</p>';
       const clean = sanitizeEmailHtml(dirty);
+
       expect(clean).not.toContain('<script>');
       expect(clean).not.toContain('alert(1)');
       expect(clean).toContain('Hello');
@@ -211,11 +223,12 @@ describe('Resend API', () => {
           email: 'delivered@resend.dev',
           name: `User${i}`,
           userId: `u${i}`,
-        }),
-      );
+        }));
       const results = await Promise.allSettled(promises);
-      const rejected = results.filter((r) => r.status === 'rejected');
+      const rejected = results.filter(r => r.status === 'rejected');
+
       expect(rejected.length).toBeLessThanOrEqual(10);
+
       results.forEach((r) => {
         expect(r.status).toBeDefined();
       });
@@ -228,11 +241,14 @@ describe('Resend API', () => {
         email: 'delivered@resend.dev',
         name: 'Test',
       });
+
       expect(mockSend).toHaveBeenCalledTimes(1);
+
       const call = mockSend.mock.calls[0][0];
+
       expect(call.html).not.toContain('/referral-images/upgrade');
       expect(call.html).toContain('https://clinicpro.co.nz/referral-images');
-      expect(call.subject).toBe("Know someone who'd find this useful?");
+      expect(call.subject).toBe('Know someone who\'d find this useful?');
     });
 
     it('template variables {{firstName}}, {{clinicName}} are replaced and sanitised', () => {
@@ -241,12 +257,15 @@ describe('Resend API', () => {
         firstName: 'Jane',
         clinicName: 'Auckland Medical',
       });
+
       expect(out).toContain('Jane');
       expect(out).toContain('Auckland Medical');
       expect(out).not.toContain('{{');
+
       const xss = renderEmailTemplate('<p>{{name}}</p>', {
         name: '<script>alert(1)</script>',
       });
+
       expect(xss).not.toContain('<script>');
     });
   });
@@ -275,6 +294,7 @@ describe('§4 Open tracking and webhooks', () => {
       headers: { 'Content-Type': 'application/json' },
     });
     const res = await POST(req);
+
     expect(res.status).toBe(400);
   });
 
@@ -296,6 +316,7 @@ describe('§4 Open tracking and webhooks', () => {
       },
     });
     const res = await POST(req);
+
     expect(res.status).toBe(400);
   });
 
@@ -304,6 +325,7 @@ describe('§4 Open tracking and webhooks', () => {
       type: 'email.opened',
       data: { email_id: 're_123', to: ['delivered@resend.dev'] },
     };
+
     expect(payload.type).toBe('email.opened');
     expect(payload.data).toHaveProperty('email_id', 're_123');
     expect(payload.data.to).toContain('delivered@resend.dev');
@@ -314,6 +336,7 @@ describe('§4 Open tracking and webhooks', () => {
       type: 'email.clicked',
       data: { email_id: 're_1', to: ['delivered@resend.dev'] },
     };
+
     expect(payload.type).toBe('email.clicked');
     expect(payload.data).toHaveProperty('email_id');
   });
@@ -328,6 +351,7 @@ describe.runIf(process.env.RESEND_API_KEY)('Resend API integration', () => {
       name: 'Integration',
       userId: 'int-test',
     });
+
     expect(result?.data?.id).toBeDefined();
     expect((result?.data as { id: string })?.id).toMatch(/^re_/);
     expect(result?.error).toBeNull();

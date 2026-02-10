@@ -19,8 +19,8 @@ export default clerkMiddleware(async (auth, req) => {
 
   // OpenMailer tracking and unsubscribe (public)
   if (
-    req.nextUrl.pathname.startsWith('/api/openmailer/track/') ||
-    req.nextUrl.pathname === '/api/openmailer/unsubscribe'
+    req.nextUrl.pathname.startsWith('/api/openmailer/track/')
+    || req.nextUrl.pathname === '/api/openmailer/unsubscribe'
   ) {
     return NextResponse.next();
   }

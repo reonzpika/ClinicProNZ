@@ -4,7 +4,7 @@
 export async function trackShare(
   userId: string,
   location: string,
-  method?: string
+  method?: string,
 ): Promise<void> {
   await fetch('/api/referral-images/share/track', {
     method: 'POST',

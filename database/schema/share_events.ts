@@ -13,12 +13,12 @@ export const shareEvents = pgTable(
     method: text('method'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
   },
-  (table) => ({
+  table => ({
     userCreatedIdx: index('share_events_user_created_idx').on(
       table.userId,
-      table.createdAt
+      table.createdAt,
     ),
-  })
+  }),
 );
 
 export type ShareEvent = typeof shareEvents.$inferSelect;

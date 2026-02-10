@@ -49,7 +49,7 @@ export default async function OpenmailerDashboardPage() {
           <p className="mt-1 text-3xl font-semibold text-gray-900">
             {
               recentCampaigns.filter(
-                (c) => c.status === 'sent' && c.sentAt
+                c => c.status === 'sent' && c.sentAt,
               ).length
             }
           </p>
@@ -81,7 +81,7 @@ export default async function OpenmailerDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
-              {recentCampaigns.map((c) => (
+              {recentCampaigns.map(c => (
                 <tr key={c.id}>
                   <td className="whitespace-nowrap px-6 py-4">
                     <Link

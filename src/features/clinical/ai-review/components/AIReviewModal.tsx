@@ -1,19 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Loader2, ThumbsUp, ThumbsDown, X } from 'lucide-react';
+import { Loader2, ThumbsDown, ThumbsUp, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+import { useConsultationStores } from '@/src/hooks/useConsultationStores';
+import { Button } from '@/src/shared/components/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from '@/src/shared/components/ui/dialog';
-import { Button } from '@/src/shared/components/ui/button';
-import { useConsultationStores } from '@/src/hooks/useConsultationStores';
 
-interface AIReviewModalProps {
+type AIReviewModalProps = {
   isOpen: boolean;
   onClose: () => void;
   reviewType: string;
@@ -23,7 +24,7 @@ interface AIReviewModalProps {
     assessmentText: string;
     planText: string;
   };
-}
+};
 
 const MODULE_TITLES = {
   red_flags: '🚩 Red Flags Scanner',
@@ -70,7 +71,9 @@ export function AIReviewModal({ isOpen, onClose, reviewType, noteContent }: AIRe
 
       const data = await res.json();
       setResponse(data.response);
-      if (data.reviewId != null) setReviewId(data.reviewId);
+      if (data.reviewId != null) {
+ setReviewId(data.reviewId);
+}
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -101,7 +104,7 @@ export function AIReviewModal({ isOpen, onClose, reviewType, noteContent }: AIRe
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="flex max-h-[85vh] max-w-3xl flex-col overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>{MODULE_TITLES[reviewType as keyof typeof MODULE_TITLES]}</span>
@@ -109,7 +112,7 @@ export function AIReviewModal({ isOpen, onClose, reviewType, noteContent }: AIRe
               onClick={onClose}
               className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100"
             >
-              <X className="h-4 w-4" />
+              <X className="size-4" />
             </button>
           </DialogTitle>
           <DialogDescription>
@@ -120,16 +123,16 @@ export function AIReviewModal({ isOpen, onClose, reviewType, noteContent }: AIRe
         <div className="flex-1 overflow-y-auto py-4">
           {loading && (
             <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-3" />
+              <Loader2 className="mb-3 size-8 animate-spin text-blue-600" />
               <p className="text-sm text-gray-600">Analyzing consultation notes...</p>
-              <p className="text-xs text-gray-400 mt-1">This typically takes 3-5 seconds</p>
+              <p className="mt-1 text-xs text-gray-400">This typically takes 3-5 seconds</p>
             </div>
           )}
 
           {error && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-800 font-medium">Error generating review</p>
-              <p className="text-sm text-red-600 mt-1">{error}</p>
+            <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="text-sm font-medium text-red-800">Error generating review</p>
+              <p className="mt-1 text-sm text-red-600">{error}</p>
               <Button
                 variant="outline"
                 size="sm"
@@ -151,9 +154,11 @@ export function AIReviewModal({ isOpen, onClose, reviewType, noteContent }: AIRe
               </div>
 
               {/* Disclaimer */}
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
                 <p className="text-xs text-amber-800">
-                  <strong>Clinical Judgment Required:</strong> These AI-generated suggestions are for consideration only and do not replace your clinical judgment. Always verify recommendations against current evidence and patient context.
+                  <strong>Clinical Judgment Required:</strong>
+{' '}
+These AI-generated suggestions are for consideration only and do not replace your clinical judgment. Always verify recommendations against current evidence and patient context.
                 </p>
               </div>
             </div>
@@ -161,11 +166,11 @@ export function AIReviewModal({ isOpen, onClose, reviewType, noteContent }: AIRe
         </div>
 
         <DialogFooter className="border-t pt-4">
-          <div className="flex items-center justify-between w-full">
+          <div className="flex w-full items-center justify-between">
             {/* Feedback buttons */}
             {response && (
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 mr-2">Was this helpful?</span>
+                <span className="mr-2 text-sm text-gray-600">Was this helpful?</span>
                 <Button
                   variant={feedback === 'helpful' ? 'default' : 'outline'}
                   size="sm"
@@ -173,7 +178,7 @@ export function AIReviewModal({ isOpen, onClose, reviewType, noteContent }: AIRe
                   disabled={feedback !== null}
                   className="gap-2"
                 >
-                  <ThumbsUp className="h-4 w-4" />
+                  <ThumbsUp className="size-4" />
                   {feedback === 'helpful' && 'Thanks!'}
                 </Button>
                 <Button
@@ -183,7 +188,7 @@ export function AIReviewModal({ isOpen, onClose, reviewType, noteContent }: AIRe
                   disabled={feedback !== null}
                   className="gap-2"
                 >
-                  <ThumbsDown className="h-4 w-4" />
+                  <ThumbsDown className="size-4" />
                   {feedback === 'not_helpful' && 'Thanks!'}
                 </Button>
               </div>

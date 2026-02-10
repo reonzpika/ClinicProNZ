@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 /**
  * Returns true if the request is authorised as admin (OpenMailer API key or x-user-tier).

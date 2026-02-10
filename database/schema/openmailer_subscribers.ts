@@ -15,11 +15,11 @@ export const openmailerSubscribers = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [
+  table => [
     index('openmailer_subscribers_email_idx').on(table.email),
     index('openmailer_subscribers_list_name_idx').on(table.listName),
     index('openmailer_subscribers_status_idx').on(table.status),
-  ]
+  ],
 );
 
 export type OpenmailerSubscriber = typeof openmailerSubscribers.$inferSelect;

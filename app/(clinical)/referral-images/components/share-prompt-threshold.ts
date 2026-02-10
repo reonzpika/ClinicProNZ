@@ -11,14 +11,18 @@ export function isSharePromptThreshold(total: number): boolean {
 }
 
 export function getDownloadCount(userId: string | null): number {
-  if (typeof window === 'undefined' || !userId) return 0;
+  if (typeof window === 'undefined' || !userId) {
+ return 0;
+}
   const raw = window.localStorage.getItem(DOWNLOAD_COUNT_KEY(userId));
-  const n = parseInt(raw ?? '0', 10);
+  const n = Number.parseInt(raw ?? '0', 10);
   return Number.isFinite(n) ? n : 0;
 }
 
 export function incrementDownloadCount(userId: string | null, by: number): number {
-  if (typeof window === 'undefined' || !userId) return 0;
+  if (typeof window === 'undefined' || !userId) {
+ return 0;
+}
   const current = getDownloadCount(userId);
   const next = current + by;
   window.localStorage.setItem(DOWNLOAD_COUNT_KEY(userId), String(next));
@@ -26,14 +30,18 @@ export function incrementDownloadCount(userId: string | null, by: number): numbe
 }
 
 export function getUploadCount(userId: string | null): number {
-  if (typeof window === 'undefined' || !userId) return 0;
+  if (typeof window === 'undefined' || !userId) {
+ return 0;
+}
   const raw = window.localStorage.getItem(UPLOAD_COUNT_KEY(userId));
-  const n = parseInt(raw ?? '0', 10);
+  const n = Number.parseInt(raw ?? '0', 10);
   return Number.isFinite(n) ? n : 0;
 }
 
 export function incrementUploadCount(userId: string | null, by: number): number {
-  if (typeof window === 'undefined' || !userId) return 0;
+  if (typeof window === 'undefined' || !userId) {
+ return 0;
+}
   const current = getUploadCount(userId);
   const next = current + by;
   window.localStorage.setItem(UPLOAD_COUNT_KEY(userId), String(next));
