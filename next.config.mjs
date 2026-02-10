@@ -10,6 +10,8 @@ const nextConfig = {
   // Temporarily disable strict mode in development to prevent double Ably connections
   reactStrictMode: process.env.NODE_ENV === 'production',
   serverExternalPackages: ['@electric-sql/pglite', 'ably'],
+  // So Turbopack can resolve @xyflow/react (optional; use dev:webpack if still failing)
+  transpilePackages: ['@xyflow/react'],
 };
 
 export default bundleAnalyzer(nextConfig);
