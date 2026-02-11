@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 
-const SIGNUP_URL = '/auth/register?redirect_url=%2Fai-scribe%2Fthank-you';
+import { markNewsletterSubscribed, NewsletterPopup } from '@/src/shared/components/NewsletterPopup';
 
 const sections = [
   { id: 'ai-scribe', label: 'AI Scribe' },
@@ -13,14 +14,48 @@ const sections = [
 
 const navItems = sections.filter(s => s.id !== 'start');
 
+type SubscribeStatus = 'idle' | 'loading' | 'success' | 'error';
+
 function scrollToSection(id: string) {
   const element = document.getElementById(id);
   if (element) {
- element.scrollIntoView({ behavior: 'smooth' });
-}
+    element.scrollIntoView({ behavior: 'smooth' });
+  }
 }
 
 export default function AiScribeLandingPage() {
+  const [email, setEmail] = useState('');
+  const [subscribeStatus, setSubscribeStatus] = useState<SubscribeStatus>('idle');
+  const [subscribeMessage, setSubscribeMessage] = useState('');
+
+  async function handleSubscribeSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const trimmed = email.trim();
+    if (!trimmed) return;
+    setSubscribeStatus('loading');
+    setSubscribeMessage('');
+    try {
+      const res = await fetch('/api/ai-scribe/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmed }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setSubscribeStatus('success');
+        setSubscribeMessage("Thanks, I'll email you when it's ready to launch.");
+        setEmail('');
+        markNewsletterSubscribed('ai-scribe');
+      } else {
+        setSubscribeStatus('error');
+        setSubscribeMessage(data?.error ?? 'Something went wrong. Please try again.');
+      }
+    } catch {
+      setSubscribeStatus('error');
+      setSubscribeMessage('Something went wrong. Please try again.');
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -42,12 +77,13 @@ export default function AiScribeLandingPage() {
                 </button>
               ))}
             </nav>
-            <Link
-              href={SIGNUP_URL}
+            <button
+              type="button"
+              onClick={() => scrollToSection('start')}
               className="inline-block rounded-lg bg-primary px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
             >
               Get notified at launch
-            </Link>
+            </button>
           </div>
         </div>
       </header>
@@ -187,12 +223,13 @@ export default function AiScribeLandingPage() {
             </div>
 
             <div className="text-center">
-              <Link
-                href={SIGNUP_URL}
+              <button
+                type="button"
+                onClick={() => scrollToSection('start')}
                 className="inline-block rounded-lg bg-primary px-6 py-3 font-medium text-white transition-colors hover:bg-primary-dark"
               >
                 Get notified at launch
-              </Link>
+              </button>
             </div>
           </div>
         </section>
@@ -274,12 +311,38 @@ export default function AiScribeLandingPage() {
               </div>
             </div>
             <p className="mb-8 text-sm opacity-90">I use this daily in my Auckland practice</p>
-            <Link
-              href={SIGNUP_URL}
-              className="inline-block rounded-lg bg-white px-8 py-4 text-lg font-semibold text-primary transition-colors hover:bg-gray-100"
+            <form
+              onSubmit={handleSubscribeSubmit}
+              className="mx-auto flex max-w-md flex-col gap-3 sm:flex-row sm:items-center"
             >
-              Get notified at launch
-            </Link>
+              <input
+                type="email"
+                placeholder="your.email@practice.co.nz"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="flex-1 rounded-lg border-0 bg-white px-4 py-3 text-text-primary placeholder:text-text-tertiary focus:outline-none focus:ring-2 focus:ring-white"
+                required
+                disabled={subscribeStatus === 'loading'}
+                aria-invalid={subscribeStatus === 'error'}
+                aria-describedby={subscribeMessage ? 'ai-scribe-subscribe-message' : undefined}
+              />
+              <button
+                type="submit"
+                className="rounded-lg bg-white px-8 py-3 text-lg font-semibold text-primary transition-colors hover:bg-gray-100 disabled:opacity-70 disabled:cursor-not-allowed"
+                disabled={subscribeStatus === 'loading'}
+              >
+                {subscribeStatus === 'loading' ? 'Subscribing…' : 'Get notified at launch'}
+              </button>
+            </form>
+            {(subscribeMessage || subscribeStatus === 'success') && (
+              <p
+                id="ai-scribe-subscribe-message"
+                className={`mt-3 text-sm ${subscribeStatus === 'error' ? 'text-red-200' : 'text-white/95'}`}
+                role={subscribeStatus === 'error' ? 'alert' : 'status'}
+              >
+                {subscribeStatus === 'success' ? "Thanks, I'll email you when it's ready to launch." : subscribeMessage}
+              </p>
+            )}
           </div>
         </section>
 
@@ -301,6 +364,14 @@ export default function AiScribeLandingPage() {
           </div>
         </footer>
       </main>
+      <NewsletterPopup
+        storageKey="ai-scribe"
+        subscribeEndpoint="/api/ai-scribe/subscribe"
+        title="Get notified at launch"
+        description="I'll email you when the AI scribe is ready to launch. In the meantime, try Referral Images; it's live and free."
+        successMessage="Thanks, I'll email you when it's ready to launch."
+        submitLabel="Get notified at launch"
+      />
     </div>
   );
 }

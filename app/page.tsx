@@ -37,8 +37,40 @@ const FAQ_ITEMS = [
   },
 ] as const;
 
+type InboxSubscribeStatus = 'idle' | 'loading' | 'success' | 'error';
+
 export default function HomePage() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const [inboxEmail, setInboxEmail] = useState('');
+  const [inboxStatus, setInboxStatus] = useState<InboxSubscribeStatus>('idle');
+  const [inboxMessage, setInboxMessage] = useState('');
+
+  async function handleInboxWaitlistSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const trimmed = inboxEmail.trim();
+    if (!trimmed) return;
+    setInboxStatus('loading');
+    setInboxMessage('');
+    try {
+      const res = await fetch('/api/inbox-management/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmed }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setInboxStatus('success');
+        setInboxMessage("You're on the list. I'll email you when Inbox Intelligence launches.");
+        setInboxEmail('');
+      } else {
+        setInboxStatus('error');
+        setInboxMessage(data?.error ?? 'Something went wrong. Please try again.');
+      }
+    } catch {
+      setInboxStatus('error');
+      setInboxMessage('Something went wrong. Please try again.');
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -315,12 +347,40 @@ export default function HomePage() {
                 </p>
                 <div className="rounded-lg border border-border bg-surface p-4">
                   <p className="mb-3 text-sm font-medium text-text-primary">Want early access?</p>
-                  <Link
-                    href="/auth/register?redirect_url=%2Froadmap%2Fthank-you"
-                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 font-medium text-white transition-colors hover:bg-primary-dark"
+                  <form
+                    onSubmit={handleInboxWaitlistSubmit}
+                    className="flex flex-col gap-3 sm:flex-row sm:items-center"
                   >
-                    Sign up to join waitlist →
-                  </Link>
+                    <input
+                      type="email"
+                      placeholder="your.email@practice.co.nz"
+                      value={inboxEmail}
+                      onChange={e => setInboxEmail(e.target.value)}
+                      className="flex-1 rounded-lg border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      required
+                      disabled={inboxStatus === 'loading'}
+                      aria-invalid={inboxStatus === 'error'}
+                      aria-describedby={inboxMessage ? 'inbox-waitlist-message' : undefined}
+                    />
+                    <button
+                      type="submit"
+                      className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-2 font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-70 disabled:cursor-not-allowed"
+                      disabled={inboxStatus === 'loading'}
+                    >
+                      {inboxStatus === 'loading' ? 'Subscribing…' : 'Sign up to join waitlist →'}
+                    </button>
+                  </form>
+                  {(inboxMessage || inboxStatus === 'success') && (
+                    <p
+                      id="inbox-waitlist-message"
+                      className={`mt-2 text-sm ${inboxStatus === 'error' ? 'text-red-600' : 'text-text-secondary'}`}
+                      role={inboxStatus === 'error' ? 'alert' : 'status'}
+                    >
+                      {inboxStatus === 'success'
+                        ? "You're on the list. I'll email you when Inbox Intelligence launches."
+                        : inboxMessage}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

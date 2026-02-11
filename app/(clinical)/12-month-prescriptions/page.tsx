@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import { DecisionWizard } from '@/src/features/12-month-prescriptions';
 import { Container } from '@/src/shared/components/layout/Container';
+import { markNewsletterSubscribed, NewsletterPopup } from '@/src/shared/components/NewsletterPopup';
 
 type SubscribeStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -12,6 +13,11 @@ export default function TwelveMonthRxPage() {
   const [subscribeEmail, setSubscribeEmail] = useState('');
   const [subscribeStatus, setSubscribeStatus] = useState<SubscribeStatus>('idle');
   const [subscribeMessage, setSubscribeMessage] = useState('');
+
+  function scrollToSubscribe() {
+    const el = document.getElementById('subscribe');
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  }
 
   async function handleSubscribeSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -30,6 +36,7 @@ export default function TwelveMonthRxPage() {
         setSubscribeStatus('success');
         setSubscribeMessage("Thanks, we'll notify you when we update the tools.");
         setSubscribeEmail('');
+        markNewsletterSubscribed('12month');
       } else {
         setSubscribeStatus('error');
         setSubscribeMessage(data?.error ?? 'Something went wrong. Please try again.');
@@ -48,6 +55,13 @@ export default function TwelveMonthRxPage() {
             <Link href="/" className="text-xl font-bold text-text-primary">
               ClinicPro
             </Link>
+            <button
+              type="button"
+              onClick={scrollToSubscribe}
+              className="rounded-lg bg-primary px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
+            >
+              Subscribe for updates
+            </button>
           </div>
         </Container>
       </header>
@@ -792,7 +806,7 @@ export default function TwelveMonthRxPage() {
         </div>
       </section>
 
-      <section className="bg-surface px-6 py-16">
+      <section id="subscribe" className="scroll-mt-20 bg-surface px-6 py-16">
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-8 text-3xl font-bold text-text-primary">
             Updates & Version History
@@ -818,8 +832,7 @@ export default function TwelveMonthRxPage() {
               Subscribe for Updates
             </h3>
             <p className="mb-4 text-text-secondary">
-              Get notified when we update these tools with new evidence, policy changes, or
-              PHARMAC Schedule updates.
+              Get notified when we add new features and updates.
             </p>
             <form
               className="flex gap-3"
@@ -889,6 +902,14 @@ export default function TwelveMonthRxPage() {
           </p>
         </Container>
       </footer>
+      <NewsletterPopup
+        storageKey="12month"
+        subscribeEndpoint="/api/12-month-prescriptions/subscribe"
+        title="Subscribe for updates"
+        description="Get notified when we add new features and updates."
+        successMessage="Thanks, we'll notify you when we update the tools."
+        submitLabel="Subscribe"
+      />
     </div>
   );
 }
