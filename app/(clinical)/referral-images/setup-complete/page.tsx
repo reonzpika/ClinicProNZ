@@ -129,6 +129,11 @@ Open the mobile page (or add it to your home screen)
 and watch it appear on your desktop instantly
             </li>
           </ol>
+          {mobile && (
+            <p className="mt-4 text-sm text-text-secondary">
+              Photos you take on your phone are sent to your desktop page. Open the desktop link on your computer to view and download.
+            </p>
+          )}
         </div>
 
         {/* 3. Primary CTA */}

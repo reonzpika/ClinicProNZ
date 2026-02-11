@@ -33,6 +33,18 @@ Under `app/api/(clinical)/referral-images/`:
 - **APIs**: `app/api/(clinical)/referral-images/`
 - **Services**: `src/lib/services/referral-images/` (email-service, s3-service)
 
+## Manual / E2E test checklist (onboarding and mobile gallery)
+
+Use this checklist when verifying first-time onboarding and "my images on mobile" behaviour (added 2026-02-11).
+
+1. **Setup-complete on mobile:** Sign up or complete setup on a mobile viewport (or DevTools device emulation). Confirm the tip "Photos you take on your phone are sent to your desktop page. Open the desktop link on your computer to view and download." appears below "How it works". On desktop viewport, the tip must not show.
+
+2. **Capture first-time banner:** Open the capture page on mobile with a fresh userId (or clear `referral-images-hasSeenDesktopTip-{userId}` in localStorage). Confirm the amber banner appears with "Photos are sent to your desktop…" and "Got it". Dismiss; refresh and confirm the banner does not reappear.
+
+3. **My images on mobile:** On the capture page, click "View & download my images on this device". With 0 images, confirm empty state: "No images yet. They'll appear here after you upload." Upload a photo (camera or gallery), complete flow; return to capture, expand "View & download my images on this device" again. Confirm the new image appears. Click Download and confirm the file downloads (or can be saved on device).
+
+4. **Desktop first-time hint:** Open the desktop page with no images and with `referral-images-desktop-first-time-hint-{userId}` not set in localStorage. Confirm the green hint banner: "Photos you take on your phone will appear here. Download and attach to your referral." Dismiss (×); refresh and confirm the hint does not reappear.
+
 ## Archived docs
 
 Working and strategy docs are in **archive/**:

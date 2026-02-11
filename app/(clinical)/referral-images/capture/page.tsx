@@ -1,7 +1,7 @@
 'use client';
 
 import imageCompression from 'browser-image-compression';
-import { Camera, CheckCircle, ChevronLeft, ChevronRight, Image, Loader2, Mail, Share2, Upload, X } from 'lucide-react';
+import { Camera, CheckCircle, ChevronLeft, ChevronRight, Download, Image, Loader2, Mail, Share2, Upload, X } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef, useState } from 'react';
 
@@ -18,6 +18,7 @@ import {
   isSharePromptThreshold,
 } from '../components/share-prompt-threshold';
 import { ShareModal } from '../components/ShareModal';
+import { triggerFileDownload } from '../components/triggerFileDownload';
 import { useShare } from '../components/useShare';
 
 type CapturedImage = {
@@ -28,6 +29,15 @@ type CapturedImage = {
     side?: 'R' | 'L';
     description?: string;
   };
+};
+
+type MyImageData = {
+  imageId: string;
+  presignedUrl: string;
+  filename: string;
+  fileSize: number;
+  createdAt: string;
+  metadata: { side?: 'R' | 'L'; description?: string };
 };
 
 type Screen = 'loading' | 'capture' | 'review' | 'metadata' | 'uploading' | 'success' | 'limit-reached' | 'error';
@@ -49,6 +59,7 @@ function detectPlatform(): Platform {
 }
 
 const HAS_SEEN_SAVE_PROMPT = 'referral-images-hasSeenSavePrompt';
+const DESKTOP_TIP_KEY = (uid: string) => `referral-images-hasSeenDesktopTip-${uid}`;
 
 function ReferralImagesMobilePageContent() {
   const searchParams = useSearchParams();
@@ -73,6 +84,11 @@ function ReferralImagesMobilePageContent() {
   const [isProcessingFiles, setIsProcessingFiles] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [showDesktopTipBanner, setShowDesktopTipBanner] = useState(false);
+  const [showMyImagesPanel, setShowMyImagesPanel] = useState(false);
+  const [myImages, setMyImages] = useState<MyImageData[] | null>(null);
+  const [myImagesLoading, setMyImagesLoading] = useState(false);
+  const [downloadingImageId, setDownloadingImageId] = useState<string | null>(null);
 
   // Share URL: Always use landing page for sharing to others
   const shareUrl
@@ -165,6 +181,57 @@ function ReferralImagesMobilePageContent() {
         setError('Failed to load status');
       });
   }, [userId]);
+
+  // First-time desktop tip banner: show when on capture and user has not dismissed it
+  useEffect(() => {
+    if (screen !== 'capture' || !userId || typeof window === 'undefined') {
+      return;
+    }
+    const key = DESKTOP_TIP_KEY(userId);
+    if (!localStorage.getItem(key)) {
+      setShowDesktopTipBanner(true);
+    }
+  }, [screen, userId]);
+
+  const handleDismissDesktopTip = () => {
+    if (userId && typeof window !== 'undefined') {
+      localStorage.setItem(DESKTOP_TIP_KEY(userId), 'true');
+    }
+    setShowDesktopTipBanner(false);
+  };
+
+  const toggleMyImagesPanel = () => {
+    const next = !showMyImagesPanel;
+    setShowMyImagesPanel(next);
+    if (next && userId) {
+      setMyImagesLoading(true);
+      fetch(`/api/referral-images/status/${userId}`)
+        .then((res) => res.json())
+        .then((data) => {
+          setMyImages(data.images ?? []);
+        })
+        .catch(() => {
+          setMyImages([]);
+        })
+        .finally(() => {
+          setMyImagesLoading(false);
+        });
+    }
+  };
+
+  const downloadMyImage = async (image: MyImageData) => {
+    if (!userId) return;
+    const url = `/api/referral-images/download/${image.imageId}?u=${userId}`;
+    setDownloadingImageId(image.imageId);
+    try {
+      const ok = await triggerFileDownload(url, image.filename);
+      if (!ok) {
+        toast.show({ title: 'Failed to download image', variant: 'destructive' });
+      }
+    } finally {
+      setDownloadingImageId(null);
+    }
+  };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -542,6 +609,21 @@ Tap
           </div>
         </header>
 
+        {showDesktopTipBanner && (
+          <div className="flex items-center justify-between gap-4 border-b border-amber-200 bg-amber-50 px-4 py-3">
+            <p className="flex-1 text-sm text-amber-900">
+              Photos are sent to your desktop. Open the desktop page on your computer to view and download.
+            </p>
+            <button
+              type="button"
+              onClick={handleDismissDesktopTip}
+              className="shrink-0 rounded-lg bg-amber-200 px-3 py-1.5 text-sm font-medium text-amber-900 transition-colors hover:bg-amber-300"
+            >
+              Got it
+            </button>
+          </div>
+        )}
+
         <ShareModal
           open={shareModalOpen}
           onOpenChange={setShareModalOpen}
@@ -625,7 +707,69 @@ Tap
           >
             Add to Home Screen for quick access
           </button>
+          {userId && (
+            <>
+              <span className="mx-2 text-text-tertiary">·</span>
+              <button
+                type="button"
+                onClick={toggleMyImagesPanel}
+                className="text-sm text-primary hover:underline"
+              >
+                {showMyImagesPanel ? 'Hide my images' : 'View & download my images on this device'}
+              </button>
+            </>
+          )}
         </div>
+
+        {showMyImagesPanel && userId && (
+          <div className="border-t border-border bg-white p-4">
+            {myImagesLoading ? (
+              <div className="flex items-center justify-center gap-2 py-6 text-text-secondary">
+                <Loader2 className="size-5 animate-spin" />
+                <span>Loading images...</span>
+              </div>
+            ) : myImages !== null && myImages.length === 0 ? (
+              <p className="py-4 text-center text-sm text-text-secondary">
+                No images yet. They&apos;ll appear here after you upload.
+              </p>
+            ) : myImages !== null && myImages.length > 0 ? (
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-text-primary">Your images</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {myImages.map((img) => (
+                    <div
+                      key={img.imageId}
+                      className="overflow-hidden rounded-lg border border-border bg-surface"
+                    >
+                      <img
+                        src={img.presignedUrl}
+                        alt={img.metadata?.description || img.filename || 'Image'}
+                        className="aspect-square w-full object-cover"
+                      />
+                      <div className="flex items-center justify-between gap-2 p-2">
+                        <span className="truncate text-xs text-text-secondary">
+                          {img.metadata?.description || img.filename}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => downloadMyImage(img)}
+                          disabled={downloadingImageId === img.imageId}
+                          className="shrink-0 rounded bg-primary px-2 py-1 text-xs font-medium text-white transition-colors hover:bg-primary-dark disabled:opacity-50"
+                        >
+                          {downloadingImageId === img.imageId ? (
+                            <Loader2 className="size-3.5 animate-spin" />
+                          ) : (
+                            <Download className="size-3.5" />
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        )}
 
         {desktopLink && (
           <footer className="border-t border-border bg-white p-4 text-center">

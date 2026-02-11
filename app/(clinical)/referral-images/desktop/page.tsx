@@ -23,6 +23,7 @@ import {
   isSharePromptThreshold,
 } from '../components/share-prompt-threshold';
 import { ShareModal } from '../components/ShareModal';
+import { triggerFileDownload } from '../components/triggerFileDownload';
 import { useShare } from '../components/useShare';
 
 type ImageData = {
@@ -91,6 +92,7 @@ function ReferralImagesDesktopPageContent() {
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const [firstTimeHintDismissed, setFirstTimeHintDismissed] = useState(true);
 
   // Share URL: Always use landing page for sharing to others (with optional referral tracking)
   const shareUrl
@@ -152,6 +154,19 @@ function ReferralImagesDesktopPageContent() {
     const isDismissed = localStorage.getItem('bookmark_banner_dismissed');
     setBookmarkBannerDismissed(!!isDismissed);
   }, []);
+
+  // First-time hint (no images yet): show until user dismisses
+  useEffect(() => {
+    if (typeof window === 'undefined' || !userId || status == null) {
+      return;
+    }
+    if (status.images.length > 0) {
+      return;
+    }
+    const key = `referral-images-desktop-first-time-hint-${userId}`;
+    const dismissed = localStorage.getItem(key);
+    setFirstTimeHintDismissed(!!dismissed);
+  }, [userId, status]);
 
   // Ably real-time sync with comprehensive logging
   useEffect(() => {
@@ -359,28 +374,6 @@ function ReferralImagesDesktopPageContent() {
     window.open(`https://wa.me/?text=${encodeURIComponent(`GP Referral Images mobile link: ${mobileLink}`)}`, '_blank');
   };
 
-  /** Fetch image as blob and trigger file download (avoids browser opening image in new tab for cross-origin presigned URLs). */
-  const triggerFileDownload = async (url: string, filename: string): Promise<boolean> => {
-    try {
-      const res = await fetch(url, { mode: 'cors' });
-      if (!res.ok) {
- return false;
-}
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = objectUrl;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(objectUrl);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
   const downloadUrl = (image: ImageData) =>
     userId ? `/api/referral-images/download/${image.imageId}?u=${userId}` : '';
 
@@ -562,6 +555,28 @@ on your computer for quick access.
             }}
             className="shrink-0 rounded p-1 text-blue-900 hover:bg-blue-200/50"
             aria-label="Dismiss bookmark banner"
+          >
+            ×
+          </button>
+        </div>
+      )}
+
+      {/* First-time hint when no images yet */}
+      {status?.images.length === 0 && !firstTimeHintDismissed && userId && (
+        <div className="flex items-center justify-between gap-4 border-b border-green-200 bg-green-50 px-4 py-3">
+          <p className="flex-1 text-sm text-green-900">
+            Photos you take on your phone will appear here. Download and attach to your referral.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                localStorage.setItem(`referral-images-desktop-first-time-hint-${userId}`, 'true');
+              }
+              setFirstTimeHintDismissed(true);
+            }}
+            className="shrink-0 rounded p-1 text-green-900 hover:bg-green-200/50"
+            aria-label="Dismiss hint"
           >
             ×
           </button>
