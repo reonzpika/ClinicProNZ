@@ -2,7 +2,7 @@
 
 import * as Tabs from '@radix-ui/react-tabs';
 import Ably from 'ably';
-import { AlertCircle, CheckCircle, Copy, Download, Loader2, Mail, MessageSquare, QrCode, RotateCcw, RotateCw, Share2, Smartphone, Trash2 } from 'lucide-react';
+import { AlertCircle, CheckCircle, Copy, Download, Loader2, Mail, MessageSquare, QrCode, RotateCcw, RotateCw, Share2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
@@ -599,14 +599,6 @@ on your computer for quick access.
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <Link
-              href={mobileLink || '#'}
-              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-text-primary transition-colors hover:bg-surface"
-              title="Open mobile capture page"
-            >
-              <Smartphone className="size-4" />
-              Switch to Mobile Page
-            </Link>
             <button
               type="button"
               onClick={() => onShareClick('desktop_header')}
