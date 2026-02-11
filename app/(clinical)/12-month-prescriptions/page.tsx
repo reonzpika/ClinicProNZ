@@ -1,33 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
 
-import {
-  DecisionWizard,
-  InteractiveFlowchart,
-  TrafficLightModal,
-  TrafficLightPanel,
-} from '@/src/features/12-month-prescriptions';
+import { DecisionWizard } from '@/src/features/12-month-prescriptions';
 import { Container } from '@/src/shared/components/layout/Container';
 
 export default function TwelveMonthRxPage() {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalSection, setModalSection] = useState<'green' | 'amber' | 'red' | null>(null);
-  const [activeTab, setActiveTab] = useState<'wizard' | 'flowchart'>('wizard');
-
-  const scrollToFlowchart = () => {
-    setActiveTab('wizard');
-    document.querySelector('#flowchart')?.scrollIntoView({
-      behavior: 'smooth',
-    });
-  };
-
-  const openChecker = (section?: 'green' | 'amber' | 'red') => {
-    setModalSection(section ?? null);
-    setModalOpen(true);
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-white">
@@ -49,296 +27,358 @@ export default function TwelveMonthRxPage() {
           </h1>
 
           <div className="mb-6 flex flex-wrap justify-center gap-4">
-            <button
-              type="button"
-              onClick={scrollToFlowchart}
+            <a
+              href="#checklist"
               className="rounded-lg bg-primary px-6 py-3 font-medium text-white transition-colors hover:bg-primary-dark"
             >
               Start Decision Tool ↓
-            </button>
-
-            <button
-              type="button"
-              onClick={() => openChecker()}
-              className="rounded-lg border border-border bg-white px-6 py-3 font-medium text-text-primary transition-colors hover:bg-surface"
-            >
-              Open Medication Checker
-            </button>
+            </a>
           </div>
         </div>
       </section>
 
-      <section className="bg-surface px-6 py-8">
-        <div className="mx-auto max-w-3xl">
-          <details className="quick-start-details rounded-lg border border-border bg-white">
-            <summary className="cursor-pointer list-none p-6 text-2xl font-bold text-text-primary [&::-webkit-details-marker]:hidden">
-              Quick Start
-            </summary>
-            <div className="border-t border-border px-6 pb-6 pt-2">
-          <details className="mb-6 rounded-lg border border-border bg-white p-6">
-            <summary className="cursor-pointer text-lg font-semibold">
-              New to 12-month prescriptions?
-            </summary>
-            <div className="mt-4 space-y-3 text-text-secondary">
-              <p className="font-medium text-text-primary">
-                From 1 February 2026, you can prescribe up to 12 months (previously 3 months).
-              </p>
-
-              <p>
-                <strong>Key point:</strong>
-{' '}
-The law gives YOU full clinical discretion.
-                There are NO mandatory eligibility criteria—no required &quot;6 months stable,&quot;
-                no age exclusions, no forced 12-month duration.
-              </p>
-
-              <p>
-                <strong>What you must know:</strong>
-              </p>
-              <ul className="ml-4 list-inside list-disc space-y-1">
-                <li>Controlled drugs still max 1-3 months (legal)</li>
-                <li>Patients collect 3-month supplies from same pharmacy</li>
-                <li>One $5 co-payment for the year</li>
-                <li>You can still prescribe 3, 6, or 9 months—your call</li>
-              </ul>
-
-              <Link
-                href="/12-month-prescriptions/guide"
-                className="mt-2 inline-block font-medium text-primary hover:underline"
-              >
-                → Read full guide (legal vs guidance, RNZCGP standards, equity considerations)
-              </Link>
-            </div>
-          </details>
-
-          <details className="mb-6 rounded-lg border border-border bg-white p-6">
-            <summary className="cursor-pointer text-lg font-semibold">
-              5 things you need to know
-            </summary>
-            <div className="mt-4 space-y-3 text-text-secondary">
-              <ol className="list-inside list-decimal space-y-2">
-                <li>
-                  <strong>The law is permissive, not prescriptive:</strong>
-{' '}
-You CAN prescribe
-                  12 months; you&apos;re not required to.
-                </li>
-                <li>
-                  <strong>RNZCGP opposed this policy:</strong>
-{' '}
-They recommended 6 months as safer.
-                  Their guidance reflects caution.
-                </li>
-                <li>
-                  <strong>Accreditation has requirements:</strong>
-{' '}
-If you&apos;re RNZCGP-accredited,
-                  you must have policy, audits, and equity measures.
-                </li>
-                <li>
-                  <strong>Clinical judgment is paramount:</strong>
-{' '}
-You determine what&apos;s
-                  appropriate for each patient.
-                </li>
-                <li>
-                  <strong>Six months is completely acceptable:</strong>
-{' '}
-Despite the policy
-                  being called &quot;12-month prescriptions,&quot; prescribing for 6 months aligns
-                  with RNZCGP&apos;s position and is often safer.
-                </li>
-              </ol>
-            </div>
-          </details>
-
-          <details className="mb-6 rounded-lg border border-border bg-white p-6">
-            <summary className="cursor-pointer text-lg font-semibold">
-              Legal requirements vs guidance
-            </summary>
-            <div className="mt-4 space-y-6 text-text-secondary">
-              <div className="space-y-3">
-                <div className="border-l-4 border-red-500 py-2 pl-4">
-                  <p className="font-semibold text-text-primary">🔴 LEGAL REQUIREMENTS (MUST COMPLY)</p>
-                  <p className="text-sm">You have no discretion - these are legally binding</p>
-                </div>
-                <div className="ml-4 text-text-tertiary">↓</div>
-                <div className="border-l-4 border-amber-500 py-2 pl-4">
-                  <p className="font-semibold text-text-primary">🟡 PROFESSIONAL STANDARDS (ACCREDITATION)</p>
-                  <p className="text-sm">Mandatory if your practice is RNZCGP-accredited</p>
-                </div>
-                <div className="ml-4 text-text-tertiary">↓</div>
-                <div className="border-l-4 border-green-500 py-2 pl-4">
-                  <p className="font-semibold text-text-primary">🟢 PROFESSIONAL GUIDANCE (RECOMMENDED)</p>
-                  <p className="text-sm">Best practice recommendations - you have discretion</p>
-                </div>
-                <div className="ml-4 text-text-tertiary">↓</div>
-                <div className="border-l-4 border-blue-500 py-2 pl-4">
-                  <p className="font-semibold text-text-primary">🔵 PRACTICE DECISIONS</p>
-                  <p className="text-sm">Your practice determines implementation details</p>
-                </div>
-              </div>
-
-              <div className="mt-6">
-                <h4 className="mb-3 font-semibold text-text-primary">🔴 Legal Requirements</h4>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-3 py-2 text-left">What the Law Says</th>
-                        <th className="px-3 py-2 text-left">What This Means for You</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border">
-                      <tr>
-                        <td className="px-3 py-2">Prescriptions may be written for up to 12 months</td>
-                        <td className="px-3 py-2">You CAN prescribe 12 months, but you&apos;re not required to</td>
-                      </tr>
-                      <tr>
-                        <td className="px-3 py-2">Dispensing limited to 3 months per occasion</td>
-                        <td className="px-3 py-2">Patients collect 3-month supplies every 3 months from pharmacy</td>
-                      </tr>
-                      <tr>
-                        <td className="px-3 py-2">Controlled drugs excluded (Class B: max 1 month; Class C: max 3 months)</td>
-                        <td className="px-3 py-2">Morphine, methylphenidate, tramadol, benzodiazepines cannot be prescribed for 12 months</td>
-                      </tr>
-                      <tr>
-                        <td className="px-3 py-2">One co-payment when patient first collects medicine</td>
-                        <td className="px-3 py-2">Patient pays $5 once, not quarterly</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-                <p className="mt-2 text-sm font-medium">
-                  Critical: The law gives YOU full clinical discretion. No mandatory eligibility criteria exist.
-                </p>
-              </div>
-
-              <div className="mt-6">
-                <h4 className="mb-3 font-semibold text-text-primary">🟡 Professional Standards (RNZCGP Accredited Practices)</h4>
-                <ul className="list-inside list-disc space-y-2">
-                  <li>Documented repeat prescribing policy</li>
-                  <li>Annual audits with Māori/non-Māori differentiation</li>
-                  <li>Minimum annual review for patients on 12-month prescriptions</li>
-                  <li>Measures to optimise Māori access</li>
-                </ul>
-              </div>
-
-              <div className="mt-6">
-                <h4 className="mb-3 font-semibold text-text-primary">🟢 Professional Guidance (Your Discretion)</h4>
-                <ul className="list-inside list-disc space-y-2">
-                  <li>&quot;6 months stable&quot; - suggested timeframe, you can use different criteria</li>
-                  <li>Age 65+ - consideration, not exclusion</li>
-                  <li>Polypharmacy - consider shorter intervals, not mandatory</li>
-                </ul>
-              </div>
-
-              <Link
-                href="/12-month-prescriptions/guide#source-authority"
-                className="mt-4 inline-block font-medium text-primary hover:underline"
-              >
-                → See full tier breakdown with examples
-              </Link>
-            </div>
-          </details>
-
-          <details className="mb-6 rounded-lg border border-border bg-white p-6">
-            <summary className="cursor-pointer text-lg font-semibold">
-              Quick decision checklist
-            </summary>
-            <div className="mt-4 space-y-4 text-text-secondary">
-              <div>
-                <h4 className="mb-2 font-semibold text-text-primary">🔴 Legal Requirements</h4>
-                <ul className="space-y-1 text-sm">
-                  <li>☐ Is this a controlled drug? (If yes → max 1-3 months)</li>
-                  <li>☐ Special Authority will remain valid for full 12 months?</li>
-                  <li>☐ Patient understands 3-month collections from same pharmacy?</li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="mb-2 font-semibold text-text-primary">🟡 Professional Standards (if accredited)</h4>
-                <ul className="space-y-1 text-sm">
-                  <li>☐ Meets our practice&apos;s documented criteria?</li>
-                  <li>☐ Annual review planned/booked?</li>
-                  <li>☐ Clinical rationale documented?</li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="mb-2 font-semibold text-text-primary">🟢 Clinical Judgment</h4>
-                <ul className="space-y-1 text-sm">
-                  <li>☐ Condition stable? (you define timeframe)</li>
-                  <li>☐ Medication requires regular monitoring? (bloods, ECG, etc.)</li>
-                  <li>☐ Patient in higher-risk group? (age, polypharmacy, unstable)</li>
-                  <li>☐ Patient will attend annual review?</li>
-                </ul>
-              </div>
-
-              <div>
-                <h4 className="mb-2 font-semibold text-text-primary">🔵 Equity Considerations</h4>
-                <ul className="space-y-1 text-sm">
-                  <li>☐ Considered barriers to access for this patient?</li>
-                  <li>☐ Will 12 months improve or hinder medication access?</li>
-                </ul>
-              </div>
-            </div>
-          </details>
-            </div>
-          </details>
-        </div>
-      </section>
-
-      <section
-        id="flowchart"
-        className="scroll-mt-20 bg-white px-6 py-16"
-      >
+      <section id="checklist" className="scroll-mt-20 bg-white px-6 py-16">
         <div className="mx-auto max-w-5xl">
-          <h2 className="mb-2 text-3xl font-bold text-text-primary">
-            Decision Support Tools
+          <h2 className="mb-6 text-3xl font-bold text-text-primary">
+            Interactive Decision Tool
           </h2>
+          <DecisionWizard />
+        </div>
+      </section>
 
-          <div className="mb-8 flex gap-4 border-b border-border">
-            <button
-              type="button"
-              onClick={() => setActiveTab('wizard')}
-              className={`border-b-2 px-6 py-3 font-medium transition-colors ${
-                activeTab === 'wizard'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              Interactive Decision Tool
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('flowchart')}
-              className={`border-b-2 px-6 py-3 font-medium transition-colors ${
-                activeTab === 'flowchart'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-text-secondary hover:text-text-primary'
-              }`}
-            >
-              Visual Flowchart
-            </button>
-          </div>
+      <section className="bg-surface px-6 py-16">
+        <div className="mx-auto max-w-4xl">
+          <details className="rounded-lg border border-border bg-white p-6">
+            <summary className="cursor-pointer text-2xl font-bold text-text-primary [&::-webkit-details-marker]:hidden">
+              📋 Medication Reference Guide
+            </summary>
 
-          {activeTab === 'wizard' && (
-            <div>
-              <DecisionWizard onOpenChecker={openChecker} />
-            </div>
-          )}
-
-          {activeTab === 'flowchart' && (
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <div className="h-[800px]">
-                <InteractiveFlowchart onOpenChecker={openChecker} />
+            <div className="mt-6 space-y-6">
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
+                <h3 className="mb-3 text-lg font-semibold text-blue-900">
+                  Why we link to NZF instead of listing all medications
+                </h3>
+                <p className="mb-3 text-sm text-blue-800">
+                  The New Zealand Formulary is the gold-standard, authoritative
+                  source for medication information in NZ. It&apos;s updated
+                  monthly and includes monitoring requirements, dose adjustments,
+                  interactions, and latest safety alerts.
+                </p>
+                <p className="mb-4 text-sm text-blue-800">
+                  We&apos;ve requested API access from NZF to integrate medication
+                  data directly. If approved, future versions will auto-populate
+                  monitoring requirements.
+                </p>
+                <a
+                  href="https://nzf.org.nz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                >
+                  Open NZF
+                </a>
               </div>
-              <div className="h-[800px]">
-                <TrafficLightPanel />
+
+              <details className="rounded-lg border border-border bg-white p-4">
+                <summary className="cursor-pointer font-semibold text-text-primary">
+                  🔴 Generally NOT Suitable for 12 Months
+                </summary>
+                <div className="mt-4 space-y-4 text-sm text-text-secondary">
+                  <p className="font-medium text-text-primary">
+                    Why NOT suitable: Requires monitoring more often than
+                    annually
+                  </p>
+                  <h4 className="font-semibold text-text-primary">
+                    Controlled Drugs (Legal Exclusion)
+                  </h4>
+                  <p className="text-sm">
+                    Maximum duration: 1-3 months (law, not clinical judgment)
+                  </p>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-3 py-2 text-left">Class</th>
+                          <th className="px-3 py-2 text-left">Max Duration</th>
+                          <th className="px-3 py-2 text-left">Examples</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        <tr>
+                          <td className="px-3 py-2 font-medium">Class B</td>
+                          <td className="px-3 py-2">1 month</td>
+                          <td className="px-3 py-2">
+                            Morphine, oxycodone, fentanyl, methadone,
+                            methylphenidate, dexamphetamine
+                          </td>
+                        </tr>
+                        <tr>
+                          <td className="px-3 py-2 font-medium">Class C</td>
+                          <td className="px-3 py-2">3 months</td>
+                          <td className="px-3 py-2">
+                            Tramadol, codeine (prescription strength),
+                            diazepam, lorazepam, clonazepam, zopiclone, zolpidem
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="text-xs text-text-tertiary">
+                    Source: Misuse of Drugs Act 1975
+                  </p>
+                  <h4 className="font-semibold text-text-primary">
+                    High-Risk Medications Requiring Regular Monitoring
+                  </h4>
+                  <p className="text-sm">
+                    Typical maximum: 3 months. These need regular blood tests or
+                    monitoring that can&apos;t wait 12 months.
+                  </p>
+                  <ul className="ml-4 list-disc space-y-1">
+                    <li>
+                      <strong>Warfarin</strong> – INR monitoring (weekly to
+                      monthly depending on stability)
+                    </li>
+                    <li>
+                      <strong>Lithium</strong> – Levels 3-monthly, renal +
+                      thyroid function 3-6 monthly
+                    </li>
+                    <li>
+                      <strong>Digoxin</strong> – Levels + renal function 3-6
+                      monthly, ECG annually
+                    </li>
+                    <li>
+                      <strong>Methotrexate</strong> – FBC + LFTs monthly
+                      initially, then 2-3 monthly
+                    </li>
+                    <li>
+                      <strong>Azathioprine</strong> – FBC + LFTs monthly
+                      initially, then 3-monthly
+                    </li>
+                    <li>
+                      <strong>Amiodarone</strong> – TFTs + LFTs 6-monthly, CXR +
+                      ECG annually
+                    </li>
+                    <li>
+                      <strong>Sodium valproate</strong> – LFTs + FBC 6-monthly
+                    </li>
+                    <li>
+                      <strong>Carbamazepine</strong> – FBC + LFTs + Na+
+                      6-monthly
+                    </li>
+                    <li>
+                      <strong>Insulin</strong> – Regular dose adjustments needed
+                    </li>
+                  </ul>
+                  <a
+                    href="https://nzf.org.nz"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    → Check NZF
+                  </a>{' '}
+                  for specific monitoring schedules and dose adjustments.
+                </div>
+              </details>
+
+              <details className="rounded-lg border border-border bg-white p-4">
+                <summary className="cursor-pointer font-semibold text-text-primary">
+                  🟡 Requires Individual Assessment
+                </summary>
+                <div className="mt-4 space-y-4 text-sm text-text-secondary">
+                  <p className="font-medium text-text-primary">
+                    Suitability depends on patient parameters (eGFR, age, etc.).
+                    Check patient&apos;s specific values before deciding
+                    duration.
+                  </p>
+                  <ul className="ml-4 list-disc space-y-2">
+                    <li>
+                      <strong>Metformin:</strong> eGFR &gt;45 generally 12mo;
+                      eGFR 30-45 max 6mo; eGFR &lt;30 contraindicated.{' '}
+                      <a
+                        href="https://nzf.org.nz"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-primary hover:underline"
+                      >
+                        → Check NZF
+                      </a>
+                    </li>
+                    <li>
+                      <strong>ACE Inhibitors / ARBs:</strong> eGFR ≥60 generally
+                      12mo; 45-59 consider 6-12mo; 30-44 max 6mo; &lt;30 max
+                      3-6mo.{' '}
+                      <a
+                        href="https://nzf.org.nz"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-primary hover:underline"
+                      >
+                        → Check NZF
+                      </a>
+                    </li>
+                    <li>
+                      <strong>DOACs:</strong> CrCl ≥50 generally 12mo (varies
+                      by drug); CrCl &lt;50 shorter or dose adjust.{' '}
+                      <a
+                        href="https://nzf.org.nz"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-primary hover:underline"
+                      >
+                        → Check NZF
+                      </a>
+                    </li>
+                    <li>
+                      <strong>Sulfonylureas:</strong> Age &lt;70 + eGFR &gt;60
+                      generally 12mo; age ≥70 or eGFR &lt;60 consider 6mo.{' '}
+                      <a
+                        href="https://nzf.org.nz"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-primary hover:underline"
+                      >
+                        → Check NZF
+                      </a>
+                    </li>
+                    <li>
+                      <strong>NSAIDs:</strong> With ACEi/ARB (&quot;double
+                      whammy&quot;) max 6mo; with ACEi/ARB + diuretic
+                      (&quot;triple whammy&quot;) max 3mo.{' '}
+                      <a
+                        href="https://bpac.org.nz/2018/triple-whammy.aspx"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-primary hover:underline"
+                      >
+                        → Check BPAC
+                      </a>
+                    </li>
+                    <li>
+                      <strong>Spironolactone:</strong> MAX 6 months even when
+                      stable (K+ monitoring).{' '}
+                      <a
+                        href="https://nzf.org.nz"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-primary hover:underline"
+                      >
+                        → Check NZF
+                      </a>
+                    </li>
+                    <li>
+                      <strong>Allopurinol:</strong> eGFR &gt;60 generally 12mo;
+                      eGFR &lt;60 consider 6mo.{' '}
+                      <a
+                        href="https://nzf.org.nz"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-primary hover:underline"
+                      >
+                        → Check NZF
+                      </a>
+                    </li>
+                    <li>
+                      Other: SGLT-2 inhibitors, gabapentin/pregabalin,
+                      bisphosphonates, loop diuretics (max 6mo), levothyroxine
+                      (12mo OK if dose stable 6+ months). Always check NZF.
+                    </li>
+                  </ul>
+                </div>
+              </details>
+
+              <details className="rounded-lg border border-border bg-white p-4">
+                <summary className="cursor-pointer font-semibold text-text-primary">
+                  🟢 Generally Suitable for 12 Months
+                </summary>
+                <div className="mt-4 space-y-4 text-sm text-text-secondary">
+                  <p>
+                    If patient stable: these typically require only annual
+                    monitoring. &quot;Generally suitable&quot; does NOT mean
+                    automatically 12 months for everyone.
+                  </p>
+                  <p className="font-medium text-text-primary">
+                    Common examples by category:
+                  </p>
+                  <ul className="ml-4 list-disc space-y-1">
+                    <li>
+                      <strong>Cardiovascular:</strong> Statins, CCBs (amlodipine,
+                      felodipine), beta blockers, aspirin (antiplatelet)
+                    </li>
+                    <li>
+                      <strong>Respiratory:</strong> ICS, ICS/LABA, LAMA
+                      (tiotropium), salbutamol
+                    </li>
+                    <li>
+                      <strong>Gastrointestinal:</strong> PPIs (omeprazole,
+                      esomeprazole)
+                    </li>
+                    <li>
+                      <strong>Hormonal:</strong> Oral contraceptives (annual BP),
+                      levothyroxine (if dose stable)
+                    </li>
+                    <li>
+                      <strong>Mental health:</strong> SSRIs/SNRIs (annual
+                      discussion about ongoing need), mirtazapine
+                    </li>
+                    <li>
+                      <strong>Diabetes:</strong> DPP-4 inhibitors (vildagliptin,
+                      sitagliptin)
+                    </li>
+                    <li>
+                      <strong>Other:</strong> Calcium + Vitamin D, montelukast
+                    </li>
+                  </ul>
+                  <p className="font-medium text-text-primary">
+                    Typical annual monitoring:
+                  </p>
+                  <ul className="ml-4 list-disc space-y-1">
+                    <li>BP (cardiovascular), lipid profile (statins), TSH (levothyroxine)</li>
+                    <li>Spirometry and inhaler technique (respiratory, if available)</li>
+                  </ul>
+                  <a
+                    href="https://nzf.org.nz"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-primary hover:underline"
+                  >
+                    → Check NZF
+                  </a>{' '}
+                  to confirm annual monitoring is sufficient for your patient.
+                </div>
+              </details>
+
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                <p className="mb-2 font-semibold text-amber-900">
+                  🔴 Important Notes:
+                </p>
+                <ol className="ml-4 list-decimal space-y-1 text-sm text-amber-800">
+                  <li>
+                    These are EXAMPLES, not comprehensive lists. Always check NZF.
+                  </li>
+                  <li>
+                    Lists are GUIDANCE, not rules. You have full clinical
+                    discretion.
+                  </li>
+                  <li>NZF is the authoritative source.</li>
+                  <li>When in doubt: Prescribe a shorter duration (3 or 6 months).</li>
+                  <li>
+                    6 months is completely acceptable. RNZCGP recommended 6
+                    months as safer than 12 months.
+                  </li>
+                </ol>
               </div>
+
+              <p className="text-xs text-text-tertiary">
+                <strong>Disclaimer:</strong> This medication reference is for
+                educational purposes only and does not replace clinical judgment
+                or official prescribing guidance. Always consult the New
+                Zealand Formulary, Medsafe data sheets, and relevant clinical
+                guidelines. Medication lists were compiled from RNZCGP guidance,
+                BPAC resources, and clinical consensus as of February 2026.
+              </p>
             </div>
-          )}
+          </details>
         </div>
       </section>
 
@@ -580,12 +620,6 @@ Despite the policy
           </p>
         </Container>
       </footer>
-
-      <TrafficLightModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        initialSection={modalSection}
-      />
     </div>
   );
 }

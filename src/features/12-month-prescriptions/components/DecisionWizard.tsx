@@ -4,8 +4,8 @@ import { useState } from 'react';
 
 type Step =
   | 'controlled-drug'
-  | 'medication-zone'
-  | 'amber-criteria'
+  | 'nzf-check'
+  | 'monitoring-frequency'
   | 'patient-stability'
   | 'clinical-judgment'
   | 'result';
@@ -16,478 +16,498 @@ type Answer = {
   answer: string;
 };
 
-type DecisionWizardProps = {
-  onOpenChecker?: (section?: 'green' | 'amber' | 'red') => void;
+type Scenario =
+  | 'monitoring-concern'
+  | 'monitoring-concern-high-risk'
+  | 'monitoring-concern-some-risk'
+  | 'high-risk'
+  | 'some-risk'
+  | 'suitable';
+
+type DurationChoice = '3 months' | '6 months' | '12 months';
+
+type BoxType = 'green' | 'blue' | 'amber';
+
+type Result =
+  | { type: 'stop'; duration: string; reason: string }
+  | {
+      type: 'suitable';
+      duration: string;
+      reason: string;
+      title: string;
+      contextLine: string;
+      boxType: BoxType;
+    };
+
+const CONTEXT_BY_SCENARIO: Record<Scenario, string> = {
+  'monitoring-concern': 'Medication requires frequent monitoring',
+  'monitoring-concern-high-risk':
+    'Medication requires frequent monitoring, multiple patient risk factors identified',
+  'monitoring-concern-some-risk':
+    'Medication requires frequent monitoring, patient factors identified',
+  'high-risk': 'Multiple patient risk factors identified',
+  'some-risk': 'Patient factors identified',
+  suitable: 'No significant risk factors identified',
 };
 
-export function DecisionWizard({ onOpenChecker }: DecisionWizardProps) {
+const RESULT_LOOKUP: Record<
+  string,
+  { boxType: BoxType; title: string; rationale: string }
+> = {
+  'monitoring-concern-3 months': {
+    boxType: 'green',
+    title: '3 months',
+    rationale:
+      'Medication requires monitoring more frequently than annually. This duration aligns with monitoring schedule.',
+  },
+  'monitoring-concern-6 months': {
+    boxType: 'green',
+    title: '6 months',
+    rationale:
+      'Medication requires monitoring more frequently than annually. This duration aligns with monitoring schedule.',
+  },
+  'monitoring-concern-high-risk-3 months': {
+    boxType: 'green',
+    title: '3 months',
+    rationale:
+      'Medication requires frequent monitoring and multiple patient risk factors identified. This duration allows appropriate monitoring.',
+  },
+  'monitoring-concern-high-risk-6 months': {
+    boxType: 'green',
+    title: '6 months',
+    rationale:
+      'Medication requires frequent monitoring and multiple patient risk factors identified. This duration aligns with monitoring needs.',
+  },
+  'monitoring-concern-some-risk-3 months': {
+    boxType: 'green',
+    title: '3 months',
+    rationale:
+      'Medication requires frequent monitoring with additional patient factors to consider. This duration allows appropriate monitoring.',
+  },
+  'monitoring-concern-some-risk-6 months': {
+    boxType: 'green',
+    title: '6 months',
+    rationale:
+      'Medication requires frequent monitoring with additional patient factors to consider. This duration aligns with monitoring needs.',
+  },
+  'high-risk-3 months': {
+    boxType: 'blue',
+    title: '3 months',
+    rationale:
+      'Multiple patient risk factors identified. Conservative duration chosen for closer monitoring.',
+  },
+  'high-risk-6 months': {
+    boxType: 'green',
+    title: '6 months',
+    rationale:
+      'Multiple patient risk factors identified. Six months allows more frequent medication reconciliation as recommended by RNZCGP.',
+  },
+  'high-risk-12 months': {
+    boxType: 'amber',
+    title: '12 months',
+    rationale:
+      'Multiple patient risk factors identified but 12 months judged appropriate.',
+  },
+  'some-risk-3 months': {
+    boxType: 'blue',
+    title: '3 months',
+    rationale:
+      'Patient factors identified. Conservative duration chosen for closer monitoring.',
+  },
+  'some-risk-6 months': {
+    boxType: 'green',
+    title: '6 months',
+    rationale:
+      'Patient factors identified. Six months duration chosen for monitoring needs.',
+  },
+  'some-risk-12 months': {
+    boxType: 'green',
+    title: '12 months',
+    rationale:
+      'Patient factors identified but 12 months judged appropriate.',
+  },
+  'suitable-3 months': {
+    boxType: 'blue',
+    title: '3 months',
+    rationale:
+      'No significant risk factors identified. Conservative duration chosen for frequent touchpoints.',
+  },
+  'suitable-6 months': {
+    boxType: 'green',
+    title: '6 months',
+    rationale:
+      'No significant risk factors identified. Six months aligns with RNZCGP recommendation as safer than 12 months.',
+  },
+  'suitable-12 months': {
+    boxType: 'green',
+    title: '12 months',
+    rationale:
+      'No significant risk factors identified. Patient suitable for maximum duration prescription.',
+  },
+};
+
+const TOTAL_STEPS = 5;
+const STEP_ORDER: Step[] = [
+  'controlled-drug',
+  'nzf-check',
+  'monitoring-frequency',
+  'patient-stability',
+  'clinical-judgment',
+];
+
+const STEP_NUMBER: Record<Step, number> = {
+  'controlled-drug': 1,
+  'nzf-check': 2,
+  'monitoring-frequency': 3,
+  'patient-stability': 4,
+  'clinical-judgment': 5,
+  result: 5,
+};
+
+const STABILITY_FLAG_OPTIONS = [
+  'Patient age <18 or pregnant',
+  'Patient age ≥65',
+  'Condition unstable or recently changed',
+  'Medication dose changed in last 6 months',
+  'Polypharmacy (5+ medications)',
+  'Poor medication adherence history',
+  'Barriers to accessing annual review',
+];
+
+function ProgressBar({ stepNumber }: { stepNumber: number }) {
+  return (
+    <div className="mb-2 flex items-center justify-between">
+      <span className="text-sm font-medium text-text-tertiary">
+        Step {stepNumber} of {TOTAL_STEPS}
+      </span>
+      <div className="mx-4 h-2 flex-1 rounded-full bg-gray-200">
+        <div
+          className="h-2 rounded-full bg-primary transition-all duration-300"
+          style={{ width: `${(stepNumber / TOTAL_STEPS) * 100}%` }}
+          role="progressbar"
+          aria-valuenow={stepNumber}
+          aria-valuemin={1}
+          aria-valuemax={TOTAL_STEPS}
+        />
+      </div>
+    </div>
+  );
+}
+
+export function DecisionWizard() {
   const [currentStep, setCurrentStep] = useState<Step>('controlled-drug');
-  const [answers, setAnswers] = useState<Answer[]>([]);
-  const [result, setResult] = useState<{
-    type: 'stop' | 'suitable' | 'consider-shorter';
-    duration: string;
-    reason: string;
-    zone?: 'red' | 'amber' | 'green';
-  } | null>(null);
+  const [_answers, setAnswers] = useState<Answer[]>([]);
+  const [monitoringConcern, setMonitoringConcern] = useState(false);
+  const [stabilityFlags, setStabilityFlags] = useState<string[]>([]);
+  const [result, setResult] = useState<Result | null>(null);
   const [copyFeedback, setCopyFeedback] = useState(false);
 
-  const totalSteps = 5;
-  const stepNumber = {
-    'controlled-drug': 1,
-    'medication-zone': 2,
-    'amber-criteria': 3,
-    'patient-stability': 4,
-    'clinical-judgment': 5,
-    'result': 5,
-  }[currentStep];
+  const stepNumber = STEP_NUMBER[currentStep];
 
   const addAnswer = (question: string, answer: string) => {
-    setAnswers([...answers, { step: currentStep, question, answer }]);
-  };
-
-  const handleAnswer = (
-    question: string,
-    answer: string,
-    nextStep: Step | 'result',
-    resultData?: typeof result,
-  ) => {
-    addAnswer(question, answer);
-
-    if (nextStep === 'result' && resultData) {
-      setResult(resultData);
-      setCurrentStep('result');
-    } else if (nextStep !== 'result') {
-      setCurrentStep(nextStep);
-    }
+    setAnswers((prev) => [...prev, { step: currentStep, question, answer }]);
   };
 
   const goBack = () => {
-    const newAnswers = [...answers];
-    newAnswers.pop();
-    setAnswers(newAnswers);
-
-    const stepOrder: Step[] = [
-      'controlled-drug',
-      'medication-zone',
-      'amber-criteria',
-      'patient-stability',
-      'clinical-judgment',
-    ];
-    const currentIndex = stepOrder.indexOf(currentStep);
+    setAnswers((prev) => prev.slice(0, -1));
+    const currentIndex = STEP_ORDER.indexOf(currentStep);
     if (currentIndex > 0) {
-      const prevStep = stepOrder[currentIndex - 1];
-      if (prevStep) {
- setCurrentStep(prevStep);
-}
+      setCurrentStep(STEP_ORDER[currentIndex - 1]!);
     }
   };
 
   const reset = () => {
     setCurrentStep('controlled-drug');
     setAnswers([]);
+    setMonitoringConcern(false);
+    setStabilityFlags([]);
     setResult(null);
   };
 
   const copySummary = () => {
-    const url = 'https://clinicpro.co.nz/12-month-prescriptions';
-    const summary = `Decision: ${result?.duration}
-Rationale: ${result?.reason}
-${url}`;
+    if (!result) return;
+    const decision = result.type === 'stop' ? result.duration : result.title;
+    const context =
+      result.type === 'stop'
+        ? 'Controlled drug - legal maximum applies'
+        : result.contextLine;
+    const summary = `12-Month Prescription
 
+Decision: ${decision}
+Context: ${context}
+Rationale: ${result.reason}
+
+Tool: https://clinicpro.co.nz/12-month-prescriptions`;
     navigator.clipboard.writeText(summary);
     setCopyFeedback(true);
     setTimeout(() => setCopyFeedback(false), 2500);
   };
 
-  // Step 1: Controlled Drug
+  // Q1: Controlled drug
   if (currentStep === 'controlled-drug') {
     return (
       <div className="mx-auto w-full max-w-5xl rounded-lg border border-border bg-gray-50 px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-6">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-text-tertiary">
-              Step
-{' '}
-{stepNumber}
-{' '}
-of
-{' '}
-{totalSteps}
-            </span>
-            <div className="mx-4 h-2 flex-1 rounded-full bg-gray-200">
-              <div
-                className="h-2 rounded-full bg-primary transition-all duration-300"
-                style={{ width: `${(stepNumber / totalSteps) * 100}%` }}
-              />
-            </div>
-          </div>
+          <ProgressBar stepNumber={stepNumber} />
           <h3 className="text-2xl font-bold text-text-primary">
             Is this a controlled drug?
           </h3>
+          <p className="mt-2 text-sm text-text-secondary">
+            Controlled drugs have legal maximum durations
+          </p>
         </div>
 
         <div className="space-y-3">
-          <div className="flex flex-col rounded-lg border-2 border-red-500 bg-red-50 md:flex-row">
-            <button
-              type="button"
-              onClick={() =>
-                handleAnswer(
-                  'Is this a controlled drug?',
-                  'Yes',
-                  'result',
-                  {
-                    type: 'stop',
-                    duration: 'Maximum 1-3 months',
-                    reason:
-                      'Controlled drugs are legally excluded from 12-month prescriptions. Class B controlled drugs: max 1 month. Class C controlled drugs: max 3 months.',
-                    zone: 'red',
-                  },
-                )}
-              className="min-w-0 flex-1 rounded-t-md px-6 py-4 text-left font-medium text-red-900 transition-colors hover:bg-red-100 md:rounded-l-md md:rounded-r-none"
-            >
-              <span className="text-lg">🔴 YES</span>
-              <p className="mt-1 text-sm opacity-80">This is a controlled drug</p>
-            </button>
-            {onOpenChecker && (
-              <button
-                type="button"
-                onClick={() => onOpenChecker('red')}
-                className="min-h-[44px] w-full shrink-0 rounded-b-md px-4 py-3 text-sm font-medium text-red-700 hover:underline md:w-auto md:rounded-l-none md:rounded-r-md md:py-2"
-              >
-                View in checker →
-              </button>
-            )}
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              addAnswer('Is this a controlled drug?', 'Yes');
+              setResult({
+                type: 'stop',
+                duration: 'Maximum 1-3 months (legal limit)',
+                reason:
+                  'This is a controlled drug. Class B controlled drugs: max 1 month (morphine, oxycodone, methylphenidate, dexamphetamine). Class C controlled drugs: max 3 months (tramadol, benzodiazepines, zopiclone, zolpidem).',
+              });
+              setCurrentStep('result');
+            }}
+            className="w-full rounded-lg border-2 border-red-500 bg-red-50 px-6 py-4 text-left font-medium text-red-900 transition-colors hover:bg-red-100"
+          >
+            <span className="text-lg">🔴 YES</span>
+            <p className="mt-1 text-sm opacity-80">This is a controlled drug</p>
+          </button>
 
           <button
             type="button"
-            onClick={() =>
-              handleAnswer('Is this a controlled drug?', 'No', 'medication-zone')}
+            onClick={() => {
+              addAnswer('Is this a controlled drug?', 'No');
+              setCurrentStep('nzf-check');
+            }}
             className="w-full rounded-lg border-2 border-green-500 bg-green-50 px-6 py-4 text-left font-medium text-green-900 transition-colors hover:bg-green-100"
           >
             <span className="text-lg">🟢 NO</span>
             <p className="mt-1 text-sm opacity-80">Not a controlled drug</p>
           </button>
         </div>
-      </div>
-    );
-  }
 
-  // Step 2: Medication Zone
-  if (currentStep === 'medication-zone') {
-    return (
-      <div className="mx-auto w-full max-w-5xl rounded-lg border border-border bg-gray-50 px-4 py-6 sm:px-6 sm:py-8">
-        <div className="mb-6">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-text-tertiary">
-              Step
-{' '}
-{stepNumber}
-{' '}
-of
-{' '}
-{totalSteps}
-            </span>
-            <div className="mx-4 h-2 flex-1 rounded-full bg-gray-200">
-              <div
-                className="h-2 rounded-full bg-primary transition-all duration-300"
-                style={{ width: `${(stepNumber / totalSteps) * 100}%` }}
-              />
-            </div>
-          </div>
-          <h3 className="text-2xl font-bold text-text-primary">
-            What zone is this medication?
-          </h3>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex flex-col rounded-lg border-2 border-red-500 bg-red-50 md:flex-row">
-            <button
-              type="button"
-              onClick={() =>
-                handleAnswer(
-                  'What zone is this medication?',
-                  'RED Zone',
-                  'result',
-                  {
-                    type: 'stop',
-                    duration: 'Maximum 3 months',
-                    reason:
-                      'RED zone medications require regular blood test monitoring. These cannot be prescribed for 12 months due to safety monitoring requirements.',
-                    zone: 'red',
-                  },
-                )}
-              className="min-w-0 flex-1 rounded-t-md px-6 py-4 text-left font-medium text-red-900 transition-colors hover:bg-red-100 md:rounded-l-md md:rounded-r-none"
-            >
-              <span className="text-lg">🔴 RED Zone</span>
-              <p className="mt-1 text-sm opacity-80">
-                Requires regular monitoring (warfarin, lithium, methotrexate,
-                etc.)
-              </p>
-            </button>
-            {onOpenChecker && (
-              <button
-                type="button"
-                onClick={() => onOpenChecker('red')}
-                className="min-h-[44px] w-full shrink-0 rounded-b-md px-4 py-3 text-sm font-medium text-red-700 hover:underline md:w-auto md:rounded-l-none md:rounded-r-md md:py-2"
-              >
-                View in checker →
-              </button>
-            )}
-          </div>
-
-          <div className="flex flex-col rounded-lg border-2 border-amber-500 bg-amber-50 md:flex-row">
-            <button
-              type="button"
-              onClick={() =>
-                handleAnswer(
-                  'What zone is this medication?',
-                  'AMBER Zone',
-                  'amber-criteria',
-                )}
-              className="min-w-0 flex-1 rounded-t-md px-6 py-4 text-left font-medium text-amber-900 transition-colors hover:bg-amber-100 md:rounded-l-md md:rounded-r-none"
-            >
-              <span className="text-lg">🟡 AMBER Zone</span>
-              <p className="mt-1 text-sm opacity-80">
-                Needs individual assessment (ACEi/ARBs, metformin, DOACs, etc.)
-              </p>
-            </button>
-            {onOpenChecker && (
-              <button
-                type="button"
-                onClick={() => onOpenChecker('amber')}
-                className="min-h-[44px] w-full shrink-0 rounded-b-md px-4 py-3 text-sm font-medium text-amber-800 hover:underline md:w-auto md:rounded-l-none md:rounded-r-md md:py-2"
-              >
-                View in checker →
-              </button>
-            )}
-          </div>
-
-          <div className="flex flex-col rounded-lg border-2 border-green-500 bg-green-50 md:flex-row">
-            <button
-              type="button"
-              onClick={() =>
-                handleAnswer(
-                  'What zone is this medication?',
-                  'GREEN Zone',
-                  'patient-stability',
-                )}
-              className="min-w-0 flex-1 rounded-t-md px-6 py-4 text-left font-medium text-green-900 transition-colors hover:bg-green-100 md:rounded-l-md md:rounded-r-none"
-            >
-              <span className="text-lg">🟢 GREEN Zone</span>
-              <p className="mt-1 text-sm opacity-80">
-                Generally suitable (statins, CCBs, beta blockers, ICS, etc.)
-              </p>
-            </button>
-            {onOpenChecker && (
-              <button
-                type="button"
-                onClick={() => onOpenChecker('green')}
-                className="min-h-[44px] w-full shrink-0 rounded-b-md px-4 py-3 text-sm font-medium text-green-800 hover:underline md:w-auto md:rounded-l-none md:rounded-r-md md:py-2"
-              >
-                View in checker →
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <button
-            type="button"
-            onClick={goBack}
-            className="px-4 py-2 text-text-secondary transition-colors hover:text-text-primary"
-          >
-            ← Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Step 3: AMBER Criteria (only if AMBER selected)
-  if (currentStep === 'amber-criteria') {
-    return (
-      <div className="mx-auto w-full max-w-5xl rounded-lg border border-border bg-gray-50 px-4 py-6 sm:px-6 sm:py-8">
-        <div className="mb-6">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-text-tertiary">
-              Step
-{' '}
-{stepNumber}
-{' '}
-of
-{' '}
-{totalSteps}
-            </span>
-            <div className="mx-4 h-2 flex-1 rounded-full bg-gray-200">
-              <div
-                className="h-2 rounded-full bg-primary transition-all duration-300"
-                style={{ width: `${(stepNumber / totalSteps) * 100}%` }}
-              />
-            </div>
-          </div>
-          <h3 className="text-2xl font-bold text-text-primary">
-            Does the medication meet AMBER zone criteria?
-          </h3>
-        </div>
-
-        <div className="mb-6 flex flex-col rounded-lg border border-amber-200 bg-amber-50 p-4 md:flex-row md:items-start md:gap-4">
-          <div className="min-w-0 flex-1">
-            <p className="text-sm text-amber-900">
-              <strong>Common AMBER criteria:</strong>
-            </p>
-            <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-amber-800">
-              <li>ACEi/ARBs: eGFR ≥60 = 12mo OK</li>
-              <li>Metformin: eGFR &gt;45 = 12mo OK</li>
-              <li>DOACs: CrCl varies by drug (see checker)</li>
-              <li>Sulfonylureas: Age &lt;70 & eGFR &gt;60 = 12mo OK</li>
-            </ul>
-          </div>
-          {onOpenChecker && (
-            <button
-              type="button"
-              onClick={() => onOpenChecker('amber')}
-              className="min-h-[44px] w-full shrink-0 px-4 py-3 text-sm font-medium text-amber-800 hover:underline md:mt-0 md:w-auto md:py-2"
-            >
-              View AMBER Table →
-            </button>
-          )}
-        </div>
-
-        <div className="space-y-3">
-          <button
-            type="button"
-            onClick={() =>
-              handleAnswer(
-                'Does the medication meet AMBER zone criteria?',
-                'Yes - criteria met',
-                'patient-stability',
-              )}
-            className="w-full rounded-lg border-2 border-green-500 bg-green-50 px-6 py-4 text-left font-medium text-green-900 transition-colors hover:bg-green-100"
-          >
-            <span className="text-lg">✓ YES - Criteria met</span>
-            <p className="mt-1 text-sm opacity-80">
-              Patient meets the threshold criteria for this medication
-            </p>
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              handleAnswer(
-                'Does the medication meet AMBER zone criteria?',
-                'No - criteria NOT met',
-                'result',
-                {
-                  type: 'consider-shorter',
-                  duration: '3-6 months recommended',
-                  reason:
-                    'Patient does not meet AMBER zone criteria. Consider shorter prescription duration with more frequent monitoring.',
-                  zone: 'amber',
-                },
-              )}
-            className="w-full rounded-lg border-2 border-amber-500 bg-amber-50 px-6 py-4 text-left font-medium text-amber-900 transition-colors hover:bg-amber-100"
-          >
-            <span className="text-lg">✗ NO - Criteria NOT met</span>
-            <p className="mt-1 text-sm opacity-80">
-              Patient doesn't meet threshold (e.g., eGFR too low, age concern)
-            </p>
-          </button>
-        </div>
-
-        <div className="mt-6">
-          <button
-            type="button"
-            onClick={goBack}
-            className="px-4 py-2 text-text-secondary transition-colors hover:text-text-primary"
-          >
-            ← Back
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Step 4: Patient Stability
-  if (currentStep === 'patient-stability') {
-    return (
-      <div className="mx-auto w-full max-w-5xl rounded-lg border border-border bg-gray-50 px-4 py-6 sm:px-6 sm:py-8">
-        <div className="mb-6">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-text-tertiary">
-              Step
-{' '}
-{stepNumber}
-{' '}
-of
-{' '}
-{totalSteps}
-            </span>
-            <div className="mx-4 h-2 flex-1 rounded-full bg-gray-200">
-              <div
-                className="h-2 rounded-full bg-primary transition-all duration-300"
-                style={{ width: `${(stepNumber / totalSteps) * 100}%` }}
-              />
-            </div>
-          </div>
-          <h3 className="text-2xl font-bold text-text-primary">
-            Is the patient stable on current medication?
-          </h3>
-        </div>
-
-        <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
-          <p className="text-sm text-blue-900">
-            <strong>Consider stable if:</strong>
+        <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <p className="text-sm font-medium text-blue-900">
+            <strong>Controlled drugs:</strong>
           </p>
           <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-blue-800">
-            <li>Condition well-controlled (e.g., BP at target, HbA1c stable)</li>
-            <li>
-              No recent dose changes (guidance suggests 6+ months, but YOUR
-              discretion)
-            </li>
-            <li>No recent exacerbations or hospital admissions</li>
-            <li>Good medication adherence</li>
+            <li>Class B (max 1 month): morphine, oxycodone, methylphenidate</li>
+            <li>Class C (max 3 months): tramadol, benzodiazepines, zopiclone</li>
+          </ul>
+        </div>
+      </div>
+    );
+  }
+
+  // Q2: NZF check
+  if (currentStep === 'nzf-check') {
+    return (
+      <div className="mx-auto w-full max-w-5xl rounded-lg border border-border bg-gray-50 px-4 py-6 sm:px-6 sm:py-8">
+        <div className="mb-6">
+          <ProgressBar stepNumber={stepNumber} />
+          <h3 className="text-2xl font-bold text-text-primary">
+            Have you checked this medication&apos;s monitoring requirements in
+            NZF?
+          </h3>
+        </div>
+
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={() => {
+              addAnswer('Checked NZF?', 'Yes');
+              setCurrentStep('monitoring-frequency');
+            }}
+            className="w-full rounded-lg border-2 border-blue-500 bg-blue-50 px-6 py-4 text-left font-medium text-blue-900 transition-colors hover:bg-blue-100"
+          >
+            <span className="text-lg">📋 Yes, I&apos;ve checked NZF</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              addAnswer('Checked NZF?', 'Skipped');
+              setCurrentStep('monitoring-frequency');
+            }}
+            className="w-full rounded-lg border-2 border-gray-400 bg-gray-50 px-6 py-4 text-left font-medium text-gray-900 transition-colors hover:bg-gray-100"
+          >
+            <span className="text-lg">⏭️ Skip for now</span>
+          </button>
+        </div>
+
+        <details className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <summary className="cursor-pointer font-medium text-blue-900">
+            What should I check in NZF?
+          </summary>
+          <div className="mt-3 space-y-2 text-sm text-blue-800">
+            <p>Check the medication in NZF for:</p>
+            <ul className="ml-4 list-disc space-y-1">
+              <li>Monitoring requirements (blood tests, ECG, etc.)</li>
+              <li>How often monitoring is needed</li>
+              <li>Renal dose adjustments</li>
+              <li>Specific patient warnings</li>
+            </ul>
+            <p className="mt-3">Common examples:</p>
+            <ul className="ml-4 list-disc space-y-1">
+              <li>Warfarin → INR monitoring (weekly to monthly)</li>
+              <li>Metformin → eGFR monitoring (dose adjust if &lt;45)</li>
+              <li>ACE inhibitors → Renal function + K+ monitoring</li>
+              <li>DOACs → CrCl monitoring (varies by drug)</li>
+            </ul>
+            <a
+              href="https://nzf.org.nz"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-block font-medium text-blue-700 hover:underline"
+            >
+              → Open NZF
+            </a>
+          </div>
+        </details>
+
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={goBack}
+            className="px-4 py-2 text-text-secondary transition-colors hover:text-text-primary"
+          >
+            ← Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Q3: Monitoring frequency
+  if (currentStep === 'monitoring-frequency') {
+    return (
+      <div className="mx-auto w-full max-w-5xl rounded-lg border border-border bg-gray-50 px-4 py-6 sm:px-6 sm:py-8">
+        <div className="mb-6">
+          <ProgressBar stepNumber={stepNumber} />
+          <h3 className="text-2xl font-bold text-text-primary">
+            Does this medication require monitoring more often than annually?
+          </h3>
+        </div>
+
+        <div className="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <p className="text-sm font-medium text-gray-900">
+            <strong>Examples:</strong>
+          </p>
+          <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-gray-700">
+            <li>Warfarin (INR monthly) → YES</li>
+            <li>Statins (lipids annually) → NO</li>
+            <li>Metformin in stable patient (renal annually) → NO</li>
+            <li>Lithium (levels 3-monthly) → YES</li>
           </ul>
         </div>
 
         <div className="space-y-3">
           <button
             type="button"
-            onClick={() =>
-              handleAnswer(
-                'Is the patient stable on current medication?',
-                'Yes - patient stable',
-                'clinical-judgment',
-              )}
-            className="w-full rounded-lg border-2 border-green-500 bg-green-50 px-6 py-4 text-left font-medium text-green-900 transition-colors hover:bg-green-100"
+            onClick={() => {
+              addAnswer('Monitoring frequency', 'Requires <annual monitoring');
+              setMonitoringConcern(true);
+              setCurrentStep('patient-stability');
+            }}
+            className="w-full rounded-lg border-2 border-red-500 bg-red-50 px-6 py-4 text-left font-medium text-red-900 transition-colors hover:bg-red-100"
           >
-            <span className="text-lg">✓ YES - Patient stable</span>
+            <span className="text-lg">🔴 YES</span>
             <p className="mt-1 text-sm opacity-80">
-              Condition controlled, no recent changes, good adherence
+              Requires monitoring &lt; annually
             </p>
           </button>
 
           <button
             type="button"
-            onClick={() =>
-              handleAnswer(
-                'Is the patient stable on current medication?',
-                'No - patient unstable or uncertain',
-                'result',
-                {
-                  type: 'consider-shorter',
-                  duration: '3-6 months recommended',
-                  reason:
-                    'Patient condition is unstable, has recent dose changes, or requires closer monitoring. Consider shorter prescription duration until stability is established.',
-                  zone: 'amber',
-                },
-              )}
-            className="w-full rounded-lg border-2 border-amber-500 bg-amber-50 px-6 py-4 text-left font-medium text-amber-900 transition-colors hover:bg-amber-100"
+            onClick={() => {
+              addAnswer('Monitoring frequency', 'Annual monitoring sufficient');
+              setMonitoringConcern(false);
+              setCurrentStep('patient-stability');
+            }}
+            className="w-full rounded-lg border-2 border-green-500 bg-green-50 px-6 py-4 text-left font-medium text-green-900 transition-colors hover:bg-green-100"
           >
-            <span className="text-lg">⚠ NO - Unstable or uncertain</span>
+            <span className="text-lg">🟢 NO</span>
             <p className="mt-1 text-sm opacity-80">
-              Recent changes, poor control, or needs closer monitoring
+              Annual monitoring sufficient
             </p>
+          </button>
+        </div>
+
+        <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <p className="text-sm text-blue-900">
+            Medications requiring frequent monitoring (monthly, 3-monthly,
+            6-monthly) are generally not suitable for 12-month prescriptions.
+          </p>
+        </div>
+
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={goBack}
+            className="px-4 py-2 text-text-secondary transition-colors hover:text-text-primary"
+          >
+            ← Back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Q4: Patient stability
+  if (currentStep === 'patient-stability') {
+    const toggleFlag = (flag: string) => {
+      setStabilityFlags((prev) =>
+        prev.includes(flag) ? prev.filter((f) => f !== flag) : [...prev, flag]
+      );
+    };
+
+    return (
+      <div className="mx-auto w-full max-w-5xl rounded-lg border border-border bg-gray-50 px-4 py-6 sm:px-6 sm:py-8">
+        <div className="mb-6">
+          <ProgressBar stepNumber={stepNumber} />
+          <h3 className="text-2xl font-bold text-text-primary">
+            Patient stability assessment
+          </h3>
+          <p className="mt-2 text-sm text-text-secondary">
+            These are considerations for clinical judgment, NOT exclusions.
+            Select any that apply.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          {STABILITY_FLAG_OPTIONS.map((flag) => (
+            <label
+              key={flag}
+              className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-white p-4 transition-colors hover:bg-surface"
+            >
+              <input
+                type="checkbox"
+                checked={stabilityFlags.includes(flag)}
+                onChange={() => toggleFlag(flag)}
+                className="mt-1 size-4"
+              />
+              <span className="text-sm text-text-secondary">{flag}</span>
+            </label>
+          ))}
+        </div>
+
+        <div className="mt-6">
+          <button
+            type="button"
+            onClick={() => {
+              const answerText =
+                stabilityFlags.length === 0
+                  ? 'None identified'
+                  : stabilityFlags.join(', ');
+              addAnswer('Patient stability factors', answerText);
+              setCurrentStep('clinical-judgment');
+            }}
+            className="rounded-lg bg-primary px-6 py-3 font-medium text-white transition-colors hover:bg-primary-dark"
+          >
+            Continue →
           </button>
         </div>
 
@@ -504,28 +524,52 @@ of
     );
   }
 
-  // Step 5: Clinical Judgment
+  // Q5: Clinical judgment
   if (currentStep === 'clinical-judgment') {
+    const scenario = monitoringConcern && stabilityFlags.length >= 3
+      ? 'monitoring-concern-high-risk'
+      : monitoringConcern && stabilityFlags.length >= 1
+        ? 'monitoring-concern-some-risk'
+        : monitoringConcern
+          ? 'monitoring-concern'
+          : stabilityFlags.length >= 3
+            ? 'high-risk'
+            : stabilityFlags.length >= 1
+              ? 'some-risk'
+              : 'suitable';
+
+    const handleDurationChoice = (duration: DurationChoice) => {
+      const key = `${scenario}-${duration}`;
+      const lookup = RESULT_LOOKUP[key];
+      if (!lookup) {
+        addAnswer('Duration chosen', duration);
+        setResult({
+          type: 'suitable',
+          duration,
+          reason: '',
+          title: duration,
+          contextLine: CONTEXT_BY_SCENARIO[scenario],
+          boxType: 'green',
+        });
+      } else {
+        const { boxType, title, rationale } = lookup;
+        addAnswer('Duration chosen', duration);
+        setResult({
+          type: 'suitable',
+          duration,
+          reason: rationale,
+          title,
+          contextLine: CONTEXT_BY_SCENARIO[scenario],
+          boxType,
+        });
+      }
+      setCurrentStep('result');
+    };
+
     return (
       <div className="mx-auto w-full max-w-5xl rounded-lg border border-border bg-gray-50 px-4 py-6 sm:px-6 sm:py-8">
         <div className="mb-6">
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-text-tertiary">
-              Step
-{' '}
-{stepNumber}
-{' '}
-of
-{' '}
-{totalSteps}
-            </span>
-            <div className="mx-4 h-2 flex-1 rounded-full bg-gray-200">
-              <div
-                className="h-2 rounded-full bg-primary transition-all duration-300"
-                style={{ width: `${(stepNumber / totalSteps) * 100}%` }}
-              />
-            </div>
-          </div>
+          <ProgressBar stepNumber={stepNumber} />
           <h3 className="text-2xl font-bold text-text-primary">
             Choose prescription duration
           </h3>
@@ -534,85 +578,200 @@ of
           </p>
         </div>
 
-        <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-4">
-          <p className="text-sm text-green-900">
-            <strong>✓ Patient is suitable for longer prescriptions</strong>
-          </p>
-          <p className="mt-2 text-sm text-green-800">
-            All criteria met. You have full discretion to choose duration based
-            on individual patient factors.
-          </p>
-        </div>
+        {scenario === 'monitoring-concern' && (
+          <div className="mb-6 rounded-lg border-2 border-red-200 bg-red-50 p-5">
+            <p className="mb-2 font-semibold text-red-900">
+              ⚠️ Why 12 months is not available:
+            </p>
+            <p className="mb-3 text-sm text-red-800">
+              This medication requires monitoring more frequently than annually
+              (e.g., INR monthly, lithium levels 3-monthly).
+            </p>
+            <p className="text-sm text-red-800">
+              Choose a duration that aligns with your monitoring plan - typically
+              3 or 6 months depending on the specific monitoring frequency.
+            </p>
+          </div>
+        )}
+
+        {scenario === 'monitoring-concern-high-risk' && (
+          <div className="mb-6 rounded-lg border-2 border-red-200 bg-red-50 p-5">
+            <p className="mb-2 font-semibold text-red-900">
+              ⚠️ Why 12 months is not available:
+            </p>
+            <p className="mb-3 text-sm text-red-800">
+              This medication requires monitoring more frequently than annually
+              (e.g., INR monthly, lithium levels 3-monthly).
+            </p>
+            <p className="mb-4 text-sm text-red-800">
+              Choose a duration that aligns with your monitoring plan - typically
+              3 or 6 months depending on the specific monitoring frequency.
+            </p>
+            <p className="mb-2 text-sm text-red-900">
+              <strong>Additional patient risk factors identified:</strong>
+            </p>
+            <ul className="ml-5 list-disc text-sm text-red-800">
+              {stabilityFlags.map((flag) => (
+                <li key={flag}>{flag}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {scenario === 'monitoring-concern-some-risk' && (
+          <div className="mb-6 rounded-lg border-2 border-red-200 bg-red-50 p-5">
+            <p className="mb-2 font-semibold text-red-900">
+              ⚠️ Why 12 months is not available:
+            </p>
+            <p className="mb-3 text-sm text-red-800">
+              This medication requires monitoring more frequently than annually
+              (e.g., INR monthly, lithium levels 3-monthly).
+            </p>
+            <p className="mb-4 text-sm text-red-800">
+              Choose a duration that aligns with your monitoring plan - typically
+              3 or 6 months depending on the specific monitoring frequency.
+            </p>
+            <p className="mb-2 text-sm text-red-900">
+              <strong>Additional patient factors to consider:</strong>
+            </p>
+            <ul className="ml-5 list-disc text-sm text-red-800">
+              {stabilityFlags.map((flag) => (
+                <li key={flag}>{flag}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {scenario === 'high-risk' && (
+          <div className="mb-6 rounded-lg border-2 border-amber-200 bg-amber-50 p-5">
+            <p className="mb-2 font-semibold text-amber-900">
+              ⚠️ Clinical recommendation: 6 months
+            </p>
+            <p className="mb-2 text-sm text-amber-800">
+              Multiple risk factors identified:
+            </p>
+            <ul className="mb-3 ml-5 list-disc text-sm text-amber-800">
+              {stabilityFlags.map((flag) => (
+                <li key={flag}>{flag}</li>
+              ))}
+            </ul>
+            <p className="text-sm text-amber-800">
+              RNZCGP recommends 6-month prescriptions when multiple risk factors
+              are present. You can still choose 12 months if you judge it
+              appropriate for this patient.
+            </p>
+          </div>
+        )}
+
+        {scenario === 'some-risk' && (
+          <div className="mb-6 rounded-lg border border-blue-200 bg-blue-50 p-5">
+            <p className="mb-2 text-sm text-blue-900">
+              ℹ️ <strong>Patient factors to consider:</strong>
+            </p>
+            <ul className="mb-3 ml-5 list-disc text-sm text-blue-800">
+              {stabilityFlags.map((flag) => (
+                <li key={flag}>{flag}</li>
+              ))}
+            </ul>
+            <p className="text-sm text-blue-800">
+              12 months is permitted but requires careful clinical judgment for
+              this patient.
+            </p>
+          </div>
+        )}
+
+        {scenario === 'suitable' && (
+          <div className="mb-6 rounded-lg border border-green-200 bg-green-50 p-5">
+            <p className="mb-2 font-semibold text-green-900">
+              ✅ Patient appears suitable for longer prescription
+            </p>
+            <p className="text-sm text-green-800">
+              No significant risk factors identified. Both 6 and 12 months are
+              appropriate.
+            </p>
+            <p className="mt-2 text-sm text-green-700">
+              Note: RNZCGP recommended 6 months as safer than 12 months, but 12
+              months is the new policy maximum.
+            </p>
+          </div>
+        )}
 
         <div className="space-y-3">
           <button
             type="button"
-            onClick={() =>
-              handleAnswer(
-                'Choose prescription duration',
-                '12 months',
-                'result',
-                {
-                  type: 'suitable',
-                  duration: '12 months',
-                  reason:
-                    'Patient meets all criteria for 12-month prescription: not a controlled drug, medication suitable (GREEN/AMBER with criteria met), patient stable. Ensure annual review is booked.',
-                  zone: 'green',
-                },
-              )}
-            className="w-full rounded-lg border-2 border-green-500 bg-green-50 px-6 py-4 text-left font-medium text-green-900 transition-colors hover:bg-green-100"
-          >
-            <span className="text-lg">12 months</span>
-            <p className="mt-1 text-sm opacity-80">
-              Maximum duration - ensure annual review booked
-            </p>
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              handleAnswer(
-                'Choose prescription duration',
-                '6 months',
-                'result',
-                {
-                  type: 'suitable',
-                  duration: '6 months (RNZCGP recommended)',
-                  reason:
-                    'Patient suitable for longer prescription. 6 months is RNZCGP\'s recommended duration as safer than 12 months - allows for more frequent medication reconciliation and monitoring.',
-                  zone: 'green',
-                },
-              )}
-            className="w-full rounded-lg border-2 border-blue-500 bg-blue-50 px-6 py-4 text-left font-medium text-blue-900 transition-colors hover:bg-blue-100"
-          >
-            <span className="text-lg">6 months</span>
-            <p className="mt-1 text-sm opacity-80">
-              RNZCGP recommended as safer - more frequent touchpoints
-            </p>
-          </button>
-
-          <button
-            type="button"
-            onClick={() =>
-              handleAnswer(
-                'Choose prescription duration',
-                '3 months',
-                'result',
-                {
-                  type: 'suitable',
-                  duration: '3 months (current standard)',
-                  reason:
-                    'Patient suitable for longer prescription, but 3 months chosen for closer monitoring or practice preference. This is the traditional standard duration.',
-                  zone: 'green',
-                },
-              )}
-            className="w-full rounded-lg border-2 border-gray-400 bg-gray-50 px-6 py-4 text-left font-medium text-gray-900 transition-colors hover:bg-gray-100"
+            onClick={() => handleDurationChoice('3 months')}
+            className="w-full rounded-lg border-2 border-gray-400 bg-white px-6 py-4 text-left font-medium text-gray-900 transition-colors hover:bg-gray-50"
           >
             <span className="text-lg">3 months</span>
             <p className="mt-1 text-sm opacity-80">
-              Traditional standard - most frequent monitoring
+              Traditional standard - more frequent clinical touchpoints
             </p>
           </button>
+
+          <button
+            type="button"
+            onClick={() => handleDurationChoice('6 months')}
+            className={
+              scenario === 'high-risk'
+                ? 'w-full rounded-lg border-[3px] border-green-600 bg-green-50 px-6 py-4 text-left font-bold text-green-900 transition-colors hover:bg-green-100'
+                : scenario === 'some-risk' || scenario === 'suitable'
+                  ? 'w-full rounded-lg border-2 border-blue-500 bg-blue-50 px-6 py-4 text-left font-medium text-blue-900 transition-colors hover:bg-blue-100'
+                  : 'w-full rounded-lg border-2 border-gray-400 bg-white px-6 py-4 text-left font-medium text-gray-900 transition-colors hover:bg-gray-50'
+            }
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <span className="text-lg">6 months</span>
+                <p className="mt-1 text-sm opacity-80">
+                  {scenario === 'high-risk'
+                    ? 'Recommended for multiple risk factors'
+                    : scenario.includes('monitoring-concern')
+                      ? 'Balances monitoring needs with reduced pharmacy visits'
+                      : 'RNZCGP recommended - more frequent touchpoints'}
+                </p>
+              </div>
+              {scenario === 'high-risk' && (
+                <span className="ml-3 rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white">
+                  RECOMMENDED
+                </span>
+              )}
+            </div>
+          </button>
+
+          {!scenario.includes('monitoring-concern') && (
+            <button
+              type="button"
+              onClick={() => handleDurationChoice('12 months')}
+              className={
+                scenario === 'suitable'
+                  ? 'w-full rounded-lg border-[3px] border-green-600 bg-green-50 px-6 py-4 text-left font-bold text-green-900 transition-colors hover:bg-green-100'
+                  : scenario === 'high-risk'
+                    ? 'w-full rounded-lg border-2 border-orange-500 bg-orange-50 px-6 py-4 text-left font-medium text-orange-900 transition-colors hover:bg-orange-100'
+                    : 'w-full rounded-lg border-2 border-gray-400 bg-white px-6 py-4 text-left font-medium text-gray-900 transition-colors hover:bg-gray-50'
+              }
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <span className="text-lg">
+                    {scenario === 'high-risk' && '⚠️ '}
+                    12 months
+                  </span>
+                  <p className="mt-1 text-sm opacity-80">
+                    {scenario === 'suitable'
+                      ? 'Maximum duration - patient appears suitable'
+                      : scenario === 'high-risk'
+                        ? 'Use with caution - ensure robust monitoring plan'
+                        : 'Maximum duration - ensure annual review booked'}
+                  </p>
+                </div>
+                {scenario === 'suitable' && (
+                  <span className="ml-3 rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white">
+                    SUITABLE
+                  </span>
+                )}
+              </div>
+            </button>
+          )}
         </div>
 
         <div className="mt-6">
@@ -628,29 +787,27 @@ of
     );
   }
 
-  // Result Screen
+  // Result screen
   if (currentStep === 'result' && result) {
-    const zoneColors = {
-      red: 'border-red-500 bg-red-50 text-red-900',
-      amber: 'border-amber-500 bg-amber-50 text-amber-900',
-      green: 'border-green-500 bg-green-50 text-green-900',
-    };
-
-    const zoneColor = result.zone
-      ? zoneColors[result.zone]
-      : 'border-blue-500 bg-blue-50 text-blue-900';
+    const isStop = result.type === 'stop';
+    const resultBoxClass = isStop
+      ? 'border-red-500 bg-red-50 text-red-900'
+      : result.boxType === 'blue'
+        ? 'border-blue-600 bg-blue-50 text-blue-900'
+        : result.boxType === 'amber'
+          ? 'border-amber-600 bg-amber-50 text-amber-900'
+          : 'border-green-600 bg-green-50 text-green-900';
+    const resultTitle = isStop ? result.duration : result.title;
 
     return (
       <div className="mx-auto w-full max-w-5xl rounded-lg border border-border bg-gray-50 px-4 py-6 sm:px-6 sm:py-8">
-        <div
-          className={`mb-6 rounded-lg border-2 p-6 ${zoneColor}`}
-        >
+        <div className={`mb-6 rounded-lg border-2 p-6 ${resultBoxClass}`}>
           <h3 className="mb-2 text-2xl font-bold">
-            {result.type === 'stop' && '🔴 Not Suitable for 12 Months'}
-            {result.type === 'consider-shorter' && '⚠️ Consider Shorter Duration'}
-            {result.type === 'suitable' && '✅ Suitable for Longer Prescription'}
+            {isStop
+              ? '🔴 Not Suitable for 12 Months'
+              : '✅ Prescription Decision'}
           </h3>
-          <p className="mb-3 text-xl font-semibold">{result.duration}</p>
+          <p className="mb-3 text-xl font-semibold">{resultTitle}</p>
           <p className="text-sm opacity-90">{result.reason}</p>
         </div>
 
@@ -661,7 +818,7 @@ of
           <div className="space-y-2 text-sm text-text-secondary">
             <div>
               <p className="font-medium text-text-primary">Decision</p>
-              <p className="mt-1">{result.duration}</p>
+              <p className="mt-1">{resultTitle}</p>
             </div>
             <div>
               <p className="font-medium text-text-primary">Rationale</p>
@@ -680,7 +837,7 @@ of
           </button>
           {copyFeedback && (
             <span className="text-sm font-medium text-green-600" role="status">
-              Copied to clipboard
+              Copied!
             </span>
           )}
           <button
