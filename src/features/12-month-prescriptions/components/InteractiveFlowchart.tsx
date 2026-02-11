@@ -68,9 +68,9 @@ export function InteractiveFlowchart({ onOpenChecker }: InteractiveFlowchartProp
         type: 'decision',
         position: { x: 250, y: 0 },
         data: {
-          label: 'Is this a controlled drug?',
+          label: 'Is the patient on any controlled drugs?',
           description:
-            'Opioids, benzodiazepines, tramadol, methylphenidate',
+            'Opioids, benzodiazepines, tramadol, methylphenidate, cannabis preparations',
         },
       },
       {

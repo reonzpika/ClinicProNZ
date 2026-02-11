@@ -40,11 +40,12 @@ type Result =
     };
 
 const CONTEXT_BY_SCENARIO: Record<Scenario, string> = {
-  'monitoring-concern': 'Medication requires frequent monitoring',
+  'monitoring-concern':
+    'One or more of the patient\'s medications require frequent monitoring',
   'monitoring-concern-high-risk':
-    'Medication requires frequent monitoring, multiple patient risk factors identified',
+    'One or more of the patient\'s medications require frequent monitoring, multiple patient risk factors identified',
   'monitoring-concern-some-risk':
-    'Medication requires frequent monitoring, patient factors identified',
+    'One or more of the patient\'s medications require frequent monitoring, patient factors identified',
   'high-risk': 'Multiple patient risk factors identified',
   'some-risk': 'Patient factors identified',
   suitable: 'No significant risk factors identified',
@@ -58,37 +59,37 @@ const RESULT_LOOKUP: Record<
     boxType: 'green',
     title: '3 months',
     rationale:
-      'Medication requires monitoring more frequently than annually. This duration aligns with monitoring schedule.',
+      'One or more of the patient\'s medications require monitoring more frequently than annually. This duration aligns with monitoring schedule.',
   },
   'monitoring-concern-6 months': {
     boxType: 'green',
     title: '6 months',
     rationale:
-      'Medication requires monitoring more frequently than annually. This duration aligns with monitoring schedule.',
+      'One or more of the patient\'s medications require monitoring more frequently than annually. This duration aligns with monitoring schedule.',
   },
   'monitoring-concern-high-risk-3 months': {
     boxType: 'green',
     title: '3 months',
     rationale:
-      'Medication requires frequent monitoring and multiple patient risk factors identified. This duration allows appropriate monitoring.',
+      'One or more of the patient\'s medications require frequent monitoring and multiple patient risk factors identified. This duration allows appropriate monitoring.',
   },
   'monitoring-concern-high-risk-6 months': {
     boxType: 'green',
     title: '6 months',
     rationale:
-      'Medication requires frequent monitoring and multiple patient risk factors identified. This duration aligns with monitoring needs.',
+      'One or more of the patient\'s medications require frequent monitoring and multiple patient risk factors identified. This duration aligns with monitoring needs.',
   },
   'monitoring-concern-some-risk-3 months': {
     boxType: 'green',
     title: '3 months',
     rationale:
-      'Medication requires frequent monitoring with additional patient factors to consider. This duration allows appropriate monitoring.',
+      'One or more of the patient\'s medications require frequent monitoring with additional patient factors to consider. This duration allows appropriate monitoring.',
   },
   'monitoring-concern-some-risk-6 months': {
     boxType: 'green',
     title: '6 months',
     rationale:
-      'Medication requires frequent monitoring with additional patient factors to consider. This duration aligns with monitoring needs.',
+      'One or more of the patient\'s medications require frequent monitoring with additional patient factors to consider. This duration aligns with monitoring needs.',
   },
   'high-risk-3 months': {
     boxType: 'blue',
@@ -250,7 +251,7 @@ Tool: https://clinicpro.co.nz/12-month-prescriptions`;
         <div className="mb-6">
           <ProgressBar stepNumber={stepNumber} />
           <h3 className="text-2xl font-bold text-text-primary">
-            Is this a controlled drug?
+            Is the patient on any controlled drugs?
           </h3>
           <p className="mt-2 text-sm text-text-secondary">
             Controlled drugs have legal maximum durations
@@ -261,31 +262,35 @@ Tool: https://clinicpro.co.nz/12-month-prescriptions`;
           <button
             type="button"
             onClick={() => {
-              addAnswer('Is this a controlled drug?', 'Yes');
+              addAnswer('Is the patient on any controlled drugs?', 'Yes');
               setResult({
                 type: 'stop',
                 duration: 'Maximum 1-3 months (legal limit)',
                 reason:
-                  'This is a controlled drug. Class B controlled drugs: max 1 month (morphine, oxycodone, methylphenidate, dexamphetamine). Class C controlled drugs: max 3 months (tramadol, benzodiazepines, zopiclone, zolpidem).',
+                  'One or more of the patient\'s medications are controlled drugs. Max 1 month: all opioids (morphine, oxycodone, fentanyl, codeine, tramadol). Max 3 months: ADHD stimulants, benzodiazepines, zopiclone, cannabis preparations.',
               });
               setCurrentStep('result');
             }}
             className="w-full rounded-lg border-2 border-red-500 bg-red-50 px-6 py-4 text-left font-medium text-red-900 transition-colors hover:bg-red-100"
           >
             <span className="text-lg">🔴 YES</span>
-            <p className="mt-1 text-sm opacity-80">This is a controlled drug</p>
+            <p className="mt-1 text-sm opacity-80">
+              Yes, this patient has controlled drug(s)
+            </p>
           </button>
 
           <button
             type="button"
             onClick={() => {
-              addAnswer('Is this a controlled drug?', 'No');
+              addAnswer('Is the patient on any controlled drugs?', 'No');
               setCurrentStep('nzf-check');
             }}
             className="w-full rounded-lg border-2 border-green-500 bg-green-50 px-6 py-4 text-left font-medium text-green-900 transition-colors hover:bg-green-100"
           >
             <span className="text-lg">🟢 NO</span>
-            <p className="mt-1 text-sm opacity-80">Not a controlled drug</p>
+            <p className="mt-1 text-sm opacity-80">
+              No, this patient has no controlled drugs
+            </p>
           </button>
         </div>
 
@@ -294,8 +299,8 @@ Tool: https://clinicpro.co.nz/12-month-prescriptions`;
             <strong>Controlled drugs:</strong>
           </p>
           <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-blue-800">
-            <li>Class B (max 1 month): morphine, oxycodone, methylphenidate</li>
-            <li>Class C (max 3 months): tramadol, benzodiazepines, zopiclone</li>
+            <li><strong>Max 1 month:</strong> All opioids (morphine, oxycodone, fentanyl, codeine, tramadol)</li>
+            <li><strong>Max 3 months:</strong> ADHD stimulants (methylphenidate, dexamfetamine), benzodiazepines, zopiclone, cannabis preparations</li>
           </ul>
         </div>
       </div>
@@ -309,8 +314,8 @@ Tool: https://clinicpro.co.nz/12-month-prescriptions`;
         <div className="mb-6">
           <ProgressBar stepNumber={stepNumber} />
           <h3 className="text-2xl font-bold text-text-primary">
-            Have you checked this medication&apos;s monitoring requirements in
-            NZF?
+            Have you checked monitoring requirements for the relevant
+            medications in NZF?
           </h3>
         </div>
 
@@ -343,7 +348,7 @@ Tool: https://clinicpro.co.nz/12-month-prescriptions`;
             What should I check in NZF?
           </summary>
           <div className="mt-3 space-y-2 text-sm text-blue-800">
-            <p>Check the medication in NZF for:</p>
+            <p>Check each relevant medication in NZF for:</p>
             <ul className="ml-4 list-disc space-y-1">
               <li>Monitoring requirements (blood tests, ECG, etc.)</li>
               <li>How often monitoring is needed</li>
@@ -388,7 +393,8 @@ Tool: https://clinicpro.co.nz/12-month-prescriptions`;
         <div className="mb-6">
           <ProgressBar stepNumber={stepNumber} />
           <h3 className="text-2xl font-bold text-text-primary">
-            Does this medication require monitoring more often than annually?
+            Does any of the patient&apos;s medications require monitoring more
+            often than annually?
           </h3>
         </div>
 
@@ -584,8 +590,9 @@ Tool: https://clinicpro.co.nz/12-month-prescriptions`;
               ⚠️ Why 12 months is not available:
             </p>
             <p className="mb-3 text-sm text-red-800">
-              This medication requires monitoring more frequently than annually
-              (e.g., INR monthly, lithium levels 3-monthly).
+              One or more of the patient&apos;s medications require monitoring
+              more frequently than annually (e.g., INR monthly, lithium levels
+              3-monthly).
             </p>
             <p className="text-sm text-red-800">
               Choose a duration that aligns with your monitoring plan - typically
@@ -600,8 +607,9 @@ Tool: https://clinicpro.co.nz/12-month-prescriptions`;
               ⚠️ Why 12 months is not available:
             </p>
             <p className="mb-3 text-sm text-red-800">
-              This medication requires monitoring more frequently than annually
-              (e.g., INR monthly, lithium levels 3-monthly).
+              One or more of the patient&apos;s medications require monitoring
+              more frequently than annually (e.g., INR monthly, lithium levels
+              3-monthly).
             </p>
             <p className="mb-4 text-sm text-red-800">
               Choose a duration that aligns with your monitoring plan - typically
@@ -624,8 +632,9 @@ Tool: https://clinicpro.co.nz/12-month-prescriptions`;
               ⚠️ Why 12 months is not available:
             </p>
             <p className="mb-3 text-sm text-red-800">
-              This medication requires monitoring more frequently than annually
-              (e.g., INR monthly, lithium levels 3-monthly).
+              One or more of the patient&apos;s medications require monitoring
+              more frequently than annually (e.g., INR monthly, lithium levels
+              3-monthly).
             </p>
             <p className="mb-4 text-sm text-red-800">
               Choose a duration that aligns with your monitoring plan - typically

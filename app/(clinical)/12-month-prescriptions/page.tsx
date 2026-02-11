@@ -33,6 +33,12 @@ export default function TwelveMonthRxPage() {
             >
               Start Decision Tool ↓
             </a>
+            <a
+              href="#guidance"
+              className="rounded-lg border-2 border-primary bg-white px-6 py-3 font-medium text-primary transition-colors hover:bg-surface"
+            >
+              Policy & Guidance
+            </a>
           </div>
         </div>
       </section>
@@ -54,31 +60,6 @@ export default function TwelveMonthRxPage() {
             </summary>
 
             <div className="mt-6 space-y-6">
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
-                <h3 className="mb-3 text-lg font-semibold text-blue-900">
-                  Why we link to NZF instead of listing all medications
-                </h3>
-                <p className="mb-3 text-sm text-blue-800">
-                  The New Zealand Formulary is the gold-standard, authoritative
-                  source for medication information in NZ. It&apos;s updated
-                  monthly and includes monitoring requirements, dose adjustments,
-                  interactions, and latest safety alerts.
-                </p>
-                <p className="mb-4 text-sm text-blue-800">
-                  We&apos;ve requested API access from NZF to integrate medication
-                  data directly. If approved, future versions will auto-populate
-                  monitoring requirements.
-                </p>
-                <a
-                  href="https://nzf.org.nz"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                >
-                  Open NZF
-                </a>
-              </div>
-
               <details className="rounded-lg border border-border bg-white p-4">
                 <summary className="cursor-pointer font-semibold text-text-primary">
                   🔴 Generally NOT Suitable for 12 Months
@@ -117,7 +98,7 @@ export default function TwelveMonthRxPage() {
                           <td className="px-3 py-2">3 months</td>
                           <td className="px-3 py-2">
                             Tramadol, codeine (prescription strength),
-                            diazepam, lorazepam, clonazepam, zopiclone, zolpidem
+                            diazepam, lorazepam, clonazepam, zopiclone
                           </td>
                         </tr>
                       </tbody>
@@ -369,6 +350,31 @@ export default function TwelveMonthRxPage() {
                 </ol>
               </div>
 
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-6">
+                <h3 className="mb-3 text-lg font-semibold text-blue-900">
+                  Why we link to NZF instead of listing all medications
+                </h3>
+                <p className="mb-3 text-sm text-blue-800">
+                  The New Zealand Formulary is the gold-standard, authoritative
+                  source for medication information in NZ. It&apos;s updated
+                  monthly and includes monitoring requirements, dose adjustments,
+                  interactions, and latest safety alerts.
+                </p>
+                <p className="mb-4 text-sm text-blue-800">
+                  We&apos;ve requested API access from NZF to integrate medication
+                  data directly. If approved, future versions will auto-populate
+                  monitoring requirements.
+                </p>
+                <a
+                  href="https://nzf.org.nz"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                >
+                  Open NZF
+                </a>
+              </div>
+
               <p className="text-xs text-text-tertiary">
                 <strong>Disclaimer:</strong> This medication reference is for
                 educational purposes only and does not replace clinical judgment
@@ -382,138 +388,373 @@ export default function TwelveMonthRxPage() {
         </div>
       </section>
 
-      <section className="bg-white px-6 py-16">
+      <section id="guidance" className="scroll-mt-20 bg-white px-6 py-16">
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-8 text-3xl font-bold text-text-primary">
-            Evidence & Resources
+            Understanding 12-Month Prescriptions
           </h2>
 
-          <div className="mb-8">
+          {/* What Changed - Always Visible */}
+          <div className="mb-8 rounded-lg border border-border bg-surface p-6">
             <h3 className="mb-4 text-2xl font-semibold text-text-primary">
-              BPAC Guidance
+              What Changed on 1 February 2026
             </h3>
-            <ul className="space-y-3 text-text-secondary">
-              <li>
-                <a
-                  href="https://bpac.org.nz/2021/gout.aspx"
-                  className="text-primary hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  → Gout management (allopurinol, colchicine dosing)
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://bpac.org.nz/2018/triple-whammy.aspx"
-                  className="text-primary hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  → Triple whammy guidance (NSAIDs + ACEi/ARB + diuretic)
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://bpac.org.nz/2021/diabetes.aspx"
-                  className="text-primary hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  → Diabetes management (metformin, SGLT-2i, sulfonylureas)
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://bpac.org.nz/2017/depression.aspx"
-                  className="text-primary hover:underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  → Depression management (SSRIs/SNRIs guidance)
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div className="mb-8">
-            <h3 className="mb-4 text-2xl font-semibold text-text-primary">
-              RNZCGP Requirements
-            </h3>
-            <p className="mb-3 text-text-secondary">
-              Foundation Standard 9.1 requirements for accredited practices:
+            <p className="mb-4 text-text-secondary">
+              From 1 February 2026, prescriptions can be written for up to 12
+              months (increased from 3 months for most medicines). Pharmacies
+              still dispense a maximum of 3 months&apos; supply at a time, so
+              patients collect repeats every 3 months. The change reduces
+              prescription co-payments from $5 quarterly to $5 once per year.
             </p>
-            <ul className="list-inside list-disc space-y-2 text-text-secondary">
-              <li>Documented repeat prescribing policy</li>
-              <li>Annual audits with Māori/non-Māori differentiation</li>
-              <li>Minimum annual review for patients on 12-month prescriptions</li>
-              <li>Measures to optimise Māori access to repeat prescriptions</li>
-            </ul>
             <a
-              href="https://www.rnzcgp.org.nz/foundation-standard-9-1"
-              className="mt-3 inline-block text-primary hover:underline"
+              href="https://www.health.govt.nz/strategies-initiatives/programmes-and-initiatives/primary-and-community-health-care/increasing-prescribing-lengths"
               target="_blank"
               rel="noopener noreferrer"
+              className="text-primary hover:underline"
             >
-              → View Foundation Standard 9.1
+              Learn more about the policy →
             </a>
           </div>
 
+          {/* Two Perspectives - Side by Side Cards */}
           <div className="mb-8">
             <h3 className="mb-4 text-2xl font-semibold text-text-primary">
-              Frequently Asked Questions
+              Two Perspectives
             </h3>
+            <div className="grid gap-6 md:grid-cols-2">
+              {/* Government View */}
+              <div className="rounded-lg border-2 border-blue-500 bg-blue-50 p-6">
+                <h4 className="mb-3 text-lg font-semibold text-blue-900">
+                  🏛️ Government Rationale
+                </h4>
+                <ul className="space-y-2 text-sm text-blue-800">
+                  <li>• Cost savings for patients ($5 once vs $20 yearly)</li>
+                  <li>• Improved access (fewer pharmacy trips)</li>
+                  <li>• Reduced GP appointment burden</li>
+                  <li>• Aligns with international practice</li>
+                </ul>
+                <p className="mt-3 text-xs text-blue-700">
+                  Source: Ministry of Health Regulatory Impact Statement
+                </p>
+              </div>
 
-            {[
-              {
-                q: 'Is "6 months stable" mandatory before 12-month prescriptions?',
-                a: 'No. This is RNZCGP guidance from patient materials, not a legal requirement. You determine what "stable" means for each patient. Some practices use 3 months, others 9 months. Your clinical judgment.',
-              },
-              {
-                q: 'Can I prescribe less than 12 months?',
-                a: 'Yes! 3, 6, or 9 months are completely acceptable. RNZCGP actually recommended 6 months as safer than 12 in their October 2024 submission to MoH.',
-              },
-              {
-                q: 'What about patients over 65?',
-                a: 'Age alone is not an exclusion. However, older adults often need closer monitoring (declining renal function, polypharmacy, falls risk). RNZCGP guidance suggests "careful consideration" for 65+, but it\'s your decision based on individual assessment.',
-              },
-              {
-                q: 'Do I need annual review appointments?',
-                a: 'If your practice is RNZCGP-accredited: Yes (Foundation Standard 9.1 requirement). If not accredited: Strongly recommended best practice, but not legally mandated.',
-              },
-              {
-                q: 'What if Special Authority expires during the 12 months?',
-                a: 'You must renew the Special Authority before further funded repeats can be dispensed. Plan SA renewals when issuing 12-month prescriptions (legal requirement, Pharmac Schedule Rule 2.4.3).',
-              },
-              {
-                q: 'What\'s the "triple whammy" and why does it matter?',
-                a: 'NSAID + ACE inhibitor/ARB + diuretic = 30% increased acute kidney injury risk. If patient on ACEi/ARB + diuretic, warn about OTC NSAIDs and consider max 3 months for NSAIDs if unavoidable (see Traffic Light Checker AMBER zone).',
-              },
-              {
-                q: 'Can patients switch pharmacies mid-prescription?',
-                a: 'Guidance says "same pharmacy" for 12-month prescriptions. This appears to be a system limitation rather than legal requirement. Practically, switching may cause dispensing issues.',
-              },
-              {
-                q: 'What about equity concerns for Māori patients?',
-                a: 'Te Tīriti raised concerns that reducing touchpoints may worsen monitoring gaps for Māori who already face barriers. Consider: Will 12 months improve access (reduce cost/transport) or worsen outcomes (fewer monitoring opportunities)? RNZCGP Standard requires practices to optimise Māori access.',
-              },
-              {
-                q: 'Do I have to issue 12-month prescriptions if patients ask?',
-                a: 'No. You have full discretion to issue shorter durations based on clinical judgment. The law permits up to 12 months; it doesn\'t require it.',
-              },
-              {
-                q: 'Where can I find the official legal text?',
-                a: 'Medicines (Increasing the Period of Supply) Amendment Regulations 2025 (SL 2025/203). See full guide for detailed source attribution and legal vs guidance distinction.',
-              },
-            ].map((item, idx) => (
-              <details key={idx} className="mb-4 border-b border-border pb-4">
-                <summary className="mb-2 cursor-pointer font-semibold hover:text-primary">
-                  {item.q}
-                </summary>
-                <p className="mt-2 text-text-secondary">{item.a}</p>
-              </details>
-            ))}
+              {/* RNZCGP Position */}
+              <div className="rounded-lg border-2 border-amber-500 bg-amber-50 p-6">
+                <h4 className="mb-3 text-lg font-semibold text-amber-900">
+                  ⚕️ RNZCGP Position
+                </h4>
+                <p className="mb-3 text-sm font-medium text-amber-900">
+                  Formally recommended 6 months as safer alternative
+                </p>
+                <ul className="space-y-2 text-sm text-amber-800">
+                  <li>• Patient safety concerns (less frequent monitoring)</li>
+                  <li>• Equity risks for Māori and Pacific peoples</li>
+                  <li>• Practice financial sustainability</li>
+                  <li>• 6 months balances benefits with safety</li>
+                </ul>
+                <p className="mt-3 text-xs text-amber-700">
+                  Source: RNZCGP Submission, October 2024
+                </p>
+              </div>
+            </div>
+            <p className="mt-4 text-center text-sm text-text-secondary">
+              <strong>You have full clinical discretion</strong> to prescribe 3,
+              6, 9, or 12 months based on individual patient assessment.
+            </p>
           </div>
+
+          {/* Authority Hierarchy - Collapsible */}
+          <div className="mb-8">
+            <details className="rounded-lg border border-border bg-white p-6">
+              <summary className="cursor-pointer text-xl font-bold text-text-primary">
+                Understanding Your Authority: What Must You Follow?
+              </summary>
+
+              <div className="mt-6 space-y-6">
+                {/* Legal Requirements */}
+                <div className="rounded-lg border-l-4 border-red-600 bg-red-50 p-5">
+                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold text-red-900">
+                    🔴 Legal Requirements - You MUST Comply
+                  </h4>
+                  <ul className="ml-5 list-disc space-y-2 text-sm text-red-800">
+                    <li>
+                      Controlled drugs: max 1 month (opioids) or max 3 months
+                      (e.g. stimulants, benzodiazepines, zopiclone, cannabis preparations)
+                    </li>
+                    <li>
+                      Dispensing limit: 3 months per occasion (6mo for oral
+                      contraceptives)
+                    </li>
+                    <li>First dispensing within 3 months of prescription date</li>
+                    <li>Special Authority must be valid for funded repeats</li>
+                    <li>Prescriber has full discretion on duration (3-12 months)</li>
+                  </ul>
+                  <p className="mt-3 text-xs text-red-700">
+                    Source: Medicines Regulations 2025, Misuse of Drugs Act 1975
+                  </p>
+                </div>
+
+                {/* Professional Standards */}
+                <div className="rounded-lg border-l-4 border-amber-600 bg-amber-50 p-5">
+                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold text-amber-900">
+                    🟡 Professional Standards - Required for RNZCGP
+                    Accreditation
+                  </h4>
+                  <p className="mb-3 text-sm text-amber-800">
+                    If your practice is RNZCGP-accredited (or seeking
+                    accreditation):
+                  </p>
+                  <ul className="ml-5 list-disc space-y-2 text-sm text-amber-800">
+                    <li>
+                      Documented repeat prescribing policy with clear criteria
+                    </li>
+                    <li>Annual audits of prescribing activity</li>
+                    <li>Audits must differentiate Māori from non-Māori results</li>
+                    <li>Minimum annual review for patients on repeat prescriptions</li>
+                    <li>
+                      Measures to optimise Māori access to repeat prescriptions
+                    </li>
+                  </ul>
+                  <p className="mt-3 text-xs text-amber-700">
+                    Source: RNZCGP Foundation Standard 9.1
+                  </p>
+                </div>
+
+                {/* Clinical Guidance */}
+                <div className="rounded-lg border-l-4 border-green-600 bg-green-50 p-5">
+                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold text-green-900">
+                    🟢 Clinical Guidance - Recommended Best Practice
+                  </h4>
+                  <p className="mb-3 text-sm text-green-800">
+                    RNZCGP and clinical consensus recommend considering:
+                  </p>
+
+                  {/* Patient Suitability Checklist */}
+                  <details className="mt-4 rounded-lg border border-green-200 bg-white p-4">
+                    <summary className="cursor-pointer font-medium text-green-900">
+                      Patient Suitability Checklist
+                    </summary>
+                    <div className="mt-3 space-y-3 text-sm text-green-800">
+                      <div>
+                        <p className="font-medium">✓ Medication considerations:</p>
+                        <ul className="ml-5 list-disc">
+                          <li>
+                            Does NOT require monitoring more often than annually
+                          </li>
+                          <li>Not a controlled drug</li>
+                          <li>
+                            Dose has been stable (RNZCGP patient materials
+                            suggest 6+ months)
+                          </li>
+                        </ul>
+                      </div>
+                      <div>
+                        <p className="font-medium">✓ Patient considerations:</p>
+                        <ul className="ml-5 list-disc">
+                          <li>Condition stable and well-controlled</li>
+                          <li>Good medication adherence</li>
+                          <li>Able to attend annual review (minimum)</li>
+                          <li>
+                            Age and life stage appropriate (careful consideration
+                            for &lt;18, pregnant, 65+)
+                          </li>
+                          <li>
+                            Not polypharmacy requiring more frequent
+                            reconciliation
+                          </li>
+                        </ul>
+                      </div>
+                      <p className="mt-3 text-xs text-green-700">
+                        Note: These are considerations, NOT mandatory criteria.
+                        You determine suitability.
+                      </p>
+                    </div>
+                  </details>
+
+                  <p className="mt-4 text-sm text-green-800">
+                    <strong>Key principle:</strong> RNZCGP recommended 6 months
+                    as safer than 12 months. Prescribing 6 months aligns with
+                    professional college guidance.
+                  </p>
+                  <p className="mt-3 text-xs text-green-700">
+                    Source: RNZCGP Position Statement, Healthify, clinical
+                    consensus
+                  </p>
+                </div>
+
+                {/* Your Clinical Decision */}
+                <div className="rounded-lg border-l-4 border-blue-600 bg-blue-50 p-5">
+                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold text-blue-900">
+                    🔵 Your Clinical Decision - Individual Practice Judgment
+                  </h4>
+                  <p className="mb-3 text-sm text-blue-800">
+                    You decide based on individual patient assessment:
+                  </p>
+                  <ul className="ml-5 list-disc space-y-2 text-sm text-blue-800">
+                    <li>Prescription duration (3, 6, 9, or 12 months)</li>
+                    <li>
+                      Review frequency (may be more frequent than annual minimum)
+                    </li>
+                    <li>Face-to-face vs telehealth review requirements</li>
+                    <li>Documentation approach for your practice</li>
+                    <li>Practice-specific medication lists or protocols</li>
+                  </ul>
+                  <p className="mt-4 text-sm font-medium text-blue-900">
+                    When in doubt: choose a shorter duration. You can always
+                    extend next time.
+                  </p>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          {/* Official Resources */}
+          <div className="mb-8">
+            <details className="rounded-lg border border-border bg-white p-6">
+              <summary className="cursor-pointer text-xl font-bold text-text-primary">
+                Official Resources & Documentation
+              </summary>
+
+              <div className="mt-6 space-y-8">
+                {/* Government Resources */}
+                <div>
+                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold text-text-primary">
+                    🏛️ Ministry of Health & Te Whatu Ora
+                  </h4>
+                  <ul className="space-y-2 text-sm text-text-secondary">
+                    <li>
+                      <a
+                        href="https://static.info.content.health.nz/docs/12-month%20Prescriptions%20Guidance.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        → Official Guidance Document (PDF)
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="https://vimeo.com/1145818509/2c46853ece?fl=pl&fe=sh"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        → Prescriber Webinar (Vimeo)
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="https://www.health.govt.nz/strategies-initiatives/programmes-and-initiatives/primary-and-community-health-care/increasing-prescribing-lengths"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        → Ministry of Health Policy Page
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Patient Information */}
+                <div>
+                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold text-text-primary">
+                    📄 Patient Information Resources
+                  </h4>
+                  <ul className="space-y-2 text-sm text-text-secondary">
+                    <li>
+                      <a
+                        href="https://healthed.govt.nz/products/changes-to-your-prescription-length"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        → HealthEd Patient Leaflet
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="https://healthify.nz/medicines-a-z/p/12-month-prescriptions"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        → Healthify Patient Guide
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* RNZCGP */}
+                <div>
+                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold text-text-primary">
+                    ⚕️ RNZCGP Guidance & Standards
+                  </h4>
+                  <ul className="space-y-2 text-sm text-text-secondary">
+                    <li>
+                      <a
+                        href="https://www.rnzcgp.org.nz/our-voice/hot-topics/12-month-prescriptions/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        → RNZCGP 12-Month Prescriptions Hub
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="https://www.rnzcgp.org.nz/running-a-practice/the-foundation-standard/whakahau-rongoa-medicines-management/91-repeat-prescribing/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        → Foundation Standard 9.1 (Repeat Prescribing)
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="https://www.rnzcgp.org.nz/documents/651/12-month_prescription_poster_FINAL_2.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        → Patient Information Poster (PDF)
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        href="https://www.rnzcgp.org.nz/documents/657/12-month-prescribing-position-statement-NOV-2025.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        → RNZCGP Position Statement (November 2025)
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+
+                {/* Pharmac */}
+                <div>
+                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold text-text-primary">
+                    💊 Pharmac Schedule Rules
+                  </h4>
+                  <ul className="space-y-2 text-sm text-text-secondary">
+                    <li>
+                      <a
+                        href="https://www.pharmac.govt.nz/medicine-funding-and-supply/what-you-need-to-know-about-medicines/12-month-prescriptions"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline"
+                      >
+                        → Pharmac 12-Month Prescriptions Information
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </details>
+          </div>
+
         </div>
       </section>
 
@@ -525,37 +766,16 @@ export default function TwelveMonthRxPage() {
 
           <div className="mb-8 rounded-lg border border-border bg-white p-6">
             <div className="mb-3 flex items-center gap-3">
-              <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-700">
-                v2.0
-              </span>
-              <span className="text-sm text-text-tertiary">February 2026</span>
-            </div>
-            <h3 className="mb-3 text-xl font-semibold text-text-primary">
-              Major Update
-            </h3>
-            <ul className="list-inside list-disc space-y-2 text-text-secondary">
-              <li>Added AMBER Zone Quick Screening Table for fast lookup</li>
-              <li>Expanded SSRI/SNRI guidance with critical caveats</li>
-              <li>Updated DOAC thresholds (CrCl-specific for each drug)</li>
-              <li>Added triple whammy monitoring guidance</li>
-              <li>Restructured for better usability (traffic light system)</li>
-              <li>Added 11 common scenario examples</li>
-            </ul>
-          </div>
-
-          <div className="mb-8 rounded-lg border border-border bg-white p-6">
-            <div className="mb-3 flex items-center gap-3">
               <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">
                 v1.0
               </span>
-              <span className="text-sm text-text-tertiary">January 2026</span>
+              <span className="text-sm text-text-tertiary">February 2026</span>
             </div>
             <h3 className="mb-3 text-xl font-semibold text-text-primary">
               Initial Release
             </h3>
             <p className="text-text-secondary">
-              First version following 12-month prescription policy implementation (1 February
-              2026). Basic flowchart and medication categorisation.
+              Decision tool and 'policy & guidance' implemented following 12-month prescription policy (1 February 2026).
             </p>
           </div>
 

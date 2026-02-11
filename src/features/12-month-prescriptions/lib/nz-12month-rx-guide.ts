@@ -77,8 +77,8 @@ Standard co-payment exemptions apply (under 14, 65+, Community Services Card hol
 ### Controlled Drugs
 
 🔴 **LEGAL REQUIREMENT**: Controlled drugs are **excluded** from 12-month prescriptions and remain subject to existing restrictions:
-- **Class B controlled drugs** (e.g., morphine, oxycodone, fentanyl): Maximum 1 month
-- **Class C controlled drugs** (e.g., tramadol, zopiclone, most benzodiazepines): Maximum 3 months
+- **Max 1 month:** All opioids (e.g. morphine, oxycodone, fentanyl, codeine, tramadol)
+- **Max 3 months:** ADHD stimulants (methylphenidate, dexamfetamine), benzodiazepines, zopiclone, cannabis preparations
 
 **SOURCE:** Misuse of Drugs Act 1975; Misuse of Drugs Regulations 1977
 
@@ -152,14 +152,9 @@ Standard co-payment exemptions apply (under 14, 65+, Community Services Card hol
 
 🔴 **LEGAL REQUIREMENT**: All controlled drugs under the Misuse of Drugs Act 1975 are excluded from 12-month prescriptions.
 
-**Class B (1 month maximum):**
-- Opioids: morphine, oxycodone, fentanyl, methadone, pethidine
-- ADHD medications: methylphenidate (Ritalin), dexamphetamine
+**Max 1 month:** All opioids (morphine, oxycodone, fentanyl, methadone, codeine, tramadol)
 
-**Class C (3 months maximum):**
-- Tramadol
-- Codeine combinations (>prescription threshold)
-- Benzodiazepines: diazepam, lorazepam, clonazepam, zopiclone, zolpidem
+**Max 3 months:** ADHD stimulants (methylphenidate, dexamfetamine), benzodiazepines (e.g. diazepam, lorazepam, clonazepam), zopiclone, cannabis preparations
 
 **SOURCE:** Misuse of Drugs Act 1975; Misuse of Drugs Regulations 1977
 
@@ -511,7 +506,7 @@ Te Tirātū called for:
 ### Before Issuing a 12-Month Prescription, Consider:
 
 #### Legal Requirements (🔴)
-- [ ] Is this a controlled drug? (If yes → max 1-3 months)
+- [ ] Is the patient on any controlled drugs? (If yes → max 1-3 months)
 - [ ] Special Authority will remain valid for full 12 months? (If no → shorter duration or plan renewal)
 - [ ] Patient understands they collect 3-month supplies from same pharmacy?
 
@@ -627,7 +622,7 @@ Te Tirātū called for:
 | **Prescriptions may be written for up to 12 months** | You CAN prescribe 12 months, but you're not required to |
 | **Dispensing limited to 3 months per occasion** (6 months for oral contraceptives) | Patients collect 3-month supplies every 3 months from pharmacy |
 | **First dispensing within 3 months** of prescription date | Patient must present prescription to pharmacy within 3 months |
-| **Controlled drugs excluded** (Class B: max 1 month; Class C: max 3 months) | Morphine, methylphenidate, tramadol, benzodiazepines cannot be prescribed for 12 months |
+| **Controlled drugs excluded** (max 1 month or max 3 months) | Opioids (max 1 month); stimulants, benzodiazepines, zopiclone, cannabis preparations (max 3 months) cannot be prescribed for 12 months |
 | **Special Authority must be valid** for funded repeats | If SA expires during 12-month period, you must renew it before further funded dispensings |
 | **One co-payment** when patient first collects medicine | Patient pays $5 once, not quarterly |
 
