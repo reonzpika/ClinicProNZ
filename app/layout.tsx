@@ -8,6 +8,7 @@ import Script from 'next/script';
 
 import { QueryClientProvider } from '@/src/providers/QueryClientProvider';
 import { AppLayoutWrapper } from '@/src/shared/components/AppLayoutWrapper';
+import { JsonLdScript } from '@/src/shared/components/seo/JsonLdScript';
 import { ToastProvider } from '@/src/shared/components/ui/toast';
 import { TestUserProvider } from '@/src/shared/contexts/TestUserContext';
 
@@ -35,9 +36,53 @@ const openSans = Open_Sans({
   variable: '--font-open-sans',
 });
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://clinicpro.co.nz';
+
 export const metadata: Metadata = {
-  title: 'ClinicPro - AI Medical Scribing for NZ GPs',
-  description: 'Finish your consultation notes in under 1 minute. AI-powered medical scribing built specifically for New Zealand general practice.',
+  metadataBase: new URL(baseUrl),
+  title: {
+    default: 'ClinicPro - Practical Tools for NZ GPs',
+    template: '%s | ClinicPro',
+  },
+  description:
+    'Free clinical tools for New Zealand general practice: 12-month prescription decision support, referral image transfer, AI scribe, and ACC claim helpers. Built by a practising GP.',
+  keywords: [
+    'ClinicPro',
+    'NZ GP tools',
+    'New Zealand general practice',
+    'clinical decision support',
+    '12-month prescriptions',
+    'AI medical scribe NZ',
+    'referral images',
+    'ACC tools',
+  ],
+  openGraph: {
+    title: 'ClinicPro - Practical Tools for NZ GPs',
+    description:
+      '12-month prescription decision tools, referral image transfer, AI scribe, and ACC utilities built for New Zealand general practice.',
+    type: 'website',
+    locale: 'en_NZ',
+    siteName: 'ClinicPro',
+    url: baseUrl,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ClinicPro - Practical Tools for NZ GPs',
+    description: 'Free, GP-built tools for New Zealand clinics.',
+  },
+};
+
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: 'ClinicPro',
+  url: baseUrl,
+  description: 'Practical clinical tools for New Zealand general practice.',
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: 'Auckland',
+    addressCountry: 'NZ',
+  },
 };
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -86,6 +131,7 @@ export default function RootLayout({
                  gtag('js', new Date());
                  gtag('config', 'G-S52BKYBFY9');`}
               </Script>
+              <JsonLdScript data={organizationSchema} />
             </head>
             <body className={`${inter.variable} ${oswald.variable} ${openSans.variable} ${inter.className}`}>
               {/* <StagewiseToolbar /> */}

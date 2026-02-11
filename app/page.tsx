@@ -1,12 +1,13 @@
 'use client';
 
-import { MapPin, Sparkles, Stethoscope } from 'lucide-react';
+import { ChevronRight, MapPin, Sparkles, Stethoscope } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
 
 import { ReferralImagesHomeCard } from '@/src/features/referral-images/ReferralImagesHomeCard';
 import { Container } from '@/src/shared/components/layout/Container';
+import { Button } from '@/src/shared/components/ui/button';
 
 const FAQ_ITEMS = [
   {
@@ -104,21 +105,37 @@ export default function HomePage() {
           </h2>
           <ReferralImagesHomeCard variant="primary" />
 
-          <div className="rounded-lg border border-border bg-white p-5 opacity-75 transition-shadow hover:shadow-md">
-            <div className="mb-2 flex items-center gap-2">
-              <h3 className="text-2xl font-normal text-text-primary">
-                12-Month Prescriptions
-              </h3>
-              <span className="rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700">
-                Coming Soon
-              </span>
+          <div className="group relative rounded-2xl border border-border bg-white p-5 transition-shadow hover:shadow-lg">
+            <div
+              className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent"
+              aria-hidden
+            />
+            <div className="relative z-10">
+              <div className="mb-3 flex items-center gap-3">
+                <h2 className="text-3xl font-semibold text-text-primary md:text-4xl">
+                  12-Month Prescriptions
+                </h2>
+                <span className="rounded bg-primary/15 px-2 py-1 text-xs font-medium text-primary">
+                  New
+                </span>
+              </div>
+              <p className="mb-6 text-lg text-text-secondary">
+                Clinical decision tools for extended prescriptions. Flowchart + medication checker.
+              </p>
+              <Button
+                asChild
+                variant="outline"
+                className="w-full border-primary text-primary transition-all hover:scale-[1.02] hover:bg-primary/10"
+              >
+                <Link
+                  href="/12-month-prescriptions"
+                  className="inline-flex items-center justify-center"
+                >
+                  Open
+                  <ChevronRight className="ml-2 size-5" aria-hidden />
+                </Link>
+              </Button>
             </div>
-            <p className="mb-2 text-text-secondary">
-              Clinical decision tools for extended prescriptions. Flowchart + medication checker.
-            </p>
-            <p className="text-sm italic text-text-secondary">
-              Currently in development
-            </p>
           </div>
 
           <div className="rounded-lg border border-border bg-white p-5 transition-shadow hover:shadow-md">
