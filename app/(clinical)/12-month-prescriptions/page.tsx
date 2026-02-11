@@ -1,11 +1,45 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 
 import { DecisionWizard } from '@/src/features/12-month-prescriptions';
 import { Container } from '@/src/shared/components/layout/Container';
 
+type SubscribeStatus = 'idle' | 'loading' | 'success' | 'error';
+
 export default function TwelveMonthRxPage() {
+  const [subscribeEmail, setSubscribeEmail] = useState('');
+  const [subscribeStatus, setSubscribeStatus] = useState<SubscribeStatus>('idle');
+  const [subscribeMessage, setSubscribeMessage] = useState('');
+
+  async function handleSubscribeSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const email = subscribeEmail.trim();
+    if (!email) return;
+    setSubscribeStatus('loading');
+    setSubscribeMessage('');
+    try {
+      const res = await fetch('/api/12-month-prescriptions/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        setSubscribeStatus('success');
+        setSubscribeMessage("Thanks, we'll notify you when we update the tools.");
+        setSubscribeEmail('');
+      } else {
+        setSubscribeStatus('error');
+        setSubscribeMessage(data?.error ?? 'Something went wrong. Please try again.');
+      }
+    } catch {
+      setSubscribeStatus('error');
+      setSubscribeMessage('Something went wrong. Please try again.');
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-white">
@@ -789,21 +823,36 @@ export default function TwelveMonthRxPage() {
             </p>
             <form
               className="flex gap-3"
-              onSubmit={e => e.preventDefault()}
+              onSubmit={handleSubscribeSubmit}
             >
               <input
                 type="email"
                 placeholder="your.email@practice.co.nz"
+                value={subscribeEmail}
+                onChange={e => setSubscribeEmail(e.target.value)}
                 className="flex-1 rounded-lg border border-border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
                 required
+                disabled={subscribeStatus === 'loading'}
+                aria-invalid={subscribeStatus === 'error'}
+                aria-describedby={subscribeMessage ? 'subscribe-message' : undefined}
               />
               <button
                 type="submit"
-                className="rounded-lg bg-primary px-6 py-2 text-white transition-colors hover:bg-primary-dark"
+                className="rounded-lg bg-primary px-6 py-2 text-white transition-colors hover:bg-primary-dark disabled:opacity-70 disabled:cursor-not-allowed"
+                disabled={subscribeStatus === 'loading'}
               >
-                Subscribe
+                {subscribeStatus === 'loading' ? 'Subscribing…' : 'Subscribe'}
               </button>
             </form>
+            {(subscribeMessage || subscribeStatus === 'success') && (
+              <p
+                id="subscribe-message"
+                className={`mt-2 text-sm ${subscribeStatus === 'error' ? 'text-red-600' : subscribeStatus === 'success' ? 'font-medium text-green-700' : 'text-text-secondary'}`}
+                role={subscribeStatus === 'error' ? 'alert' : subscribeStatus === 'success' ? 'status' : undefined}
+              >
+                {subscribeStatus === 'success' ? "Thanks, we'll notify you when we update the tools." : subscribeMessage}
+              </p>
+            )}
             <p className="mt-2 text-xs text-text-tertiary">
               No spam. Updates only when tools change (usually 1-2 times per year).
             </p>

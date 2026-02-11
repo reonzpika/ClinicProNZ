@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class GPClinicScraper:
     def __init__(self):
         self.base_url = "https://www.healthpoint.co.nz"
-        self.start_url = "https://www.healthpoint.co.nz/gps-accident-urgent-medical-care/north-auckland"
+        self.start_url = "https://www.healthpoint.co.nz/gps-accident-urgent-medical-care/gp/"
         self.clinic_data = []
         
     async def scrape_all_clinics(self, debug_mode: bool = False) -> List[Dict]:
@@ -442,7 +442,7 @@ async def main(debug_mode: bool = False):
         clinic_data = await scraper.scrape_all_clinics(debug_mode=debug_mode)
         
         # Export to CSV in script directory
-        csv_path = scraper.export_to_csv("north_auckland_gp_clinics.csv")
+        csv_path = scraper.export_to_csv("gp_clinics.csv")
         
         # Print summary
         print(f"\n=== Scraping Complete ===")
