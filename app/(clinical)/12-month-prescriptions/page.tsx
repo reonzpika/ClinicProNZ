@@ -57,8 +57,21 @@ export default function TwelveMonthRxPage() {
   const [subscribeMessage, setSubscribeMessage] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [stickyTocVisible, setStickyTocVisible] = useState(false);
+  const [isXlOrLarger, setIsXlOrLarger] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [tocAnimationVisible, setTocAnimationVisible] = useState(false);
+
+  const tocShown = isXlOrLarger || stickyTocVisible;
+
+  useEffect(() => {
+    const mql = window.matchMedia('(min-width: 1280px)');
+    function update(e: MediaQueryListEvent | null) {
+      setIsXlOrLarger((e ?? mql).matches);
+    }
+    update(null);
+    mql.addEventListener('change', update);
+    return () => mql.removeEventListener('change', update);
+  }, []);
 
   useEffect(() => {
     const el = document.getElementById('guidance');
@@ -75,13 +88,17 @@ export default function TwelveMonthRxPage() {
   }, []);
 
   useEffect(() => {
+    if (isXlOrLarger) {
+      setTocAnimationVisible(true);
+      return;
+    }
     if (!stickyTocVisible) {
       setTocAnimationVisible(false);
       return;
     }
     const frame = requestAnimationFrame(() => setTocAnimationVisible(true));
     return () => cancelAnimationFrame(frame);
-  }, [stickyTocVisible]);
+  }, [stickyTocVisible, isXlOrLarger]);
 
   useEffect(() => {
     const headerOffset = 100;
@@ -163,7 +180,7 @@ export default function TwelveMonthRxPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border bg-white">
-        <Container size="md">
+        <Container size="fluid">
           <div className="flex items-center justify-between py-4">
             <div className="flex min-w-0 flex-1 items-center gap-0 lg:flex-initial">
               <button
@@ -185,7 +202,7 @@ export default function TwelveMonthRxPage() {
             <button
               type="button"
               onClick={scrollToSubscribe}
-              className="rounded-lg bg-primary px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
+              className="ml-auto shrink-0 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
             >
               Subscribe for updates
             </button>
@@ -193,11 +210,11 @@ export default function TwelveMonthRxPage() {
         </Container>
       </header>
 
-      {/* Sticky TOC (large screens only, visible when scrolled to/past #guidance) */}
-      {stickyTocVisible && (
+      {/* Sticky TOC: at xl always visible; at lg visible when scrolled to/past #guidance */}
+      {tocShown && (
         <aside
-          className={`fixed left-0 top-14 bottom-0 z-40 hidden w-60 bg-white py-6 pl-6 pr-4 transition-all duration-300 ease-out lg:block ${
-            tocAnimationVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
+          className={`fixed left-0 top-14 bottom-0 z-40 hidden w-60 bg-white py-6 pl-6 pr-4 lg:block ${!isXlOrLarger ? 'transition-all duration-300 ease-out ' : ''}${
+            isXlOrLarger || tocAnimationVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
           }`}
           aria-label="On this page"
         >
@@ -303,7 +320,7 @@ export default function TwelveMonthRxPage() {
       )}
 
       <div
-        className={`transition-[padding] duration-300 ${stickyTocVisible ? 'lg:pl-60' : ''}`}
+        className={`transition-[padding] duration-300 ${tocShown ? 'lg:pl-60' : ''}`}
       >
       <section className="bg-white px-6 py-20">
         <div className="mx-auto max-w-4xl text-center">
