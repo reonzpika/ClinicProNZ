@@ -125,13 +125,17 @@ export default function TwelveMonthRxPage() {
 
   function scrollToSubscribe() {
     const el = document.getElementById('subscribe');
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (el) {
+ el.scrollIntoView({ behavior: 'smooth' });
+}
   }
 
   async function handleSubscribeSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const email = subscribeEmail.trim();
-    if (!email) return;
+    if (!email) {
+ return;
+}
     setSubscribeStatus('loading');
     setSubscribeMessage('');
     try {
@@ -143,7 +147,7 @@ export default function TwelveMonthRxPage() {
       const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setSubscribeStatus('success');
-        setSubscribeMessage("Thanks, we'll notify you when we update the tools.");
+        setSubscribeMessage('Thanks, we\'ll notify you when we update the tools.');
         setSubscribeEmail('');
         markNewsletterSubscribed('12month');
       } else {
@@ -402,38 +406,56 @@ export default function TwelveMonthRxPage() {
                   </p>
                   <ul className="ml-4 list-disc space-y-1">
                     <li>
-                      <strong>Warfarin</strong> – INR monitoring (weekly to
+                      <strong>Warfarin</strong>
+{' '}
+– INR monitoring (weekly to
                       monthly depending on stability)
                     </li>
                     <li>
-                      <strong>Lithium</strong> – Levels 3-monthly, renal +
+                      <strong>Lithium</strong>
+{' '}
+– Levels 3-monthly, renal +
                       thyroid function 3-6 monthly
                     </li>
                     <li>
-                      <strong>Digoxin</strong> – Levels + renal function 3-6
+                      <strong>Digoxin</strong>
+{' '}
+– Levels + renal function 3-6
                       monthly, ECG annually
                     </li>
                     <li>
-                      <strong>Methotrexate</strong> – FBC + LFTs monthly
+                      <strong>Methotrexate</strong>
+{' '}
+– FBC + LFTs monthly
                       initially, then 2-3 monthly
                     </li>
                     <li>
-                      <strong>Azathioprine</strong> – FBC + LFTs monthly
+                      <strong>Azathioprine</strong>
+{' '}
+– FBC + LFTs monthly
                       initially, then 3-monthly
                     </li>
                     <li>
-                      <strong>Amiodarone</strong> – TFTs + LFTs 6-monthly, CXR +
+                      <strong>Amiodarone</strong>
+{' '}
+– TFTs + LFTs 6-monthly, CXR +
                       ECG annually
                     </li>
                     <li>
-                      <strong>Sodium valproate</strong> – LFTs + FBC 6-monthly
+                      <strong>Sodium valproate</strong>
+{' '}
+– LFTs + FBC 6-monthly
                     </li>
                     <li>
-                      <strong>Carbamazepine</strong> – FBC + LFTs + Na+
+                      <strong>Carbamazepine</strong>
+{' '}
+– FBC + LFTs + Na+
                       6-monthly
                     </li>
                     <li>
-                      <strong>Insulin</strong> – Regular dose adjustments needed
+                      <strong>Insulin</strong>
+{' '}
+– Regular dose adjustments needed
                     </li>
                   </ul>
                   <a
@@ -443,7 +465,8 @@ export default function TwelveMonthRxPage() {
                     className="font-medium text-primary hover:underline"
                   >
                     → Check NZF
-                  </a>{' '}
+                  </a>
+{' '}
                   for specific monitoring schedules and dose adjustments.
                 </div>
               </details>
@@ -460,8 +483,11 @@ export default function TwelveMonthRxPage() {
                   </p>
                   <ul className="ml-4 list-disc space-y-2">
                     <li>
-                      <strong>Metformin:</strong> eGFR &gt;45 generally 12mo;
-                      eGFR 30-45 max 6mo; eGFR &lt;30 contraindicated.{' '}
+                      <strong>Metformin:</strong>
+{' '}
+eGFR &gt;45 generally 12mo;
+                      eGFR 30-45 max 6mo; eGFR &lt;30 contraindicated.
+{' '}
                       <a
                         href="https://nzf.org.nz"
                         target="_blank"
@@ -472,9 +498,12 @@ export default function TwelveMonthRxPage() {
                       </a>
                     </li>
                     <li>
-                      <strong>ACE Inhibitors / ARBs:</strong> eGFR ≥60 generally
+                      <strong>ACE Inhibitors / ARBs:</strong>
+{' '}
+eGFR ≥60 generally
                       12mo; 45-59 consider 6-12mo; 30-44 max 6mo; &lt;30 max
-                      3-6mo.{' '}
+                      3-6mo.
+{' '}
                       <a
                         href="https://nzf.org.nz"
                         target="_blank"
@@ -485,8 +514,11 @@ export default function TwelveMonthRxPage() {
                       </a>
                     </li>
                     <li>
-                      <strong>DOACs:</strong> CrCl ≥50 generally 12mo (varies
-                      by drug); CrCl &lt;50 shorter or dose adjust.{' '}
+                      <strong>DOACs:</strong>
+{' '}
+CrCl ≥50 generally 12mo (varies
+                      by drug); CrCl &lt;50 shorter or dose adjust.
+{' '}
                       <a
                         href="https://nzf.org.nz"
                         target="_blank"
@@ -497,8 +529,11 @@ export default function TwelveMonthRxPage() {
                       </a>
                     </li>
                     <li>
-                      <strong>Sulfonylureas:</strong> Age &lt;70 + eGFR &gt;60
-                      generally 12mo; age ≥70 or eGFR &lt;60 consider 6mo.{' '}
+                      <strong>Sulfonylureas:</strong>
+{' '}
+Age &lt;70 + eGFR &gt;60
+                      generally 12mo; age ≥70 or eGFR &lt;60 consider 6mo.
+{' '}
                       <a
                         href="https://nzf.org.nz"
                         target="_blank"
@@ -509,9 +544,12 @@ export default function TwelveMonthRxPage() {
                       </a>
                     </li>
                     <li>
-                      <strong>NSAIDs:</strong> With ACEi/ARB (&quot;double
+                      <strong>NSAIDs:</strong>
+{' '}
+With ACEi/ARB (&quot;double
                       whammy&quot;) max 6mo; with ACEi/ARB + diuretic
-                      (&quot;triple whammy&quot;) max 3mo.{' '}
+                      (&quot;triple whammy&quot;) max 3mo.
+{' '}
                       <a
                         href="https://bpac.org.nz/2018/triple-whammy.aspx"
                         target="_blank"
@@ -522,8 +560,11 @@ export default function TwelveMonthRxPage() {
                       </a>
                     </li>
                     <li>
-                      <strong>Spironolactone:</strong> MAX 6 months even when
-                      stable (K+ monitoring).{' '}
+                      <strong>Spironolactone:</strong>
+{' '}
+MAX 6 months even when
+                      stable (K+ monitoring).
+{' '}
                       <a
                         href="https://nzf.org.nz"
                         target="_blank"
@@ -534,8 +575,11 @@ export default function TwelveMonthRxPage() {
                       </a>
                     </li>
                     <li>
-                      <strong>Allopurinol:</strong> eGFR &gt;60 generally 12mo;
-                      eGFR &lt;60 consider 6mo.{' '}
+                      <strong>Allopurinol:</strong>
+{' '}
+eGFR &gt;60 generally 12mo;
+                      eGFR &lt;60 consider 6mo.
+{' '}
                       <a
                         href="https://nzf.org.nz"
                         target="_blank"
@@ -569,31 +613,45 @@ export default function TwelveMonthRxPage() {
                   </p>
                   <ul className="ml-4 list-disc space-y-1">
                     <li>
-                      <strong>Cardiovascular:</strong> Statins, CCBs (amlodipine,
+                      <strong>Cardiovascular:</strong>
+{' '}
+Statins, CCBs (amlodipine,
                       felodipine), beta blockers, aspirin (antiplatelet)
                     </li>
                     <li>
-                      <strong>Respiratory:</strong> ICS, ICS/LABA, LAMA
+                      <strong>Respiratory:</strong>
+{' '}
+ICS, ICS/LABA, LAMA
                       (tiotropium), salbutamol
                     </li>
                     <li>
-                      <strong>Gastrointestinal:</strong> PPIs (omeprazole,
+                      <strong>Gastrointestinal:</strong>
+{' '}
+PPIs (omeprazole,
                       esomeprazole)
                     </li>
                     <li>
-                      <strong>Hormonal:</strong> Oral contraceptives (annual BP),
+                      <strong>Hormonal:</strong>
+{' '}
+Oral contraceptives (annual BP),
                       levothyroxine (if dose stable)
                     </li>
                     <li>
-                      <strong>Mental health:</strong> SSRIs/SNRIs (annual
+                      <strong>Mental health:</strong>
+{' '}
+SSRIs/SNRIs (annual
                       discussion about ongoing need), mirtazapine
                     </li>
                     <li>
-                      <strong>Diabetes:</strong> DPP-4 inhibitors (vildagliptin,
+                      <strong>Diabetes:</strong>
+{' '}
+DPP-4 inhibitors (vildagliptin,
                       sitagliptin)
                     </li>
                     <li>
-                      <strong>Other:</strong> Calcium + Vitamin D, montelukast
+                      <strong>Other:</strong>
+{' '}
+Calcium + Vitamin D, montelukast
                     </li>
                   </ul>
                   <p className="font-medium text-text-primary">
@@ -610,7 +668,8 @@ export default function TwelveMonthRxPage() {
                     className="font-medium text-primary hover:underline"
                   >
                     → Check NZF
-                  </a>{' '}
+                  </a>
+{' '}
                   to confirm annual monitoring is sufficient for your patient.
                 </div>
               </details>
@@ -662,7 +721,9 @@ export default function TwelveMonthRxPage() {
               </div>
 
               <p className="text-xs text-text-tertiary">
-                <strong>Disclaimer:</strong> This medication reference is for
+                <strong>Disclaimer:</strong>
+{' '}
+This medication reference is for
                 educational purposes only and does not replace clinical judgment
                 or official prescribing guidance. Always consult the New
                 Zealand Formulary, Medsafe data sheets, and relevant clinical
@@ -744,7 +805,9 @@ export default function TwelveMonthRxPage() {
               </div>
             </div>
             <p className="mt-4 text-center text-sm text-text-secondary">
-              <strong>You have full clinical discretion</strong> to prescribe 3,
+              <strong>You have full clinical discretion</strong>
+{' '}
+to prescribe 3,
               6, 9, or 12 months based on individual patient assessment.
             </p>
           </div>
@@ -858,7 +921,9 @@ export default function TwelveMonthRxPage() {
                   </details>
 
                   <p className="mt-4 text-sm text-green-800">
-                    <strong>Key principle:</strong> RNZCGP recommended 6 months
+                    <strong>Key principle:</strong>
+{' '}
+RNZCGP recommended 6 months
                     as safer than 12 months. Prescribing 6 months aligns with
                     professional college guidance.
                   </p>
@@ -1222,7 +1287,7 @@ export default function TwelveMonthRxPage() {
               Get notified when we add new features and updates.
             </p>
             <form
-              className="flex gap-3"
+              className="flex flex-col gap-3 sm:flex-row"
               onSubmit={handleSubscribeSubmit}
             >
               <input
@@ -1238,7 +1303,7 @@ export default function TwelveMonthRxPage() {
               />
               <button
                 type="submit"
-                className="rounded-lg bg-primary px-6 py-2 text-white transition-colors hover:bg-primary-dark disabled:opacity-70 disabled:cursor-not-allowed"
+                className="w-full rounded-lg bg-primary px-6 py-2 text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
                 disabled={subscribeStatus === 'loading'}
               >
                 {subscribeStatus === 'loading' ? 'Subscribing…' : 'Subscribe'}
@@ -1250,7 +1315,7 @@ export default function TwelveMonthRxPage() {
                 className={`mt-2 text-sm ${subscribeStatus === 'error' ? 'text-red-600' : subscribeStatus === 'success' ? 'font-medium text-green-700' : 'text-text-secondary'}`}
                 role={subscribeStatus === 'error' ? 'alert' : subscribeStatus === 'success' ? 'status' : undefined}
               >
-                {subscribeStatus === 'success' ? "Thanks, we'll notify you when we update the tools." : subscribeMessage}
+                {subscribeStatus === 'success' ? 'Thanks, we\'ll notify you when we update the tools.' : subscribeMessage}
               </p>
             )}
             <p className="mt-2 text-xs text-text-tertiary">
