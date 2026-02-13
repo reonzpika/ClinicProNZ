@@ -1,7 +1,8 @@
 'use client';
 
+import { Menu, X } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { DecisionWizard } from '@/src/features/12-month-prescriptions';
 import { Container } from '@/src/shared/components/layout/Container';
@@ -9,10 +10,118 @@ import { markNewsletterSubscribed, NewsletterPopup } from '@/src/shared/componen
 
 type SubscribeStatus = 'idle' | 'loading' | 'success' | 'error';
 
+type TocChild = { id: string; label: string };
+type TocSection = { id: string; label: string; children: TocChild[] };
+
+const TOC_SECTIONS: TocSection[] = [
+  { id: 'checklist', label: 'Decision Tool', children: [] },
+  {
+    id: 'guidance',
+    label: 'Understanding 12-Month Prescriptions',
+    children: [
+      { id: 'what-changed', label: 'What changed?' },
+      { id: 'two-perspectives', label: 'Two perspectives' },
+      { id: 'your-authority', label: 'What must you follow?' },
+    ],
+  },
+  {
+    id: 'resources',
+    label: 'Resources and Downloads',
+    children: [
+      { id: 'resources-waiting-room', label: 'Waiting room and reception' },
+      { id: 'resources-patient', label: 'Patient conversations' },
+      { id: 'resources-practice-managers', label: 'Practice managers and policy' },
+      { id: 'resources-prescriber', label: 'Prescriber education' },
+      { id: 'resources-pharmacy', label: 'Pharmacy liaison' },
+    ],
+  },
+];
+
+const TOC_IDS = [
+  'checklist',
+  'guidance',
+  'what-changed',
+  'two-perspectives',
+  'your-authority',
+  'resources',
+  'resources-waiting-room',
+  'resources-patient',
+  'resources-practice-managers',
+  'resources-prescriber',
+  'resources-pharmacy',
+];
+
 export default function TwelveMonthRxPage() {
   const [subscribeEmail, setSubscribeEmail] = useState('');
   const [subscribeStatus, setSubscribeStatus] = useState<SubscribeStatus>('idle');
   const [subscribeMessage, setSubscribeMessage] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [stickyTocVisible, setStickyTocVisible] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [tocAnimationVisible, setTocAnimationVisible] = useState(false);
+
+  useEffect(() => {
+    const el = document.getElementById('guidance');
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      entries => {
+        const entry = entries[0];
+        if (entry) setStickyTocVisible(entry.isIntersecting || entry.boundingClientRect.top < 0);
+      },
+      { rootMargin: '0px', threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!stickyTocVisible) {
+      setTocAnimationVisible(false);
+      return;
+    }
+    const frame = requestAnimationFrame(() => setTocAnimationVisible(true));
+    return () => cancelAnimationFrame(frame);
+  }, [stickyTocVisible]);
+
+  useEffect(() => {
+    const headerOffset = 100;
+    function updateActive() {
+      const elements = TOC_IDS.map(id => document.getElementById(id)).filter(Boolean) as HTMLElement[];
+      if (elements.length === 0) return;
+      let best: string | null = null;
+      let bestTop = -Infinity;
+      for (const el of elements) {
+        const top = el.getBoundingClientRect().top;
+        if (top <= headerOffset && top > bestTop) {
+          bestTop = top;
+          best = el.id;
+        }
+      }
+      if (best) setActiveId(best);
+      else {
+        const first = elements.find(el => el.getBoundingClientRect().top > 0) ?? elements[0];
+        setActiveId(first?.id ?? null);
+      }
+    }
+    updateActive();
+    window.addEventListener('scroll', updateActive, { passive: true });
+    return () => window.removeEventListener('scroll', updateActive);
+  }, []);
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSidebarOpen(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [sidebarOpen]);
+
+  function scrollToSection(id: string) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    setSidebarOpen(false);
+  }
 
   function scrollToSubscribe() {
     const el = document.getElementById('subscribe');
@@ -52,9 +161,23 @@ export default function TwelveMonthRxPage() {
       <header className="sticky top-0 z-50 border-b border-border bg-white">
         <Container size="md">
           <div className="flex items-center justify-between py-4">
-            <Link href="/" className="text-xl font-bold text-text-primary">
-              ClinicPro
-            </Link>
+            <div className="flex min-w-0 flex-1 items-center gap-0 lg:flex-initial">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="flex min-h-[44px] min-w-[44px] shrink-0 items-center justify-center rounded-lg text-text-primary transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-primary lg:hidden"
+                aria-label="Open contents"
+                aria-expanded={sidebarOpen}
+              >
+                <Menu size={24} aria-hidden />
+              </button>
+              <Link
+                href="/"
+                className="text-xl font-bold text-text-primary lg:ml-0"
+              >
+                ClinicPro
+              </Link>
+            </div>
             <button
               type="button"
               onClick={scrollToSubscribe}
@@ -66,6 +189,118 @@ export default function TwelveMonthRxPage() {
         </Container>
       </header>
 
+      {/* Sticky TOC (large screens only, visible when scrolled to/past #guidance) */}
+      {stickyTocVisible && (
+        <aside
+          className={`fixed left-0 top-14 bottom-0 z-40 hidden w-60 bg-white py-6 pl-6 pr-4 transition-all duration-300 ease-out lg:block ${
+            tocAnimationVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
+          }`}
+          aria-label="On this page"
+        >
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-text-tertiary">
+            On this page
+          </h2>
+          <nav className="flex flex-col gap-1">
+            {TOC_SECTIONS.map(section => (
+              <div key={section.id}>
+                <a
+                  href={`#${section.id}`}
+                  className={`block rounded-md py-2 text-sm transition-colors hover:bg-surface hover:text-primary ${
+                    activeId === section.id ? 'bg-blue-100 text-primary' : 'text-text-secondary'
+                  }`}
+                >
+                  {section.label}
+                </a>
+                {section.children.length > 0 && (
+                  <div className="ml-2 flex flex-col gap-0.5 border-l border-border pl-3">
+                    {section.children.map(child => (
+                      <a
+                        key={child.id}
+                        href={`#${child.id}`}
+                        className={`block rounded-md py-1.5 text-sm transition-colors hover:bg-surface hover:text-primary ${
+                          activeId === child.id ? 'bg-blue-100 text-primary' : 'text-text-secondary'
+                        }`}
+                      >
+                        {child.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </nav>
+        </aside>
+      )}
+
+      {/* Slide-out drawer (small screens) */}
+      {sidebarOpen && (
+        <>
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(false)}
+            className="fixed inset-0 z-40 bg-black/30 focus:outline-none lg:hidden"
+            aria-label="Close contents"
+          />
+          <div
+            className="fixed left-0 top-0 bottom-0 z-50 w-[min(320px,100vw-2rem)] max-w-[85vw] border-r border-border bg-white shadow-lg transition-transform lg:hidden"
+            role="dialog"
+            aria-label="Contents"
+          >
+            <div className="flex min-h-[44px] items-center justify-between border-b border-border px-4 py-3">
+              <h2 className="text-lg font-semibold text-text-primary">Contents</h2>
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(false)}
+                className="flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg text-text-primary transition-colors hover:bg-surface focus:outline-none focus:ring-2 focus:ring-primary"
+                aria-label="Close contents"
+              >
+                <X size={24} aria-hidden />
+              </button>
+            </div>
+            <nav className="flex flex-col p-4">
+              {TOC_SECTIONS.map(section => (
+                <div key={section.id}>
+                  <a
+                    href={`#${section.id}`}
+                    className={`min-h-[44px] flex items-center rounded-lg py-3 transition-colors hover:bg-surface hover:text-primary ${
+                      activeId === section.id ? 'bg-blue-100 text-primary' : 'text-text-secondary'
+                    }`}
+                    onClick={e => {
+                      e.preventDefault();
+                      scrollToSection(section.id);
+                    }}
+                  >
+                    {section.label}
+                  </a>
+                  {section.children.length > 0 && (
+                    <div className="ml-2 flex flex-col border-l border-border pl-3">
+                      {section.children.map(child => (
+                        <a
+                          key={child.id}
+                          href={`#${child.id}`}
+                          className={`min-h-[44px] flex items-center rounded-lg py-2.5 text-sm transition-colors hover:bg-surface hover:text-primary ${
+                            activeId === child.id ? 'bg-blue-100 text-primary' : 'text-text-secondary'
+                          }`}
+                          onClick={e => {
+                            e.preventDefault();
+                            scrollToSection(child.id);
+                          }}
+                        >
+                          {child.label}
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </nav>
+          </div>
+        </>
+      )}
+
+      <div
+        className={`transition-[padding] duration-300 ${stickyTocVisible ? 'lg:pl-60' : ''}`}
+      >
       <section className="bg-white px-6 py-20">
         <div className="mx-auto max-w-4xl text-center">
           <h1 className="mb-6 text-4xl font-bold text-text-primary md:text-5xl">
@@ -74,19 +309,22 @@ export default function TwelveMonthRxPage() {
             Clinical Decision Tools
           </h1>
 
-          <div className="mb-6 flex flex-wrap justify-center gap-4">
+          <div className="mb-6 flex flex-col items-center gap-3">
             <a
               href="#checklist"
               className="rounded-lg bg-primary px-6 py-3 font-medium text-white transition-colors hover:bg-primary-dark"
             >
               Start Decision Tool ↓
             </a>
-            <a
-              href="#guidance"
-              className="rounded-lg border-2 border-primary bg-white px-6 py-3 font-medium text-primary transition-colors hover:bg-surface"
-            >
-              Policy & Guidance
-            </a>
+            <p className="text-sm text-text-secondary">
+              <a href="#guidance" className="text-primary hover:underline">
+                Guidance
+              </a>
+              {' · '}
+              <a href="#resources" className="text-primary hover:underline">
+                Resources
+              </a>
+            </p>
           </div>
         </div>
       </section>
@@ -443,7 +681,7 @@ export default function TwelveMonthRxPage() {
           </h2>
 
           {/* What Changed - Always Visible */}
-          <div className="mb-8 rounded-lg border border-border bg-surface p-6">
+          <div id="what-changed" className="mb-8 scroll-mt-20 rounded-lg border border-border bg-surface p-6">
             <h3 className="mb-4 text-2xl font-semibold text-text-primary">
               What Changed on 1 February 2026
             </h3>
@@ -465,7 +703,7 @@ export default function TwelveMonthRxPage() {
           </div>
 
           {/* Two Perspectives - Side by Side Cards */}
-          <div className="mb-8">
+          <div id="two-perspectives" className="mb-8 scroll-mt-20">
             <h3 className="mb-4 text-2xl font-semibold text-text-primary">
               Two Perspectives
             </h3>
@@ -512,7 +750,7 @@ export default function TwelveMonthRxPage() {
           </div>
 
           {/* Authority Hierarchy - Collapsible */}
-          <div className="mb-8">
+          <div id="your-authority" className="mb-8 scroll-mt-20">
             <details className="rounded-lg border border-border bg-white p-6">
               <summary className="cursor-pointer text-xl font-bold text-text-primary">
                 Understanding Your Authority: What Must You Follow?
@@ -656,150 +894,284 @@ export default function TwelveMonthRxPage() {
             </details>
           </div>
 
-          {/* Official Resources */}
-          <div className="mb-8">
-            <details className="rounded-lg border border-border bg-white p-6">
-              <summary className="cursor-pointer text-xl font-bold text-text-primary">
-                Official Resources & Documentation
+          {/* Resources & Downloads */}
+          <div id="resources" className="mb-8 scroll-mt-20">
+            <h3 className="mb-2 text-2xl font-semibold text-text-primary">
+              Resources & Downloads
+            </h3>
+            <p className="mb-6 text-sm text-text-secondary">
+              Organised by how you&apos;ll use them. Print the waiting room materials, hand patients the FAQ, and use the practice manager section for policy and audit work.
+            </p>
+
+            {/* Waiting Room & Reception */}
+            <details id="resources-waiting-room" open className="mb-4 scroll-mt-20 rounded-lg border border-border bg-white p-6">
+              <summary className="cursor-pointer text-lg font-bold text-text-primary">
+                📌 Waiting Room & Reception
               </summary>
+              <p className="mt-3 mb-4 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+                Print and display
+              </p>
+              <ul className="space-y-2 text-sm text-text-secondary">
+                <li>
+                  <a
+                    href="https://healthed.govt.nz/products/changes-to-your-prescription-length-poster-he2964"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → HealthEd A4 poster (HE2964)
+                  </a>
+                  {' '}<span className="text-text-tertiary">— Official government-branded poster</span>
+                </li>
+                <li>
+                  <a
+                    href="https://healthed.govt.nz/products/changes-to-your-prescription-length"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → HealthEd A5 patient flyer
+                  </a>
+                  {' '}<span className="text-text-tertiary">— Take-home flyer for patients</span>
+                </li>
+                <li>
+                  <a
+                    href="https://www.rnzcgp.org.nz/documents/651/12-month_prescription_poster_FINAL_2.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → RNZCGP patient poster (PDF)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://www.pinnaclepractices.co.nz/assets/Resource-files/12-month-prescriptions-poster.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → Pinnacle practice poster (PDF, 4.8 MB)
+                  </a>
+                  {' '}<span className="text-text-tertiary">— Alternative design</span>
+                </li>
+              </ul>
+            </details>
 
-              <div className="mt-6 space-y-8">
-                {/* Government Resources */}
-                <div>
-                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold text-text-primary">
-                    🏛️ Ministry of Health & Te Whatu Ora
-                  </h4>
-                  <ul className="space-y-2 text-sm text-text-secondary">
-                    <li>
-                      <a
-                        href="https://static.info.content.health.nz/docs/12-month%20Prescriptions%20Guidance.pdf"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        → Official Guidance Document (PDF)
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="https://vimeo.com/1145818509/2c46853ece?fl=pl&fe=sh"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        → Prescriber Webinar (Vimeo)
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="https://www.health.govt.nz/strategies-initiatives/programmes-and-initiatives/primary-and-community-health-care/increasing-prescribing-lengths"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        → Ministry of Health Policy Page
-                      </a>
-                    </li>
-                  </ul>
-                </div>
+            {/* Patient Conversations */}
+            <details id="resources-patient" className="mb-4 scroll-mt-20 rounded-lg border border-border bg-white p-6">
+              <summary className="cursor-pointer text-lg font-bold text-text-primary">
+                💬 Patient Conversations
+              </summary>
+              <p className="mt-3 mb-4 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+                Share during consultations or via patient portal
+              </p>
+              <ul className="space-y-2 text-sm text-text-secondary">
+                <li>
+                  <a
+                    href="https://www.rnzcgp.org.nz/documents/650/12-month_prescription_changes_FAQs_FINAL_2.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → RNZCGP patient FAQ sheet (PDF)
+                  </a>
+                  {' '}<span className="text-text-tertiary">— Printable handout</span>
+                </li>
+                <li>
+                  <a
+                    href="https://healthed.govt.nz/products/changes-to-your-prescription-length"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → HealthEd patient flyer
+                  </a>
+                  {' '}<span className="text-text-tertiary">— Take-home</span>
+                </li>
+                <li>
+                  <a
+                    href="https://healthify.nz/medicines-a-z/p/12-month-prescriptions"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → Healthify patient guide
+                  </a>
+                  {' '}<span className="text-text-tertiary">— Link for portal or email to patients</span>
+                </li>
+              </ul>
+            </details>
 
-                {/* Patient Information */}
-                <div>
-                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold text-text-primary">
-                    📄 Patient Information Resources
-                  </h4>
-                  <ul className="space-y-2 text-sm text-text-secondary">
-                    <li>
-                      <a
-                        href="https://healthed.govt.nz/products/changes-to-your-prescription-length"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        → HealthEd Patient Leaflet
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="https://healthify.nz/medicines-a-z/p/12-month-prescriptions"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        → Healthify Patient Guide
-                      </a>
-                    </li>
-                  </ul>
-                </div>
+            {/* Practice Managers & Policy */}
+            <details id="resources-practice-managers" className="mb-4 scroll-mt-20 rounded-lg border border-border bg-white p-6">
+              <summary className="cursor-pointer text-lg font-bold text-text-primary">
+                📋 Practice Managers & Policy
+              </summary>
+              <p className="mt-3 mb-4 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+                Policy, audit, and accreditation
+              </p>
+              <ul className="space-y-2 text-sm text-text-secondary">
+                <li>
+                  <a
+                    href="https://www.rnzcgp.org.nz/gpdocs/New-website/Quality/Webinar---indicators-24-and-32/Repeat-Prescribing-policy.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → RNZCGP sample repeat prescribing policy (PDF)
+                  </a>
+                  {' '}<span className="text-text-tertiary">— 2018 version; needs updating for 12-month context</span>
+                </li>
+                <li>
+                  <a
+                    href="https://www.rnzcgp.org.nz/documents/232/Audit_of_Repeat_Prescribing_Policy_sample_template.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → RNZCGP repeat prescribing audit template (PDF)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://www.rnzcgp.org.nz/running-a-practice/the-foundation-standard/whakahau-rongoa-medicines-management/91-repeat-prescribing/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → Foundation Standard 9.1: Repeat Prescribing
+                  </a>
+                  {' '}<span className="text-text-tertiary">— Updated November 2025</span>
+                </li>
+                <li>
+                  <span className="text-text-primary">
+                    Dr Jo Scott-Jones practice pack
+                  </span>
+                  {' '}<span className="text-text-tertiary">— Draft policy, consent form, and patient leaflet. Email{' '}
+                    <a
+                      href="mailto:Sarah.Wotherspoon@pinnacle.health.nz"
+                      className="text-primary hover:underline"
+                    >
+                      Sarah.Wotherspoon@pinnacle.health.nz
+                    </a>
+                    {' '}to request.
+                  </span>
+                </li>
+              </ul>
+            </details>
 
-                {/* RNZCGP */}
-                <div>
-                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold text-text-primary">
-                    ⚕️ RNZCGP Guidance & Standards
-                  </h4>
-                  <ul className="space-y-2 text-sm text-text-secondary">
-                    <li>
-                      <a
-                        href="https://www.rnzcgp.org.nz/our-voice/hot-topics/12-month-prescriptions/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        → RNZCGP 12-Month Prescriptions Hub
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="https://www.rnzcgp.org.nz/running-a-practice/the-foundation-standard/whakahau-rongoa-medicines-management/91-repeat-prescribing/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        → Foundation Standard 9.1 (Repeat Prescribing)
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="https://www.rnzcgp.org.nz/documents/651/12-month_prescription_poster_FINAL_2.pdf"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        → Patient Information Poster (PDF)
-                      </a>
-                    </li>
-                    <li>
-                      <a
-                        href="https://www.rnzcgp.org.nz/documents/657/12-month-prescribing-position-statement-NOV-2025.pdf"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        → RNZCGP Position Statement (November 2025)
-                      </a>
-                    </li>
-                  </ul>
-                </div>
+            {/* Prescriber Education */}
+            <details id="resources-prescriber" className="mb-4 scroll-mt-20 rounded-lg border border-border bg-white p-6">
+              <summary className="cursor-pointer text-lg font-bold text-text-primary">
+                🎓 Prescriber Education
+              </summary>
+              <p className="mt-3 mb-4 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+                Webinars, guidance, and position statements
+              </p>
+              <ul className="space-y-2 text-sm text-text-secondary">
+                <li>
+                  <a
+                    href="https://vimeo.com/1145818509/2c46853ece?fl=pl&fe=sh"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → Health NZ prescriber webinar (Vimeo)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://static.info.content.health.nz/docs/12-month%20Prescriptions%20Guidance.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → Health NZ official guidance (PDF)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://youtu.be/FCVV39xPIks"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → Pinnacle webinar recording (YouTube)
+                  </a>
+                  {' '}+{' '}
+                  <a
+                    href="https://www.pinnaclepractices.co.nz/assets/Resource-files/12-Month-Prescribing-Webinar-Presentation.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    slides (PDF)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://www.procare.co.nz/media/4034/prescription-webinar-final.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → ProCare webinar slides (PDF)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://www.rnzcgp.org.nz/documents/657/12-month-prescribing-position-statement-NOV-2025.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → RNZCGP position statement (November 2025, PDF)
+                  </a>
+                </li>
+              </ul>
+            </details>
 
-                {/* Pharmac */}
-                <div>
-                  <h4 className="mb-3 flex items-center gap-2 text-lg font-semibold text-text-primary">
-                    💊 Pharmac Schedule Rules
-                  </h4>
-                  <ul className="space-y-2 text-sm text-text-secondary">
-                    <li>
-                      <a
-                        href="https://www.pharmac.govt.nz/medicine-funding-and-supply/what-you-need-to-know-about-medicines/12-month-prescriptions"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        → Pharmac 12-Month Prescriptions Information
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+            {/* Pharmacy Liaison */}
+            <details id="resources-pharmacy" className="mb-4 scroll-mt-20 rounded-lg border border-border bg-white p-6">
+              <summary className="cursor-pointer text-lg font-bold text-text-primary">
+                💊 Pharmacy Liaison
+              </summary>
+              <p className="mt-3 mb-4 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+                Share with your dispensing pharmacy
+              </p>
+              <ul className="space-y-2 text-sm text-text-secondary">
+                <li>
+                  <a
+                    href="https://vimeo.com/1156619626/955c0b7da6?share=copy&fl=sv&fe=ci"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → Health NZ pharmacist webinar (Vimeo)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://www.pinnaclepractices.co.nz/assets/Resource-files/Core-regulatory-and-dispensing-rules.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → Pinnacle core regulatory & dispensing rules one-pager (PDF)
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="https://www.pharmac.govt.nz/news-and-resources/consultations-and-decisions/2025-10-decision-on-changes-to-support-increased-prescription-lengths"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline"
+                  >
+                    → Pharmac Schedule Rule changes
+                  </a>
+                </li>
+              </ul>
             </details>
           </div>
 
@@ -824,6 +1196,21 @@ export default function TwelveMonthRxPage() {
             </h3>
             <p className="text-text-secondary">
               Decision tool and 'policy & guidance' implemented following 12-month prescription policy (1 February 2026).
+            </p>
+          </div>
+
+          <div className="mb-8 rounded-lg border border-border bg-white p-6">
+            <div className="mb-3 flex items-center gap-3">
+              <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">
+                v1.1
+              </span>
+              <span className="text-sm text-text-tertiary">February 2026</span>
+            </div>
+            <h3 className="mb-3 text-xl font-semibold text-text-primary">
+              Resources section reorganised by use case
+            </h3>
+            <p className="text-text-secondary">
+              Waiting room, patient conversations, practice managers, prescriber education, pharmacy liaison. Added 15+ new resources including Health NZ pharmacist webinar, HealthEd A4 poster, Pinnacle webinar recording and slides, ProCare webinar slides, RNZCGP audit template, RNZCGP sample policy, and Dr Jo Scott-Jones practice pack.
             </p>
           </div>
 
@@ -872,6 +1259,7 @@ export default function TwelveMonthRxPage() {
           </div>
         </div>
       </section>
+      </div>
 
       <footer className="bg-background py-12 text-center">
         <Container size="md">
