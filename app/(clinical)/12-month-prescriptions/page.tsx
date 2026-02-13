@@ -75,13 +75,17 @@ export default function TwelveMonthRxPage() {
 
   useEffect(() => {
     const el = document.getElementById('guidance');
-    if (!el) return;
+    if (!el) {
+ return;
+}
     const observer = new IntersectionObserver(
-      entries => {
+      (entries) => {
         const entry = entries[0];
-        if (entry) setStickyTocVisible(entry.isIntersecting || entry.boundingClientRect.top < 0);
+        if (entry) {
+ setStickyTocVisible(entry.isIntersecting || entry.boundingClientRect.top < 0);
+}
       },
-      { rootMargin: '0px', threshold: 0 }
+      { rootMargin: '0px', threshold: 0 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -104,7 +108,9 @@ export default function TwelveMonthRxPage() {
     const headerOffset = 100;
     function updateActive() {
       const elements = TOC_IDS.map(id => document.getElementById(id)).filter(Boolean) as HTMLElement[];
-      if (elements.length === 0) return;
+      if (elements.length === 0) {
+ return;
+}
       let best: string | null = null;
       let bestTop = -Infinity;
       for (const el of elements) {
@@ -114,8 +120,9 @@ export default function TwelveMonthRxPage() {
           best = el.id;
         }
       }
-      if (best) setActiveId(best);
-      else {
+      if (best) {
+ setActiveId(best);
+} else {
         const first = elements.find(el => el.getBoundingClientRect().top > 0) ?? elements[0];
         setActiveId(first?.id ?? null);
       }
@@ -126,9 +133,13 @@ export default function TwelveMonthRxPage() {
   }, []);
 
   useEffect(() => {
-    if (!sidebarOpen) return;
+    if (!sidebarOpen) {
+ return;
+}
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setSidebarOpen(false);
+      if (e.key === 'Escape') {
+ setSidebarOpen(false);
+}
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
@@ -136,7 +147,9 @@ export default function TwelveMonthRxPage() {
 
   function scrollToSection(id: string) {
     const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: 'smooth' });
+    if (el) {
+ el.scrollIntoView({ behavior: 'smooth' });
+}
     setSidebarOpen(false);
   }
 
@@ -199,13 +212,6 @@ export default function TwelveMonthRxPage() {
                 ClinicPro
               </Link>
             </div>
-            <button
-              type="button"
-              onClick={scrollToSubscribe}
-              className="ml-auto shrink-0 rounded-lg bg-primary px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-dark"
-            >
-              Subscribe for updates
-            </button>
           </div>
         </Container>
       </header>
@@ -213,7 +219,7 @@ export default function TwelveMonthRxPage() {
       {/* Sticky TOC: at xl always visible; at lg visible when scrolled to/past #guidance */}
       {tocShown && (
         <aside
-          className={`fixed left-0 top-14 bottom-0 z-40 hidden w-60 bg-white py-6 pl-6 pr-4 lg:block ${!isXlOrLarger ? 'transition-all duration-300 ease-out ' : ''}${
+          className={`fixed bottom-0 left-0 top-14 z-40 hidden w-60 bg-white py-6 pl-6 pr-4 lg:block ${!isXlOrLarger ? 'transition-all duration-300 ease-out ' : ''}${
             isXlOrLarger || tocAnimationVisible ? 'translate-x-0 opacity-100' : '-translate-x-4 opacity-0'
           }`}
           aria-label="On this page"
@@ -263,7 +269,7 @@ export default function TwelveMonthRxPage() {
             aria-label="Close contents"
           />
           <div
-            className="fixed left-0 top-0 bottom-0 z-50 w-[min(320px,100vw-2rem)] max-w-[85vw] border-r border-border bg-white shadow-lg transition-transform lg:hidden"
+            className="fixed inset-y-0 left-0 z-50 w-[min(320px,100vw-2rem)] max-w-[85vw] border-r border-border bg-white shadow-lg transition-transform lg:hidden"
             role="dialog"
             aria-label="Contents"
           >
@@ -283,10 +289,10 @@ export default function TwelveMonthRxPage() {
                 <div key={section.id}>
                   <a
                     href={`#${section.id}`}
-                    className={`min-h-[44px] flex items-center rounded-lg py-3 transition-colors hover:bg-surface hover:text-primary ${
+                    className={`flex min-h-[44px] items-center rounded-lg py-3 transition-colors hover:bg-surface hover:text-primary ${
                       activeId === section.id ? 'bg-blue-100 text-primary' : 'text-text-secondary'
                     }`}
-                    onClick={e => {
+                    onClick={(e) => {
                       e.preventDefault();
                       scrollToSection(section.id);
                     }}
@@ -299,10 +305,10 @@ export default function TwelveMonthRxPage() {
                         <a
                           key={child.id}
                           href={`#${child.id}`}
-                          className={`min-h-[44px] flex items-center rounded-lg py-2.5 text-sm transition-colors hover:bg-surface hover:text-primary ${
+                          className={`flex min-h-[44px] items-center rounded-lg py-2.5 text-sm transition-colors hover:bg-surface hover:text-primary ${
                             activeId === child.id ? 'bg-blue-100 text-primary' : 'text-text-secondary'
                           }`}
-                          onClick={e => {
+                          onClick={(e) => {
                             e.preventDefault();
                             scrollToSection(child.id);
                           }}
@@ -314,6 +320,18 @@ export default function TwelveMonthRxPage() {
                   )}
                 </div>
               ))}
+              <div className="mt-4 border-t border-border pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    scrollToSubscribe();
+                    setSidebarOpen(false);
+                  }}
+                  className="flex min-h-[44px] w-full items-center rounded-lg bg-primary px-4 py-3 font-medium text-white transition-colors hover:bg-primary-dark"
+                >
+                  Subscribe for updates
+                </button>
+              </div>
             </nav>
           </div>
         </>
@@ -990,7 +1008,7 @@ RNZCGP recommended 6 months
               <summary className="cursor-pointer text-lg font-bold text-text-primary">
                 📌 Waiting Room & Reception
               </summary>
-              <p className="mt-3 mb-4 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+              <p className="mb-4 mt-3 text-xs font-medium uppercase tracking-wide text-text-tertiary">
                 Print and display
               </p>
               <ul className="space-y-2 text-sm text-text-secondary">
@@ -1003,7 +1021,8 @@ RNZCGP recommended 6 months
                   >
                     → HealthEd A4 poster (HE2964)
                   </a>
-                  {' '}<span className="text-text-tertiary">— Official government-branded poster</span>
+                  {' '}
+<span className="text-text-tertiary">— Official government-branded poster</span>
                 </li>
                 <li>
                   <a
@@ -1014,7 +1033,8 @@ RNZCGP recommended 6 months
                   >
                     → HealthEd A5 patient flyer
                   </a>
-                  {' '}<span className="text-text-tertiary">— Take-home flyer for patients</span>
+                  {' '}
+<span className="text-text-tertiary">— Take-home flyer for patients</span>
                 </li>
                 <li>
                   <a
@@ -1035,7 +1055,8 @@ RNZCGP recommended 6 months
                   >
                     → Pinnacle practice poster (PDF, 4.8 MB)
                   </a>
-                  {' '}<span className="text-text-tertiary">— Alternative design</span>
+                  {' '}
+<span className="text-text-tertiary">— Alternative design</span>
                 </li>
               </ul>
             </details>
@@ -1045,7 +1066,7 @@ RNZCGP recommended 6 months
               <summary className="cursor-pointer text-lg font-bold text-text-primary">
                 💬 Patient Conversations
               </summary>
-              <p className="mt-3 mb-4 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+              <p className="mb-4 mt-3 text-xs font-medium uppercase tracking-wide text-text-tertiary">
                 Share during consultations or via patient portal
               </p>
               <ul className="space-y-2 text-sm text-text-secondary">
@@ -1058,7 +1079,8 @@ RNZCGP recommended 6 months
                   >
                     → RNZCGP patient FAQ sheet (PDF)
                   </a>
-                  {' '}<span className="text-text-tertiary">— Printable handout</span>
+                  {' '}
+<span className="text-text-tertiary">— Printable handout</span>
                 </li>
                 <li>
                   <a
@@ -1069,7 +1091,8 @@ RNZCGP recommended 6 months
                   >
                     → HealthEd patient flyer
                   </a>
-                  {' '}<span className="text-text-tertiary">— Take-home</span>
+                  {' '}
+<span className="text-text-tertiary">— Take-home</span>
                 </li>
                 <li>
                   <a
@@ -1080,7 +1103,8 @@ RNZCGP recommended 6 months
                   >
                     → Healthify patient guide
                   </a>
-                  {' '}<span className="text-text-tertiary">— Link for portal or email to patients</span>
+                  {' '}
+<span className="text-text-tertiary">— Link for portal or email to patients</span>
                 </li>
               </ul>
             </details>
@@ -1090,7 +1114,7 @@ RNZCGP recommended 6 months
               <summary className="cursor-pointer text-lg font-bold text-text-primary">
                 📋 Practice Managers & Policy
               </summary>
-              <p className="mt-3 mb-4 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+              <p className="mb-4 mt-3 text-xs font-medium uppercase tracking-wide text-text-tertiary">
                 Policy, audit, and accreditation
               </p>
               <ul className="space-y-2 text-sm text-text-secondary">
@@ -1103,7 +1127,8 @@ RNZCGP recommended 6 months
                   >
                     → RNZCGP sample repeat prescribing policy (PDF)
                   </a>
-                  {' '}<span className="text-text-tertiary">— 2018 version; needs updating for 12-month context</span>
+                  {' '}
+<span className="text-text-tertiary">— 2018 version; needs updating for 12-month context</span>
                 </li>
                 <li>
                   <a
@@ -1124,21 +1149,26 @@ RNZCGP recommended 6 months
                   >
                     → Foundation Standard 9.1: Repeat Prescribing
                   </a>
-                  {' '}<span className="text-text-tertiary">— Updated November 2025</span>
+                  {' '}
+<span className="text-text-tertiary">— Updated November 2025</span>
                 </li>
                 <li>
                   <span className="text-text-primary">
                     Dr Jo Scott-Jones practice pack
                   </span>
-                  {' '}<span className="text-text-tertiary">— Draft policy, consent form, and patient leaflet. Email{' '}
+                  {' '}
+<span className="text-text-tertiary">
+— Draft policy, consent form, and patient leaflet. Email
+{' '}
                     <a
                       href="mailto:Sarah.Wotherspoon@pinnacle.health.nz"
                       className="text-primary hover:underline"
                     >
                       Sarah.Wotherspoon@pinnacle.health.nz
                     </a>
-                    {' '}to request.
-                  </span>
+                    {' '}
+to request.
+</span>
                 </li>
               </ul>
             </details>
@@ -1148,7 +1178,7 @@ RNZCGP recommended 6 months
               <summary className="cursor-pointer text-lg font-bold text-text-primary">
                 🎓 Prescriber Education
               </summary>
-              <p className="mt-3 mb-4 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+              <p className="mb-4 mt-3 text-xs font-medium uppercase tracking-wide text-text-tertiary">
                 Webinars, guidance, and position statements
               </p>
               <ul className="space-y-2 text-sm text-text-secondary">
@@ -1181,7 +1211,9 @@ RNZCGP recommended 6 months
                   >
                     → Pinnacle webinar recording (YouTube)
                   </a>
-                  {' '}+{' '}
+                  {' '}
++
+{' '}
                   <a
                     href="https://www.pinnaclepractices.co.nz/assets/Resource-files/12-Month-Prescribing-Webinar-Presentation.pdf"
                     target="_blank"
@@ -1219,7 +1251,7 @@ RNZCGP recommended 6 months
               <summary className="cursor-pointer text-lg font-bold text-text-primary">
                 💊 Pharmacy Liaison
               </summary>
-              <p className="mt-3 mb-4 text-xs font-medium uppercase tracking-wide text-text-tertiary">
+              <p className="mb-4 mt-3 text-xs font-medium uppercase tracking-wide text-text-tertiary">
                 Share with your dispensing pharmacy
               </p>
               <ul className="space-y-2 text-sm text-text-secondary">
