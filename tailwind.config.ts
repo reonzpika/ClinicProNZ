@@ -38,6 +38,9 @@ export default {
         xs: '400px',
         // Add extra small breakpoint for screens under 400px
       },
+      animation: {
+        'pulse-slow': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
