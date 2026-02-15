@@ -13,6 +13,7 @@ import {
 } from '@/src/shared/components/ui/dialog';
 import { useToast } from '@/src/shared/components/ui/toast';
 
+import { MobileInstallPrompt } from '../components/OnboardingPrompts';
 import {
   incrementUploadCount,
   isSharePromptThreshold,
@@ -41,22 +42,6 @@ type MyImageData = {
 };
 
 type Screen = 'loading' | 'capture' | 'review' | 'metadata' | 'uploading' | 'success' | 'limit-reached' | 'error';
-
-type Platform = 'ios' | 'android' | 'other';
-
-function detectPlatform(): Platform {
-  if (typeof navigator === 'undefined') {
- return 'other';
-}
-  const ua = navigator.userAgent;
-  if (/iPhone|iPad|iPod/.test(ua)) {
- return 'ios';
-}
-  if (/Android/.test(ua)) {
- return 'android';
-}
-  return 'other';
-}
 
 const HAS_SEEN_SAVE_PROMPT = 'referral-images-hasSeenSavePrompt';
 const DESKTOP_TIP_KEY = (uid: string) => `referral-images-hasSeenDesktopTip-${uid}`;
@@ -526,74 +511,11 @@ function ReferralImagesMobilePageContent() {
           </div>
         )}
         {/* Save to Home Screen modal */}
-        {showSavePrompt && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-sm rounded-lg bg-white p-6 shadow-xl">
-              <div className="mb-4 text-center text-4xl">📱</div>
-              <h2 className="mb-2 text-center text-xl font-bold text-text-primary">Save to Home Screen</h2>
-              <p className="mb-4 text-center text-sm text-text-secondary">
-                Save this page for instant access during consults. It&apos;ll work like an app - no need to find the link again.
-              </p>
-              {detectPlatform() === 'ios' && (
-                <ol className="mb-4 list-inside list-decimal space-y-2 text-left text-sm text-text-secondary">
-                  <li>
-Tap the
-<strong>Share button</strong>
-{' '}
-(□↑) at the bottom
-                  </li>
-                  <li>
-Scroll down and tap
-<strong>&quot;Add to Home Screen&quot;</strong>
-                  </li>
-                  <li>
-Tap
-<strong>&quot;Add&quot;</strong>
-{' '}
-in the top-right
-                  </li>
-                </ol>
-              )}
-              {detectPlatform() === 'android' && (
-                <ol className="mb-4 list-inside list-decimal space-y-2 text-left text-sm text-text-secondary">
-                  <li>
-Tap the
-<strong>menu</strong>
-{' '}
-(⋮) in the top-right corner
-                  </li>
-                  <li>
-Tap
-<strong>&quot;Add to Home screen&quot;</strong>
-                  </li>
-                  <li>
-Tap
-<strong>&quot;Add&quot;</strong>
-                  </li>
-                </ol>
-              )}
-              {detectPlatform() === 'other' && (
-                <p className="mb-4 text-center text-sm text-text-secondary">
-                  Look for &quot;Add to Home Screen&quot; or &quot;Install App&quot; in your browser menu.
-                </p>
-              )}
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={handleSavedPrompt}
-                  className="w-full rounded-lg bg-primary py-3 font-medium text-white transition-colors hover:bg-primary-dark"
-                >
-                  I&apos;ve Saved It
-                </button>
-                <button
-                  onClick={handleRemindLater}
-                  className="w-full rounded-lg border border-border py-3 text-text-secondary transition-colors hover:bg-surface"
-                >
-                  Remind Me Later
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <MobileInstallPrompt
+          open={showSavePrompt}
+          onClose={handleRemindLater}
+          onSaved={handleSavedPrompt}
+        />
 
         <header className="border-b border-border bg-white">
           <div className="mx-auto flex max-w-7xl items-center justify-center p-4">
@@ -640,7 +562,7 @@ Tap
               onClick={sendEmailToSelf}
               disabled={isSendingEmail || !userId}
               className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-border bg-white px-4 py-2 text-text-primary transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
-              title="Email me my links"
+              title="Email my links"
             >
               {isSendingEmail
 ? (
@@ -659,7 +581,7 @@ Tap
 : (
                 <>
                   <Mail className="size-4" />
-                  Email Me
+                  Email my links
                 </>
               )}
             </button>

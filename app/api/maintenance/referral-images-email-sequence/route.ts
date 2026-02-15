@@ -165,6 +165,7 @@ export async function GET(req: NextRequest) {
         and(
           eq(users.imageTier, 'free'),
           eq(imageToolUsage.month, prevMonth),
+          sql`${imageToolUsage.limitHitEmailSentAt} IS NOT NULL`,
           or(
             isNull(users.lastMonthResetEmailFor),
             ne(users.lastMonthResetEmailFor, currentMonth),

@@ -2,7 +2,7 @@
 
 import * as Tabs from '@radix-ui/react-tabs';
 import Ably from 'ably';
-import { AlertCircle, CheckCircle, Copy, Download, Loader2, Mail, MessageSquare, QrCode, RotateCcw, RotateCw, Share2, Trash2 } from 'lucide-react';
+import { AlertCircle, Bookmark, CheckCircle, Copy, Download, Loader2, Mail, MessageSquare, QrCode, RotateCcw, RotateCw, Share2, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
@@ -17,7 +17,7 @@ import {
 } from '@/src/shared/components/ui/dialog';
 import { useToast } from '@/src/shared/components/ui/toast';
 
-import { BookmarkInstructionsModal } from '../components/BookmarkInstructionsModal';
+import { DesktopBookmarkPrompt } from '../components/OnboardingPrompts';
 import {
   incrementDownloadCount,
   isSharePromptThreshold,
@@ -86,13 +86,12 @@ function ReferralImagesDesktopPageContent() {
   const [deletingImageId, setDeletingImageId] = useState<string | null>(null);
   const [rotatingImageId, setRotatingImageId] = useState<string | null>(null);
   const [bookmarkBannerDismissed, setBookmarkBannerDismissed] = useState(true); // start true, set false in useEffect if not dismissed
-  const [showBookmarkInstructions, setShowBookmarkInstructions] = useState(false);
+  const [showBookmarkPrompt, setShowBookmarkPrompt] = useState(false);
   const [enlargedImage, setEnlargedImage] = useState<ImageData | null>(null);
   const [downloadingImageIds, setDownloadingImageIds] = useState<Set<string>>(new Set());
   const [isDownloadingAll, setIsDownloadingAll] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const [firstTimeHintDismissed, setFirstTimeHintDismissed] = useState(true);
 
   // Share URL: Always use landing page for sharing to others (with optional referral tracking)
   const shareUrl
@@ -154,19 +153,6 @@ function ReferralImagesDesktopPageContent() {
     const isDismissed = localStorage.getItem('bookmark_banner_dismissed');
     setBookmarkBannerDismissed(!!isDismissed);
   }, []);
-
-  // First-time hint (no images yet): show until user dismisses
-  useEffect(() => {
-    if (typeof window === 'undefined' || !userId || status == null) {
-      return;
-    }
-    if (status.images.length > 0) {
-      return;
-    }
-    const key = `referral-images-desktop-first-time-hint-${userId}`;
-    const dismissed = localStorage.getItem(key);
-    setFirstTimeHintDismissed(!!dismissed);
-  }, [userId, status]);
 
   // Ably real-time sync with comprehensive logging
   useEffect(() => {
@@ -533,18 +519,15 @@ function ReferralImagesDesktopPageContent() {
         <div className="flex items-center justify-between gap-4 border-b border-blue-200 bg-blue-100 px-4 py-3">
           <p className="flex-1 text-sm text-blue-900">
             <span className="mr-1" aria-hidden>🔖</span>
-            <strong>Bookmark this page</strong>
-{' '}
-on your computer for quick access.
-{' '}
-            <button
-              type="button"
-              onClick={() => setShowBookmarkInstructions(true)}
-              className="font-medium text-blue-800 underline hover:text-blue-900"
-            >
-              How to bookmark
-            </button>
+            Save for instant access during consults.
           </p>
+          <button
+            type="button"
+            onClick={() => setShowBookmarkPrompt(true)}
+            className="shrink-0 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            Bookmark Now
+          </button>
           <button
             type="button"
             onClick={() => {
@@ -555,28 +538,6 @@ on your computer for quick access.
             }}
             className="shrink-0 rounded p-1 text-blue-900 hover:bg-blue-200/50"
             aria-label="Dismiss bookmark banner"
-          >
-            ×
-          </button>
-        </div>
-      )}
-
-      {/* First-time hint when no images yet */}
-      {status?.images.length === 0 && !firstTimeHintDismissed && userId && (
-        <div className="flex items-center justify-between gap-4 border-b border-green-200 bg-green-50 px-4 py-3">
-          <p className="flex-1 text-sm text-green-900">
-            Photos you take on your phone will appear here. Download and attach to your referral.
-          </p>
-          <button
-            type="button"
-            onClick={() => {
-              if (typeof window !== 'undefined') {
-                localStorage.setItem(`referral-images-desktop-first-time-hint-${userId}`, 'true');
-              }
-              setFirstTimeHintDismissed(true);
-            }}
-            className="shrink-0 rounded p-1 text-green-900 hover:bg-green-200/50"
-            aria-label="Dismiss hint"
           >
             ×
           </button>
@@ -601,6 +562,15 @@ on your computer for quick access.
           <div className="flex items-center gap-3">
             <button
               type="button"
+              onClick={() => setShowBookmarkPrompt(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition-colors hover:bg-surface"
+              title="Bookmark this page for quick access"
+            >
+              <Bookmark className="size-4" />
+              Bookmark this page
+            </button>
+            <button
+              type="button"
               onClick={() => onShareClick('desktop_header')}
               disabled={!userId || !shareUrl}
               className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 transition-colors hover:bg-surface disabled:cursor-not-allowed disabled:opacity-50"
@@ -618,10 +588,10 @@ on your computer for quick access.
         </div>
       </header>
 
-      {/* Bookmark instructions modal */}
-      <BookmarkInstructionsModal
-        open={showBookmarkInstructions}
-        onClose={() => setShowBookmarkInstructions(false)}
+      {/* Bookmark prompt modal */}
+      <DesktopBookmarkPrompt
+        open={showBookmarkPrompt}
+        onClose={() => setShowBookmarkPrompt(false)}
       />
 
       {/* Share modal */}
@@ -788,24 +758,17 @@ minutes
       </Dialog>
 
       <main className="mx-auto max-w-7xl px-4 py-8">
-        {/* Mobile Link Sharing - collapsed by default */}
-        <details className="group mb-6 rounded-lg border border-border bg-white shadow-sm">
+        {/* Mobile Link Sharing - collapsed by default, low prominence */}
+        <details className="group mb-6 rounded-lg border border-border/70 bg-surface/30">
           <summary className="cursor-pointer list-none">
-            <div className="flex items-center justify-between p-6 pb-4">
-              <h2 className="text-lg font-semibold text-text-primary">
-                Send Mobile Link to Your Phone
-              </h2>
+            <div className="flex items-center justify-between py-3 px-4">
+              <span className="text-sm text-text-tertiary">
+                Send link to your phone (email or QR) to capture photos
+              </span>
               <span className="text-text-tertiary transition-transform group-open:rotate-180" aria-hidden>▼</span>
             </div>
           </summary>
           <div className="px-6 pb-6 pt-0">
-          <p className="mb-4 text-sm text-text-secondary">
-            💡
-{' '}
-<strong>Save the mobile link to your phone&apos;s home screen</strong>
-{' '}
-for instant access during consults.
-          </p>
           <div className="mb-4 flex items-center gap-3">
             <input
               type="text"
@@ -887,7 +850,7 @@ for instant access during consults.
 
           <details className="mt-4 overflow-hidden rounded-lg border border-border">
             <summary className="cursor-pointer bg-surface px-4 py-3 text-sm font-medium text-text-primary hover:bg-black/5">
-              How to save to home screen
+              Save the mobile link to your phone&apos;s home screen
             </summary>
             <div className="border-t border-border p-4">
               <Tabs.Root defaultValue="iphone" className="text-sm">
@@ -959,6 +922,9 @@ for instant access during consults.
           {status && status.images.length === 0 ? (
             <div className="py-12 text-center">
               <p className="mb-4 text-text-secondary">No images yet</p>
+              <p className="mb-2 rounded-lg border-l-4 border-primary bg-primary/5 px-4 py-3 text-sm font-medium text-text-primary">
+                Photos you take on your phone will appear here. Download and attach to your referral.
+              </p>
               <p className="text-sm text-text-tertiary">
                 Use your mobile link to capture photos
               </p>
